@@ -1,0 +1,132 @@
+@font-face {
+  font-family: 'Red Hat Mono';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/red-hat-mono-300.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Red Hat Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/red-hat-mono-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Red Hat Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/red-hat-mono-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Red Hat Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/red-hat-mono-700.woff2') format('woff2');
+}
+
+:root {
+  --ink: #000000;
+  --paper: #ffffff;
+
+  /* Migration aliases; keep until every component uses the canonical names. */
+  --stroke: var(--ink);
+  --fill: var(--paper);
+
+  --app-width: 350px;
+  --window-width: 400px;
+  --window-height: 640px;
+  --width: var(--app-width);
+
+  --text-xs: 0.7rem;
+  --text-sm: 0.8rem;
+  --text-md: 0.9rem;
+  --text-lg: 1rem;
+
+  --space-1: 3px;
+  --space-2: 5px;
+  --space-3: 10px;
+  --space-4: 20px;
+  --space-5: 40px;
+
+  --stroke-width: 2px;
+  --modal-stroke-width: 3px;
+  --control-height: 70px;
+  --progress-height: 20px;
+  --popup-width: 300px;
+
+  --font: 'Red Hat Mono', monospace;
+
+  font-family: var(--font);
+  color-scheme: light;
+  overflow: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+}
+
+.app-shell {
+  display: contents;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: solid var(--stroke-width) var(--ink);
+  border-radius: 0;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+button:hover:not(:disabled) {
+  border-style: dotted;
+}
+
+button:active:not(:disabled) {
+  color: var(--paper);
+  background: var(--ink);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  border-style: dotted;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px dotted var(--ink);
+  outline-offset: 2px;
+}
+
+.no-select {
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

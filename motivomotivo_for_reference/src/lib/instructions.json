@@ -1,0 +1,42 @@
+{
+  "Overview": {
+    "text": "motivomotivo is a grid-based creative environment that separates minimalistic vector design from raster-based post-processing. Use the Composition view for layout and geometry, and the Fusion view for experimental rendering.",
+    "image": "/assets/instructions/overview.png"
+  },
+  "Project Bar": {
+    "text": "Your global settings hub. Here you define the canvas dimensions, the density of the grid subdivisions, the background color, and your custom color palette. It also handles exporting your final artwork to SVG or PNG.",
+    "image": "/assets/instructions/project-bar.png"
+  },
+  "Composition View": {
+    "text": "This is the main canvas, divided in square cells. Using the Single Cell button, click to select a single cell, or using the Select Area button drag to select multiple cells. This is where you lay down the geometric foundation and typography of your artwork.",
+    "image": "/assets/instructions/composition-view.png"
+  },
+  "Motivo Bar": {
+    "text": "Controls the geometric marks inside your selected cells. Each cell can hold up to three distinct marks. You can toggle their visibility and precisely adjust their shape, color from the palette, size, position within the cell, and rotation. The app has intentional constraints, think of it as a design challenge.",
+    "image": "/assets/instructions/motivo-bar.png"
+  },
+  "Macro-Cells": {
+    "text": "Break the standard grid by merging a perfect square of cells (e.g., 2x2 or 3x3) into a single, massive Macro-Cell. Use the Select Area tool to highlight a square, then click the Merge button in the toolbar. Geometric marks, text, and images will automatically scale and anchor to this new expanded area. You can shatter them back into individual cells using the Unmerge button.",
+    "image": "/assets/instructions/macro-cells.png"
+  },
+  "Text Bar": {
+    "text": "Manages typography for the selected cell. You can span text across multiple columns, adjust leading (line height), font size, alignment, and toggle between horizontal and vertical text direction.",
+    "image": "/assets/instructions/text-bar.png"
+  },
+  "Image Bar": {
+    "text": "Allows you to insert raster images into your composition. Select a cell to act as the anchor, upload an image, and adjust its grid span (width and height) and internal padding. Images sit behind your geometric marks but above the background.",
+    "image": "/assets/instructions/image-bar.png"
+  },
+  "Fusion View": {
+    "text": "A rasterized, real-time preview of your composition. In this view, the structural vector data is flattened onto a canvas so that pixel-based post-processing effects can be applied.",
+    "image": "/assets/instructions/fusion-view.png"
+  },
+  "Post-Processing Bar": {
+    "text": "Available only in the Fusion view. Allows you to stack and tweak various visual effects. Keep an eye on the limit badge (another creativity eliciting constraint), and use the dice icon to randomize effect values for unexpected results.",
+    "image": "/assets/instructions/post-processing-bar.png"
+  },
+  "Batch Bar": {
+    "text": "Automates the generation of multiple design variations by injecting data from a CSV file. The system uses a zero-indexed coordinate grid (the top-left cell is 0,0). Name your CSV columns 'tX_Y' to replace text (e.g., 't2_1' for text at column 2, row 1) and 'iX_Y' to replace images from an optional loaded folder (e.g., 'i0_3' for an image at column 0, row 3). Use a 'filename' column to specify custom export names; otherwise, it defaults to a sequential prefix. Blank cells in your CSV will simply retain the original template's content.",
+    "image": "/assets/instructions/batch-bar.png"
+  }
+}
