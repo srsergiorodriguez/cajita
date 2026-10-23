@@ -333,6 +333,48 @@ async function publishToGithubUnsafe(
   };
 }
 
+
+export async function rollbackToGithub({
+  token,
+  owner,
+  repo,
+  branch = 'gh-pages',
+  commit,
+  onProgress
+} = {}) {
+  if (!token) throw new PublishError('PUBLISH_AUTH', 'Falta el token de GitHub.');
+  if (!/^[a-f0-9]{40}$/i.test(String(commit ?? ''))) {
+    throw new PublishError('PUBLISH_MISSING', 'El commit de restauración no es válido.');
+  }
+  await getRepo(token, owner, repo);
+  if (!(await getPages(token, owner, repo))) {
+    await enablePages(token, owner, repo, branch);
+  }
+  const target = await getCommit(token, owner, repo, commit);
+  const ref = await getBranch(token, owner, repo, branch);
+  if (!ref?.object?.sha) {
+    throw new PublishError('PUBLISH_MISSING', 'La rama de publicación no existe.');
+  }
+  onProgress?.('publish.progress.rollback');
+  const next = await createCommit(
+    token,
+    owner,
+    repo,
+    target.tree.sha,
+    [ref.object.sha]
+  );
+  await request(token, updateRefApi(owner, repo, branch), {
+    method: 'PATCH',
+    body: { sha: next.sha, force: false }
+  });
+  const build = await waitForBuild(token, owner, repo, next, onProgress);
+  return {
+    url: githubPagesUrl(owner, repo),
+    commit: next.sha,
+    build
+  };
+}
+
 export async function unpublishFromGithub({ token, repo } = {}) {
   const parsed = parseRepo(repo);
   if (!parsed)

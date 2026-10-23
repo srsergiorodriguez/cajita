@@ -1,5 +1,6 @@
 import { buildSite } from './site.js';
 import { AUDIO_PLAYER_SCRIPT } from './audio-player.js';
+import { FICHA_MOVE_SCRIPT } from './ficha-move.js';
 
 function escapeAttribute(value) {
   return String(value ?? '')
@@ -21,14 +22,25 @@ function routerScript() {
     bySlug[section.getAttribute('data-page-slug')]=section;
     byId[section.getAttribute('data-page-id')]=section;
   });
+  function animate(section){
+    var mode=section.getAttribute('data-transition')||'cut';
+    if(mode!=='fade'&&mode!=='slide')return;
+    section.classList.remove('sf-transition-fade','sf-transition-slide');
+    void section.offsetWidth;
+    section.classList.add('sf-transition-'+mode);
+    setTimeout(function(){section.classList.remove('sf-transition-'+mode);},1100);
+  }
   function show(section,push){
     if(!section)return;
     sections.forEach(function(item){item.classList.toggle('is-active',item===section);});
     document.title=section.getAttribute('data-page-title')||document.title;
     if(push){
+      animate(section);
       var next='#/'+section.getAttribute('data-page-slug');
       if(location.hash!==next)history.pushState(null,'',next);
     }
+    var stage=section.querySelector('.stage');
+    if(stage&&stage.__cajitaFichasRefresh)stage.__cajitaFichasRefresh();
     window.scrollTo(0,0);
   }
   function fromHash(){
@@ -54,7 +66,6 @@ function routerScript() {
  */
 export function buildSingleFile(project, { assetHref, builtinHref, customHref, fontFaces }) {
   const clean = structuredClone(project);
-  clean.fichaSettings = { ...(clean.fichaSettings ?? {}), movable: false };
   const site = buildSite(clean, {
     assetHref,
     builtinHref,
@@ -68,7 +79,7 @@ export function buildSingleFile(project, { assetHref, builtinHref, customHref, f
     .map(({ page, html }, index) => {
       const main = extractMain(html);
       const active = page.id === clean.startPageId || (!clean.startPageId && index === 0);
-      return `<section class="sf-page${active ? ' is-active' : ''}" data-page-id="${escapeAttribute(page.id)}" data-page-slug="${escapeAttribute(page.slug)}" data-page-title="${escapeAttribute(`${page.title} — ${clean.title}`)}">${main}</section>`;
+      return `<section class="sf-page${active ? ' is-active' : ''}" data-page-id="${escapeAttribute(page.id)}" data-page-slug="${escapeAttribute(page.slug)}" data-page-title="${escapeAttribute(`${page.title} — ${clean.title}`)}" data-transition="${escapeAttribute(page.transition ?? 'cut')}" data-ficha-project="${escapeAttribute(clean.id)}" data-ficha-page="${escapeAttribute(page.id)}">${main}</section>`;
     })
     .join('\n');
   return `<!doctype html>
@@ -80,11 +91,16 @@ export function buildSingleFile(project, { assetHref, builtinHref, customHref, f
 <style>${site.css}
 .sf-page{display:none;}
 .sf-page.is-active{display:block;}
+.sf-page.sf-transition-fade{animation:sf-fade 1000ms ease both;}
+.sf-page.sf-transition-slide{animation:sf-slide 1000ms ease both;}
+@keyframes sf-fade{from{opacity:0;}to{opacity:1;}}
+@keyframes sf-slide{from{opacity:0;transform:translateX(28px);}to{opacity:1;transform:none;}}
+@media (prefers-reduced-motion:reduce){.sf-page.sf-transition-fade,.sf-page.sf-transition-slide{animation:none;}}
 </style>
 </head>
 <body class="fit-${escapeAttribute(clean.stage.fit)} align-${escapeAttribute(clean.stage.align)}">
 ${sections}
-<script>${routerScript()}\n${AUDIO_PLAYER_SCRIPT}</script>
+<script>${clean.fichaSettings?.movable ? `${FICHA_MOVE_SCRIPT}\n` : ''}${routerScript()}\n${AUDIO_PLAYER_SCRIPT}</script>
 </body>
 </html>`;
 }

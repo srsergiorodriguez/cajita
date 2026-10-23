@@ -28,6 +28,7 @@ export function createFichaField({
   key = '',
   type = 'text',
   required = false,
+  aliases = [],
   idFactory
 } = {}) {
   return {
@@ -36,6 +37,9 @@ export function createFichaField({
     key: String(key).trim(),
     type: FICHA_FIELD_TYPES.includes(type) ? type : 'text',
     required: Boolean(required),
+    aliases: Array.isArray(aliases)
+      ? aliases.map((alias) => String(alias).trim()).filter(Boolean)
+      : [],
     visible: true
   };
 }
@@ -120,5 +124,8 @@ export function fichaFieldErrors(field) {
     errors.push('key must start with a letter and use lowercase letters, digits, or _');
   }
   if (!FICHA_FIELD_TYPES.includes(field.type)) errors.push('unknown field type');
+  if (field.aliases !== undefined && !Array.isArray(field.aliases)) {
+    errors.push('aliases must be an array');
+  }
   return errors;
 }

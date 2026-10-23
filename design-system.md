@@ -970,36 +970,16 @@ Rules:
 
 ---
 
-## 11. Shipped site themes
+## 11. Shipped site theme
 
-Site themes are **separate from the app themes**. They style the exported site:
-background, ink, accent, muted, paper, and a font pairing. The editor chrome
-keeps the Ficha chrome (light or dark); the site can use any of these
-independently.
+The app ships one site theme, **Papel**:
 
-| Theme     | Background | Ink       | Accent                | Pairing   | Use                     |
-| --------- | ---------- | --------- | --------------------- | --------- | ----------------------- |
-| Papel     | `#F6F0E4`  | `#1C1917` | `#A82A1E`             | Editorial | default, warm portfolio |
-| Riso      | `#FFF6EC`  | `#1B1B1B` | `#E94F37` + `#2A9D8F` | Poster    | zine, comic, loud       |
-| Ficha     | `#F7F1E5`  | `#24303F` | `#2E5A88`             | Slab      | archive, collection     |
-| Newsprint | `#F2F0EA`  | `#141414` | `#C1121F`             | Slab      | newspaper, editorial    |
-| Terminal  | `#101410`  | `#D8F3DC` | `#95D5B2`             | Technical | net art, experimental   |
-| Blueprint | `#0E2A47`  | `#EAF4FF` | `#7FD1E8`             | Technical | technical, collection   |
+| Theme | Background | Ink | Accent | Pairing | Feel |
+| ----- | ---------- | --- | ------ | ------- | ---- |
+| Papel | `#F6F0E4` | `#1C1917` | `#A82A1E` | Editorial | paper, archive, quiet |
 
-Rules:
-
-- One site theme per site; one accent used sparingly.
-- Background textures are optional and subtle (paper grain, halftone, grid).
-- User can override background/ink/accent with the colour picker; contrast is
-  checked and warned, not blocked.
-- The editor chrome does **not** adopt the site theme. Editing stays in Ficha
-  light or dark, so the tool remains recognisable and the student's content is
-  judged against a stable surface.
-- The exported page letterbox uses the page's own background colour, so the
-  stage blends into the window instead of sitting on a contrasting mat. Each
-  page can have its own background.
-
----
+The editor chrome remains Ficha light/dark. Imported projects with old theme names
+are normalized to Papel on load.
 
 ## 12. Implementation rules
 

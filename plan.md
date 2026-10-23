@@ -1,6 +1,6 @@
 # cajita — active sprint
 
-Status: **S29 complete — in-app tutorial and example-project walkthrough** · 2026-10-23.
+Status: **S30 complete — field aliases, single-file parity, rollback, theme cleanup** · 2026-10-23.
 S0 shell. S1 projects. S2 canvas. S3 links/map/fichas. S4 export/preview.
 S5 GitHub Pages. S6 page size. S7 metadata/SEO. S8 video/sound. S9 transitions.
 S10 media/embeds. S11 shapes. S12 fichas. S13 CSV. S14 movable. S15 table/card.
@@ -273,10 +273,8 @@ stage into a smaller viewport; page resizing no longer moves elements.
 ## Deferred / next
 
 - Live GitHub Pages smoke test with fichas, persistence, reset, and p5.
-- Field aliases.
 - Media cut semantics (currently cut copies media; element cut removes).
 - Publish history rollback.
-- Single-file page transitions/movable parity.
 
 ---
 

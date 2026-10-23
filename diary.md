@@ -1642,3 +1642,18 @@ Verification: **128 tests**, 0 svelte-check warnings, build passes; screenshots
   (opened without submitting), and settings.
 - Added a test that every tutorial step has a screenshot and ES/EN copy.
 - Raw `forTutorial/` media is ignored; only `public/tutorial/` screenshots ship.
+
+---
+
+## 2026-10-23 — S30: aliases, single-file parity, rollback, theme cleanup
+
+- CSV schema fields now accept comma-separated aliases. Header matching strips
+  accents/punctuation and checks key, label, and aliases.
+- Single-file export now preserves movable fichas, per-page positions, reset, and
+  fade/slide transitions. The ficha runtime initializes every stage and refreshes
+  positions when a single-file section becomes active.
+- Media cut now removes the asset and clipboard payloads can restore it on paste.
+- Publish history records successful publishes; older entries can be restored via
+  a new gh-pages commit, with Pages re-enabled if needed.
+- Theme cleanup reduced the internal site theme set to Papel and normalizes legacy
+  theme names during migration.

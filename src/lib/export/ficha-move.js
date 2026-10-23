@@ -1,21 +1,24 @@
 /**
- * Progressive visitor enhancement for movable fichas.
- * Positions are stored in localStorage per project/page/element; a reset button
- * restores the authored layout.
+ * Progressive visitor enhancement for movable fichas. Positions are stored in
+ * localStorage per project/page/element; a reset button restores the authored
+ * layout. Single-file exports contain several stages, so this initializes each
+ * stage independently and exposes a refresh hook for the section router.
  */
 export const FICHA_MOVE_SCRIPT = `(function(){
-  function init(){
-    var stage=document.querySelector('.stage');
-    if(!stage)return;
+  function initStage(stage){
+    var section=stage.closest('[data-ficha-page]');
     var body=document.body;
-    var storageKey='cajita-fichas:'+(body.getAttribute('data-ficha-project')||'local')+':'+(body.getAttribute('data-ficha-page')||'page');
+    var projectId=(section&&section.getAttribute('data-ficha-project'))||body.getAttribute('data-ficha-project')||'local';
+    var pageId=(section&&section.getAttribute('data-ficha-page'))||body.getAttribute('data-ficha-page')||'page';
+    var storageKey='cajita-fichas:'+projectId+':'+pageId;
     var stored={};
     try{stored=JSON.parse(localStorage.getItem(storageKey)||'{}')||{};}catch(err){stored={};}
     var items=[];
     var authored={};
     var positions={};
-    function setPosition(el,id,x,y){
+    function setPosition(el,id,x,y,remember){
       var sw=stage.clientWidth,sh=stage.clientHeight;
+      if(!sw||!sh)return;
       var px=parseFloat(x),py=parseFloat(y);
       if(!isFinite(px)||!isFinite(py))return;
       var left=Math.max(0,Math.min(sw-el.offsetWidth,px/100*sw));
@@ -23,7 +26,7 @@ export const FICHA_MOVE_SCRIPT = `(function(){
       var nx=(left/sw*100)+'%',ny=(top/sh*100)+'%';
       el.style.setProperty('--x',nx);
       el.style.setProperty('--y',ny);
-      positions[id]={x:nx,y:ny};
+      if(remember)positions[id]={x:nx,y:ny};
     }
     function persist(){
       try{localStorage.setItem(storageKey,JSON.stringify(positions));}catch(err){}
@@ -44,7 +47,7 @@ export const FICHA_MOVE_SCRIPT = `(function(){
       if(!id)return;
       authored[id]={x:el.style.getPropertyValue('--x'),y:el.style.getPropertyValue('--y'),z:el.style.zIndex || ''};
       items.push({el:el,id:id});
-      if(stored[id])setPosition(el,id,stored[id].x,stored[id].y);
+      if(stored[id])setPosition(el,id,stored[id].x,stored[id].y,false);
       var summary=el.querySelector('summary');
       if(!summary)return;
       summary.tabIndex=0;
@@ -99,9 +102,17 @@ export const FICHA_MOVE_SCRIPT = `(function(){
       });
       el.classList.add('is-movable');
     });
-    document.addEventListener('click',function(event){
-      if(event.target.closest('[data-ficha-reset]'))restoreAll();
-    });
+    var reset=stage.querySelector('[data-ficha-reset]');
+    if(reset)reset.addEventListener('click',restoreAll);
+    stage.__cajitaFichasRefresh=function(){
+      items.forEach(function(item){
+        var value=positions[item.id]||stored[item.id];
+        if(value)setPosition(item.el,item.id,value.x,value.y,false);
+      });
+    };
+  }
+  function init(){
+    Array.prototype.forEach.call(document.querySelectorAll('.stage'),initStage);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
   else init();

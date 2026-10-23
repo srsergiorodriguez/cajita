@@ -166,6 +166,17 @@
         customDomain: domain,
         lastPublishedAt: new Date().toISOString()
       });
+      recordPublish({
+        kind: 'publish',
+        at: new Date().toISOString(),
+        owner: parsed.owner,
+        repo: parsed.name,
+        branch: 'gh-pages',
+        commit: result.commit,
+        url: result.url,
+        uploaded: result.plan?.uploaded ?? 0,
+        deleted: result.plan?.deleted ?? 0
+      });
       url = result.url;
       writeCache(parsed, result);
       progress = '';
@@ -217,6 +228,51 @@
       toast(t('publish.unpublished'));
     } catch (error) {
       errorCode = error?.code ?? 'NETWORK';
+    } finally {
+      busy = false;
+    }
+  }
+
+  async function rollback(entry) {
+    const parsed = parseRepo(`${entry.owner}/${entry.repo}`);
+    const cleanToken = token.replace(/\s+/g, '').replace(/^Bearer/i, '');
+    if (!parsed || !cleanToken || !entry.commit) {
+      errorCode = !cleanToken ? 'PUBLISH_AUTH' : 'PUBLISH_REPO';
+      return;
+    }
+    busy = true;
+    errorCode = '';
+    errorDetail = '';
+    progress = 'publish.progress.rollback';
+    try {
+      const result = await platform.publisher.rollback({
+        token: cleanToken,
+        owner: parsed.owner,
+        repo: parsed.name,
+        branch: entry.branch || 'gh-pages',
+        commit: entry.commit,
+        onProgress: (key, params = {}) => {
+          progress = key;
+          progressParams = params;
+        }
+      });
+      localStorage.removeItem(cacheKey(parsed, session.project.id));
+      recordPublish({
+        kind: 'rollback',
+        at: new Date().toISOString(),
+        owner: parsed.owner,
+        repo: parsed.name,
+        branch: entry.branch || 'gh-pages',
+        commit: result.commit,
+        url: result.url
+      });
+      url = result.url;
+      progress = '';
+      toast(t('publish.rollback.success'));
+    } catch (error) {
+      errorCode = error?.code ?? 'PUBLISH_LOCAL';
+      errorDetail = error?.detail || error?.message || '';
+      progress = '';
     } finally {
       busy = false;
     }
@@ -354,7 +410,9 @@
             <span class="history-kind">
               {entry.kind === 'publish'
                 ? t('publish.history.published')
-                : t('publish.history.unpublished')}
+                : entry.kind === 'rollback'
+                  ? t('publish.history.rollback')
+                  : t('publish.history.unpublished')}
             </span>
             <span class="history-repo">{entry.owner}/{entry.repo}</span>
             {#if entry.kind === 'publish'}
@@ -376,6 +434,17 @@
               >
                 {entry.commit.slice(0, 7)}
               </a>
+              {#if entry.kind !== 'unpublish' && entry.commit !== history[0]?.commit}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onclick={() => rollback(entry)}
+                  disabled={busy || !token.trim()}
+                  title={t('publish.rollback.action')}
+                >
+                  {t('publish.rollback.action')}
+                </Button>
+              {/if}
             {/if}
           </div>
         {/each}

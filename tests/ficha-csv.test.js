@@ -58,6 +58,17 @@ describe('ficha CSV', () => {
     expect(report.errors.some((error) => error.message.includes('URL'))).toBe(true);
   });
 
+  it('maps CSV headers through field aliases and accents', () => {
+    const project = fixture();
+    project.fichaSchema.fields[0].aliases = ['Autor/a', 'AUTOR'];
+    const report = validateFichaCsv(
+      project,
+      'code,label,Autor/a\nOBJ-001,Retrato,Ana\n'
+    );
+    expect(report.errors).toEqual([]);
+    expect(report.rows[0].values.fld_author).toBe('Ana');
+  });
+
   it('blocks unknown headers and duplicate codes', () => {
     const project = fixture();
     project.fichas.f_1 = {

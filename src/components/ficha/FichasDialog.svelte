@@ -245,6 +245,17 @@
     );
   }
 
+  function updateSchemaAliases(index, value) {
+    updateSchemaField(
+      index,
+      'aliases',
+      value
+        .split(',')
+        .map((alias) => alias.trim())
+        .filter(Boolean)
+    );
+  }
+
   function syncFieldKey(index) {
     const field = schemaDraft[index];
     if (!field) return;
@@ -656,8 +667,8 @@
       {:else}
         <div class="schema-table">
           <div class="schema-row schema-row--head">
-            <span>{t('ficha.fieldLabel')}</span><span>{t('ficha.fieldKey')}</span><span
-              >{t('ficha.fieldType')}</span
+            <span>{t('ficha.fieldLabel')}</span><span>{t('ficha.fieldKey')}</span
+            ><span>{t('ficha.fieldAliases')}</span><span>{t('ficha.fieldType')}</span
             ><span>{t('ficha.required')}</span><span></span>
           </div>
           {#each schemaDraft as field, index (field.id)}
@@ -674,6 +685,12 @@
                 aria-label={t('ficha.fieldKey')}
                 oninput={(event) =>
                   updateSchemaField(index, 'key', event.currentTarget.value)}
+              />
+              <input
+                value={(field.aliases ?? []).join(', ')}
+                aria-label={t('ficha.fieldAliases')}
+                placeholder={t('ficha.fieldAliasesHint')}
+                oninput={(event) => updateSchemaAliases(index, event.currentTarget.value)}
               />
               <select
                 value={field.type}
@@ -1285,7 +1302,7 @@
   }
   .schema-row {
     display: grid;
-    grid-template-columns: 1.2fr 1fr 140px 120px 116px;
+    grid-template-columns: 1.15fr 0.9fr 1fr 130px 100px 116px;
     gap: var(--space-2);
     align-items: center;
     padding: 5px var(--space-2);

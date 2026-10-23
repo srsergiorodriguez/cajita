@@ -12,8 +12,12 @@ const HEADER_ALIASES = new Map([
 function normalizeHeader(value) {
   return String(value ?? '')
     .replace(/^\uFEFF/, '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .trim()
-    .toLowerCase();
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
 }
 
 function headerMap(project, headers) {
@@ -29,10 +33,10 @@ function headerMap(project, headers) {
     if (STRUCTURAL.includes(alias)) {
       target = { kind: alias };
     } else {
-      const field = fields.find(
-        (item) =>
-          item.key.toLowerCase() === alias ||
-          item.label.trim().toLowerCase() === alias
+      const field = fields.find((item) =>
+        [item.key, item.label, ...(item.aliases ?? [])]
+          .map(normalizeHeader)
+          .includes(alias)
       );
       if (field) target = { kind: 'field', field };
     }

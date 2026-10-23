@@ -46,51 +46,6 @@ export const SITE_THEMES = Object.freeze({
     muted: '#6b6257',
     pairing: 'editorial',
     texture: 'paper'
-  },
-  riso: {
-    name: 'riso',
-    background: '#fff6ec',
-    ink: '#1b1b1b',
-    accent: '#e94f37',
-    muted: '#7a6d62',
-    pairing: 'poster',
-    texture: 'halftone'
-  },
-  ficha: {
-    name: 'ficha',
-    background: '#f7f1e5',
-    ink: '#24303f',
-    accent: '#2e5a88',
-    muted: '#736653',
-    pairing: 'slab',
-    texture: 'paper'
-  },
-  newsprint: {
-    name: 'newsprint',
-    background: '#f2f0ea',
-    ink: '#141414',
-    accent: '#c1121f',
-    muted: '#6d6a63',
-    pairing: 'slab',
-    texture: 'paper'
-  },
-  terminal: {
-    name: 'terminal',
-    background: '#101410',
-    ink: '#d8f3dc',
-    accent: '#95d5b2',
-    muted: '#8ba894',
-    pairing: 'technical',
-    texture: 'grid'
-  },
-  blueprint: {
-    name: 'blueprint',
-    background: '#0e2a47',
-    ink: '#eaf4ff',
-    accent: '#7fd1e8',
-    muted: '#a5c2d8',
-    pairing: 'technical',
-    texture: 'grid'
   }
 });
 
@@ -166,7 +121,6 @@ export function createProject({
   stagePreset = 'wide',
   stageWidth,
   stageHeight,
-  theme = 'papel',
   idFactory,
   clock
 } = {}) {
@@ -194,7 +148,7 @@ export function createProject({
         : undefined
     ),
     siteBackground: '#fffdf7',
-    theme: SITE_THEMES[theme] ?? SITE_THEMES.papel,
+    theme: SITE_THEMES.papel,
     media: { ...DEFAULT_MEDIA },
     pages: [page],
     assets: {},

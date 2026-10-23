@@ -21,7 +21,7 @@ import {
   getGithubTokenInfo,
   setGithubToken
 } from './web/secrets.js';
-import { publishToGithub, unpublishFromGithub } from './web/github.js';
+import { publishToGithub, rollbackToGithub, unpublishFromGithub } from './web/github.js';
 
 export const platform = {
   kind: 'web',
@@ -66,7 +66,8 @@ export const platform = {
   },
   publisher: {
     publish: publishToGithub,
-    unpublish: unpublishFromGithub
+    unpublish: unpublishFromGithub,
+    rollback: rollbackToGithub
   },
   async openExternal(url) {
     window.open(url, '_blank', 'noopener,noreferrer');

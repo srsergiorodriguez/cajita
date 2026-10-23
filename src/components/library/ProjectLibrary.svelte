@@ -192,7 +192,6 @@
             <button class="card-main" type="button" onclick={() => open(item)}>
               <span
                 class="cover"
-                data-site-theme={item.theme}
                 style={`--cover-ratio:${item.stageWidth ?? 1200}/${item.stageHeight ?? 800}`}
                 aria-hidden="true"
               >
@@ -403,43 +402,10 @@
     text-align: left;
   }
 
-  .cover[data-site-theme='papel'] {
+  .cover {
     --cover-bg: var(--site-papel-bg);
     --cover-ink: var(--site-papel-ink);
     --cover-accent: var(--site-papel-accent);
-  }
-
-  .cover[data-site-theme='riso'] {
-    --cover-bg: var(--site-riso-bg);
-    --cover-ink: var(--site-riso-ink);
-    --cover-accent: var(--site-riso-accent);
-  }
-
-  .cover[data-site-theme='ficha'] {
-    --cover-bg: var(--site-ficha-bg);
-    --cover-ink: var(--site-ficha-ink);
-    --cover-accent: var(--site-ficha-accent);
-  }
-
-  .cover[data-site-theme='newsprint'] {
-    --cover-bg: var(--site-newsprint-bg);
-    --cover-ink: var(--site-newsprint-ink);
-    --cover-accent: var(--site-newsprint-accent);
-  }
-
-  .cover[data-site-theme='terminal'] {
-    --cover-bg: var(--site-terminal-bg);
-    --cover-ink: var(--site-terminal-ink);
-    --cover-accent: var(--site-terminal-accent);
-  }
-
-  .cover[data-site-theme='blueprint'] {
-    --cover-bg: var(--site-blueprint-bg);
-    --cover-ink: var(--site-blueprint-ink);
-    --cover-accent: var(--site-blueprint-accent);
-  }
-
-  .cover {
     position: relative;
     display: block;
     height: auto;

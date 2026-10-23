@@ -69,7 +69,7 @@
       <div class="row">
         <Button onclick={() => toast('guardado', 'success')}>success</Button>
         <Button onclick={() => toast('algo salió mal', 'error')}>error</Button>
-        <Button onclick={() => toast('tema: riso', 'info')}>info</Button>
+        <Button onclick={() => toast('cajita', 'info')}>info</Button>
       </div>
     </Panel>
 

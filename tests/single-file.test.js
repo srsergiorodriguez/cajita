@@ -5,6 +5,22 @@ import { createElement } from '../src/lib/domain/elements.js';
 import { buildSingleFile } from '../src/lib/export/single-file.js';
 
 describe('single-file export', () => {
+  it('keeps movable fichas and page transitions in the single file', () => {
+    const project = createProject({ title: 'Archivo', locale: 'es' });
+    project.fichaSettings.movable = true;
+    project.pages[0].transition = 'fade';
+    const html = buildSingleFile(project, {
+      assetHref: () => '',
+      builtinHref: () => '',
+      customHref: () => '',
+      fontFaces: []
+    });
+    expect(html).toContain('data-ficha-project="' + project.id + '"');
+    expect(html).toContain('__cajitaFichasRefresh');
+    expect(html).toContain('sf-transition-fade');
+    expect(html).toContain('data-transition="fade"');
+  });
+
   it('inlines pages, assets, and a hash router', () => {
     const project = createProject({ title: 'Archivo', locale: 'es' });
     const start = project.pages[0];

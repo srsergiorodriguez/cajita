@@ -37,6 +37,23 @@ describe('project model', () => {
     expect(validateProject(project).ok).toBe(true);
   });
 
+  it('normalizes legacy themes to the single Papel theme', () => {
+    const project = projectFixture({
+      theme: {
+        name: 'riso',
+        background: '#fff6ec',
+        ink: '#1b1b1b',
+        accent: '#e94f37',
+        muted: '#7a6d62',
+        pairing: 'poster',
+        texture: 'halftone'
+      }
+    });
+    const migrated = migrateProject(project);
+    expect(migrated.ok).toBe(true);
+    expect(migrated.project.theme.name).toBe('papel');
+  });
+
   it('creates a stage from a preset', () => {
     const stage = createStage('square');
     expect(stage.width).toBe(1080);

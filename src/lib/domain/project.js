@@ -480,6 +480,13 @@ export function validateProject(project) {
         if (typeof field.required !== 'boolean') {
           push(errors, `${path}.required`, 'must be a boolean');
         }
+        if (
+          field.aliases !== undefined &&
+          (!Array.isArray(field.aliases) ||
+            field.aliases.some((alias) => typeof alias !== 'string'))
+        ) {
+          push(errors, `${path}.aliases`, 'must be an array of strings');
+        }
       });
     }
   }
@@ -608,6 +615,10 @@ export function migrateProject(raw) {
           typeof raw.siteBackground === 'string'
             ? raw.siteBackground
             : (raw.stage?.background?.color ?? '#fffdf7'),
+        theme:
+          isObject(raw.theme) && SITE_THEMES[raw.theme.name]
+            ? raw.theme
+            : SITE_THEMES.papel,
         fichaSchema: isObject(raw.fichaSchema) ? raw.fichaSchema : { fields: [] },
         fichaSettings: {
           movable: false,

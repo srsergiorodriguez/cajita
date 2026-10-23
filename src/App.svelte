@@ -89,7 +89,7 @@
     toast(`${action} ${result.kind === 'asset' ? result.name : noun}`, 'success', 1400);
   }
 
-  function handleKeydown(event) {
+  async function handleKeydown(event) {
     const typing = isTypingTarget(event.target);
 
     if (event.key === 'Escape') {
@@ -114,9 +114,9 @@
       try {
         result =
           key === 'v'
-            ? pasteSelection()
+            ? await pasteSelection()
             : key === 'x'
-              ? cutSelection()
+              ? await cutSelection()
               : copySelection();
       } catch (err) {
         toast(err instanceof Error ? err.message : String(err), 'error');

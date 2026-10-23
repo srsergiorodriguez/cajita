@@ -487,6 +487,9 @@ export function saveFichaSchema(fields, { showCode } = {}) {
       key: field.key.trim(),
       type: field.type,
       required: Boolean(field.required),
+      aliases: (field.aliases ?? [])
+        .map((alias) => String(alias).trim())
+        .filter(Boolean),
       visible: field.visible !== false
     }));
     for (const field of clean) {
@@ -600,14 +603,14 @@ export function copySelection() {
     ? session.project?.assets?.[session.selectedAssetId]
     : null;
   if (asset) {
-    assetClipboard = asset.id;
+    assetClipboard = { mode: 'reference', assetId: asset.id };
     elementClipboard = [];
     return { kind: 'asset', count: 1, name: asset.name };
   }
   return null;
 }
 
-export function cutSelection() {
+export async function cutSelection() {
   const result = copySelection();
   if (!result) return null;
   if (result.kind === 'elements') {
@@ -615,12 +618,34 @@ export function cutSelection() {
     session.selectedElementIds = [];
     return result;
   }
-  // Media files are immutable library entries; cutting keeps them available for
-  // the paste and does not remove the source asset.
+  const clipboard = assetClipboard;
+  const asset =
+    clipboard?.mode === 'reference'
+      ? session.project?.assets?.[clipboard.assetId]
+      : null;
+  if (!asset) return result;
+  const projectId = session.project.id;
+  const row = await platform.assets.get(projectId, asset.id);
+  if (!row?.blob) throw new Error('No se pudo recuperar el archivo del medio.');
+  const thumb = await platform.assets.getThumb?.(projectId, asset.id);
+  const payload = {
+    mode: 'payload',
+    asset: structuredClone($state.snapshot(asset)),
+    blob: row.blob,
+    thumb: thumb?.blob ?? null,
+    thumbHash: thumb?.hash ?? ''
+  };
+  assetClipboard = payload;
+  try {
+    await deleteAsset(asset.id);
+  } catch (error) {
+    assetClipboard = null;
+    throw error;
+  }
   return result;
 }
 
-export function pasteSelection() {
+export async function pasteSelection() {
   if (elementClipboard.length) {
     const pasted = [];
     runCommand('pegar elementos', (draft) => {
@@ -642,9 +667,21 @@ export function pasteSelection() {
     session.selectedElementIds = pasted;
     return { kind: 'elements', count: pasted.length };
   }
-  if (assetClipboard) {
-    const asset = session.project?.assets?.[assetClipboard];
+  if (assetClipboard?.mode === 'reference') {
+    const asset = session.project?.assets?.[assetClipboard.assetId];
     if (!asset || !['image', 'video', 'audio'].includes(asset.kind)) return null;
+    addElement(asset.kind, { assetId: asset.id });
+    return { kind: 'asset', count: 1, name: asset.name };
+  }
+  if (assetClipboard?.mode === 'payload') {
+    const { asset, blob, thumb, thumbHash } = assetClipboard;
+    if (!['image', 'video', 'audio'].includes(asset.kind)) return null;
+    if (!session.project?.assets?.[asset.id]) {
+      await platform.assets.put(session.project.id, asset, blob, thumb, thumbHash);
+      runCommand('restaurar medio', (draft) => {
+        draft.assets[asset.id] = asset;
+      });
+    }
     addElement(asset.kind, { assetId: asset.id });
     return { kind: 'asset', count: 1, name: asset.name };
   }
@@ -705,7 +742,7 @@ export function recordPublish(entry) {
   return runCommand('registrar publicación', (draft) => {
     draft.publish = draft.publish ?? {};
     draft.publish.history = appendPublishHistory(draft.publish.history, entry);
-    if (entry?.kind === 'publish') {
+    if (entry?.kind === 'publish' || entry?.kind === 'rollback') {
       draft.publish.lastPublishedAt = entry.at;
     }
   });
@@ -868,10 +905,9 @@ export async function createAndOpenProject({
   locale = 'es',
   stagePreset = 'wide',
   stageWidth,
-  stageHeight,
-  theme = 'papel'
+  stageHeight
 } = {}) {
-  const project = createProject({ title, locale, stagePreset, stageWidth, stageHeight, theme });
+  const project = createProject({ title, locale, stagePreset, stageWidth, stageHeight });
   await platform.projects.save(project, { revision: 1, backup: true });
   await refreshLibrary();
   await openProject(project.id);
