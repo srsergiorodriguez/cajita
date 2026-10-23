@@ -110,6 +110,7 @@ export function createPage({
           }
         : undefined,
     transition: 'cut',
+    gridId: '',
     elements: []
   };
 }
@@ -148,6 +149,9 @@ export function createProject({
         : undefined
     ),
     siteBackground: '#fffdf7',
+    grids: {},
+    gridSettings: { show: true, snap: true },
+    pageTemplates: {},
     theme: SITE_THEMES.papel,
     media: { ...DEFAULT_MEDIA },
     pages: [page],

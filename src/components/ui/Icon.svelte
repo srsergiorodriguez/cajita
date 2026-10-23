@@ -83,6 +83,8 @@
     <path d="M4 6h16M7 10h10M4 14h16M8.5 18h7" />
   {:else if name === 'align-right'}
     <path d="M4 6h16M10 10h10M4 14h16M13 18h7" />
+  {:else if name === 'grid'}
+    <path d="M4 4h16v16H4zM4 10h16M4 15h16M10 4v16M15 4v16" />
   {:else if name === 'archive'}
     <path d="M3 7h18v4H3zM5 11v8h14v-8M9 15h6" />
   {:else if name === 'shape'}

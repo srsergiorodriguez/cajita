@@ -9,6 +9,7 @@ import { isValidSlug, isReservedSlug } from './slugs.js';
 import { META_FIELDS } from './links.js';
 import { parseEmbed } from './embeds.js';
 import { BUILTIN_FONTS as BUILTIN_FONT_LIST } from './elements.js';
+import { normaliseGrid } from './grid.js';
 import { FICHA_LIMITS, fichaFieldErrors, isSafeFichaUrl } from './fichas.js';
 
 const BUILTIN_FONTS = new Set(BUILTIN_FONT_LIST.map((font) => font.id));
@@ -255,6 +256,14 @@ function checkPage(page, index, project, errors) {
   if (!['free', 'grid'].includes(page.layout)) {
     push(errors, `${path}.layout`, 'must be free or grid');
   }
+  if (page.gridId !== undefined && typeof page.gridId !== 'string') {
+    push(errors, `${path}.gridId`, 'must be a string');
+  } else if (
+    page.gridId &&
+    (!project.grids || !project.grids[page.gridId])
+  ) {
+    push(errors, `${path}.gridId`, 'grid does not exist');
+  }
   if (page.layout === 'grid') {
     if (!isObject(page.grid)) {
       push(errors, `${path}.grid`, 'required for grid pages');
@@ -344,6 +353,46 @@ export function validateProject(project) {
     typeof project.siteBackground !== 'string'
   ) {
     push(errors, 'siteBackground', 'must be a color string');
+  }
+
+  if (project.grids !== undefined) {
+    if (!isObject(project.grids)) {
+      push(errors, 'grids', 'must be an object');
+    } else {
+      for (const [id, grid] of Object.entries(project.grids)) {
+        const clean = normaliseGrid(grid);
+        if (!isObject(grid) || !Number.isFinite(Number(grid.cellSize)) || Number(grid.cellSize) <= 0) {
+          push(errors, `grids.${id}.cellSize`, 'must be a positive number');
+        }
+        if (
+          !Number.isFinite(Number(grid?.marginPercent)) ||
+          Number(grid.marginPercent) < 0 ||
+          Number(grid.marginPercent) > 50
+        ) {
+          push(errors, `grids.${id}.marginPercent`, 'must be between 0 and 50');
+        }
+        if (grid?.merges !== undefined && !Array.isArray(grid.merges)) {
+          push(errors, `grids.${id}.merges`, 'must be an array');
+        }
+        if (!Array.isArray(grid?.merges) && clean.merges.length) {
+          push(errors, `grids.${id}.merges`, 'must be an array');
+        }
+      }
+    }
+  }
+
+  if (project.gridSettings !== undefined) {
+    if (
+      !isObject(project.gridSettings) ||
+      typeof project.gridSettings.show !== 'boolean' ||
+      typeof project.gridSettings.snap !== 'boolean'
+    ) {
+      push(errors, 'gridSettings', 'show and snap must be booleans');
+    }
+  }
+
+  if (project.pageTemplates !== undefined && !isObject(project.pageTemplates)) {
+    push(errors, 'pageTemplates', 'must be an object');
   }
 
   if (!isObject(project.theme)) {
@@ -619,6 +668,26 @@ export function migrateProject(raw) {
           isObject(raw.theme) && SITE_THEMES[raw.theme.name]
             ? raw.theme
             : SITE_THEMES.papel,
+        grids: isObject(raw.grids)
+          ? Object.fromEntries(
+              Object.entries(raw.grids).map(([id, grid]) => [
+                id,
+                {
+                  ...grid,
+                  marginPercent: grid?.marginPercent ?? 5
+                }
+              ])
+            )
+          : {},
+        gridSettings: {
+          show: true,
+          snap: true,
+          ...(isObject(raw.gridSettings) ? raw.gridSettings : {})
+        },
+        pageTemplates: isObject(raw.pageTemplates) ? raw.pageTemplates : {},
+        pages: Array.isArray(raw.pages)
+          ? raw.pages.map((page) => ({ ...page, gridId: page.gridId ?? '' }))
+          : raw.pages,
         fichaSchema: isObject(raw.fichaSchema) ? raw.fichaSchema : { fields: [] },
         fichaSettings: {
           movable: false,

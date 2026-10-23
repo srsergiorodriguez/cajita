@@ -3,7 +3,7 @@
   import Icon from '../ui/Icon.svelte';
   import { maskClipPath } from '../../lib/domain/mask.js';
 
-  let { asset, projectId, mask = [] } = $props();
+  let { asset, projectId, mask = [], fit = 'cover' } = $props();
   const clip = $derived(maskClipPath(mask));
   let url = $state(null);
   let loadedKey = $state('');
@@ -71,7 +71,7 @@
   img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: var(--asset-fit, cover);
   }
 
   .asset-thumb.has-mask img {

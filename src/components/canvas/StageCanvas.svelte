@@ -35,6 +35,8 @@
     snapMove
   } from '../../lib/domain/geometry.js';
   import { elementName, fontStack, mediaFrame } from '../../lib/domain/elements.js';
+  import { snapFrameMove, snapFrameResize } from '../../lib/domain/grid.js';
+  import GridOverlay from './GridOverlay.svelte';
   import { toast } from '../../lib/state/ui.svelte.js';
 
   let stageEl = $state(null);
@@ -63,6 +65,12 @@
   );
   const placing = $derived(['image', 'video', 'audio'].includes(placementAsset?.kind));
   const aspect = $derived(stage.width / stage.height);
+  const activeGrid = $derived(
+    page?.gridId ? session.project?.grids?.[page.gridId] ?? null : null
+  );
+  const gridSnapping = $derived(
+    Boolean(activeGrid && session.project?.gridSettings?.snap)
+  );
   const textMeasureKey = $derived(
     elements
       .filter((element) => element.type === 'text' && !element.hidden)
@@ -210,6 +218,11 @@
         enabled: editor.snap && !event.altKey,
         threshold: 6
       });
+      if (gridSnapping && !event.altKey) {
+        const snapped = snapFrameMove(result.frame, activeGrid, stage, 8);
+        result.frame.x = snapped.x;
+        result.frame.y = snapped.y;
+      }
       setGuides(result.guides.x, result.guides.y);
       const dx = result.frame.x - primaryStart.x;
       const dy = result.frame.y - primaryStart.y;
@@ -230,10 +243,14 @@
 
     if (pointerState.mode === 'resize') {
       const local = pointToLocal(point, pointerState.frame);
-      const frame = resizeRotatedFrame(pointerState.frame, pointerState.handle, local, {
+      let frame = resizeRotatedFrame(pointerState.frame, pointerState.handle, local, {
         keepAspect: event.shiftKey,
         minSize: 24
       });
+      if (gridSnapping && !event.altKey) {
+        const snapped = snapFrameResize(frame, pointerState.handle, activeGrid, stage, 8);
+        if (snapped.w >= 24 && snapped.h >= 24) frame = snapped;
+      }
       updateElement(
         pointerState.id,
         { frame },
@@ -313,6 +330,11 @@
       const frame = mediaFrame(placementAsset, stage, page?.elements.length ?? 0);
       frame.x = Math.min(Math.max(0, point.x - frame.w / 2), stage.width - frame.w);
       frame.y = Math.min(Math.max(0, point.y - frame.h / 2), stage.height - frame.h);
+      if (gridSnapping && !event.altKey) {
+        const snapped = snapFrameMove(frame, activeGrid, stage, 8);
+        frame.x = snapped.x;
+        frame.y = snapped.y;
+      }
       try {
         addElement(placementAsset.kind, { assetId: placementAsset.id, frame });
       } catch (error) {
@@ -375,6 +397,10 @@
             <strong>{t('canvas.emptyTitle')}</strong>
             <span>{t('canvas.emptyHint')}</span>
           </div>
+        {/if}
+
+        {#if activeGrid && session.project?.gridSettings?.show}
+          <GridOverlay grid={activeGrid} {stage} />
         {/if}
 
         {#each elements as element, index (element.id)}

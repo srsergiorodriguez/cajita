@@ -1657,3 +1657,19 @@ Verification: **128 tests**, 0 svelte-check warnings, build passes; screenshots
   a new gh-pages commit, with Pages re-enabled if needed.
 - Theme cleanup reduced the internal site theme set to Papel and normalizes legacy
   theme names during migration.
+
+
+---
+
+## 2026-10-23 — S31: layout grids and page templates
+
+- Project-level grid definitions with cell size, margin percentage, rectangular cell merges,
+  per-page grid assignment, editor-only overlay, and independent show/snap toggles.
+- Snapping applies to all element move/resize interactions and respects merged
+  cell boundaries; grid changes preserve merge cell coordinates.
+- Page templates store elements, background, transition, and grid assignment.
+  Applying appends elements, overwrites page settings, and lets the template grid
+  win. Media and ficha references are shared; links are preserved.
+
+- Grids are centered in the canvas using the motivomotivo-style percentage margin;
+  page-size changes reflow cards and clip or drop merges that no longer fit.

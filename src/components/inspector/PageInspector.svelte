@@ -3,8 +3,11 @@
   import Field from '../ui/Field.svelte';
   import Section from '../ui/Section.svelte';
   import SegmentedControl from '../ui/SegmentedControl.svelte';
+  import Select from '../ui/Select.svelte';
   import FontsDialog from './FontsDialog.svelte';
   import LayersList from './LayersList.svelte';
+  import PageTemplatesDialog from './PageTemplatesDialog.svelte';
+  import GridsDialog from '../canvas/GridsDialog.svelte';
   import { plural, t } from '../../lib/i18n/index.svelte.js';
   import { isValidSlug } from '../../lib/domain/slugs.js';
   import { formatBytes, projectStats } from '../../lib/domain/model.js';
@@ -17,7 +20,9 @@
     renamePageSlug,
     renamePageTitle,
     session,
+    setGridSettings,
     setSiteBackground,
+    assignPageGrid,
     updatePage,
     updateStageSize
   } from '../../lib/state/project.svelte.js';
@@ -32,6 +37,8 @@
   let heightDraft = $state(0);
   let confirming = $state(false);
   let fontsOpen = $state(false);
+  let gridsOpen = $state(false);
+  let templatesOpen = $state(false);
 
   const summary = $derived(session.project ? projectStats(session.project) : null);
   const stage = $derived(session.project?.stage);
@@ -103,6 +110,14 @@
         }
       )
     );
+  }
+
+  function setGrid(value) {
+    apply(() => assignPageGrid(page.id, value));
+  }
+
+  function setGridFlag(key, value) {
+    apply(() => setGridSettings({ [key]: value }));
   }
 
   function setSiteBackgroundColor(value) {
@@ -201,6 +216,62 @@
     />
   </Section>
 
+  <Section label={t('grid.section')}>
+    <Select
+      label={t('grid.pageGrid')}
+      value={page.gridId ?? ''}
+      options={[
+        { value: '', label: t('grid.none') },
+        ...Object.values(session.project?.grids ?? {}).map((grid) => ({
+          value: grid.id,
+          label: grid.name
+        }))
+      ]}
+      onchange={setGrid}
+    />
+    <div class="grid-flags">
+      <label class="check">
+        <input
+          type="checkbox"
+          checked={session.project?.gridSettings?.show !== false}
+          onchange={(event) => setGridFlag('show', event.currentTarget.checked)}
+        />
+        <span>{t('grid.show')}</span>
+      </label>
+      <label class="check">
+        <input
+          type="checkbox"
+          checked={session.project?.gridSettings?.snap !== false}
+          onchange={(event) => setGridFlag('snap', event.currentTarget.checked)}
+        />
+        <span>{t('grid.snap')}</span>
+      </label>
+    </div>
+    <div class="row">
+      <Button size="sm" variant="secondary" onclick={() => (gridsOpen = true)}>
+        {t('grid.manage')}
+      </Button>
+      {#if page.gridId}
+        <Button
+          size="sm"
+          variant="ghost"
+          onclick={() => apply(() => assignPageGrid(page.id, ''))}
+        >
+          {t('grid.removeFromPage')}
+        </Button>
+      {/if}
+    </div>
+  </Section>
+
+  <Section label={t('templates.section')}>
+    <p class="hint">{t('templates.pageHint')}</p>
+    <div class="row">
+      <Button size="sm" variant="secondary" onclick={() => (templatesOpen = true)}>
+        {t('templates.open')}
+      </Button>
+    </div>
+  </Section>
+
   <Section label={t('page.actions')}>
     <div class="row">
       <Button
@@ -229,6 +300,9 @@
       {/if}
     </div>
   </Section>
+
+  <GridsDialog bind:open={gridsOpen} />
+  <PageTemplatesDialog bind:open={templatesOpen} {page} />
 
   <Section label={t('layers.title')}>
     <LayersList {page} />
@@ -337,5 +411,27 @@
     flex-direction: column;
     gap: var(--space-2);
     padding: var(--space-3) var(--space-4);
+  }
+  .grid-flags {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    margin: var(--space-2) 0;
+  }
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--ink);
+    font-size: var(--text-xs);
+  }
+  .check input {
+    accent-color: var(--selection);
+  }
+  .hint {
+    margin: 0 0 var(--space-2);
+    color: var(--muted);
+    font-size: var(--text-2xs);
+    line-height: 1.4;
   }
 </style>

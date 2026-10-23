@@ -981,6 +981,24 @@ The app ships one site theme, **Papel**:
 The editor chrome remains Ficha light/dark. Imported projects with old theme names
 are normalized to Papel on load.
 
+## 11b. Layout grids and page templates
+
+Layout grids are project-level editor guides. A grid stores a desired cell size, a
+margin percentage, and rectangular merged cells; a page may reference one grid. The available area is
+reduced by the margin percentage on both sides, the largest whole number of cells
+is fitted, and the resulting grid is centered in the canvas. Grid overlays and
+snapping never enter preview or export. Snap is a separate toggle from grid
+visibility and applies to all element move/resize operations.
+
+When the page size, margin, or cell size changes, the grid is recomputed and merged
+cells are clipped to the new bounds; merges that no longer fit are dropped. Element
+positions and sizes are unchanged by page resizing.
+
+Page templates are project-level snapshots of a page's elements, background,
+transition, and grid reference. Applying a template appends its elements, overwrites
+those page settings, and lets the template's grid assignment win. Assets and fichas
+remain shared by reference; links are copied as authored.
+
 ## 12. Implementation rules
 
 1. **Tokens only.** `src/styles/tokens.css` (shared scales and shape) and

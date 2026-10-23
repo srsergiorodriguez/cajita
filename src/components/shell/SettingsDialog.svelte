@@ -64,6 +64,12 @@
   <section class="settings-section">
     <h2>{t('settings.about')}</h2>
     <p>{t('settings.aboutText')}</p>
+    <p class="about-by">{t('settings.aboutBy')}</p>
+    <p class="about-links">
+      <a href="https://srsergiorodriguez.github.io/" target="_blank" rel="noopener noreferrer">
+        {t('settings.portfolio')} ↗
+      </a>
+    </p>
     <p class="version">{t('app.version')}</p>
   </section>
 
@@ -131,5 +137,16 @@
       flex-direction: column;
       gap: var(--space-2);
     }
+  }
+  .about-by {
+    margin: 0;
+  }
+  .about-links {
+    margin: 0;
+  }
+  .about-links a {
+    color: var(--selection);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 </style>

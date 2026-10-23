@@ -17,6 +17,7 @@ import {
 } from '../domain/pages.js';
 import { createElement, duplicateElement, mediaFrame } from '../domain/elements.js';
 import { resizeStage } from '../domain/stage.js';
+import { normaliseGrid, reflowGrid, mergeGridCells, unmergeGridCells } from '../domain/grid.js';
 import { normalizeCustomDomain } from '../domain/publish/domain.js';
 import { appendPublishHistory } from '../domain/publish/history.js';
 import { githubPagesUrl } from '../domain/publish/plan.js';
@@ -748,6 +749,149 @@ export function recordPublish(entry) {
   });
 }
 
+export function createGrid() {
+  let grid;
+  runCommand('crear cuadrícula', (draft) => {
+    grid = {
+      id: createId('grid'),
+      name: `Cuadrícula ${Object.keys(draft.grids ?? {}).length + 1}`,
+      cellSize: 80,
+      marginPercent: 5,
+      merges: []
+    };
+    draft.grids = draft.grids ?? {};
+    draft.grids[grid.id] = grid;
+  });
+  return grid;
+}
+
+export function updateGrid(gridId, patch, { coalesceKey = null } = {}) {
+  return runCommand(
+    'editar cuadrícula',
+    (draft) => {
+      const grid = draft.grids?.[gridId];
+      if (!grid) throw new Error('La cuadrícula no existe.');
+      const next = { ...grid, ...patch };
+      draft.grids[gridId] = {
+        ...reflowGrid(next, draft.stage),
+        name: next.name ?? grid.name,
+        id: gridId
+      };
+    },
+    { coalesceKey }
+  );
+}
+
+export function deleteGrid(gridId) {
+  return runCommand('eliminar cuadrícula', (draft) => {
+    delete draft.grids?.[gridId];
+    for (const page of draft.pages ?? []) {
+      if (page.gridId === gridId) page.gridId = '';
+    }
+  });
+}
+
+export function mergeGrid(gridId, selection) {
+  return runCommand('fusionar celdas', (draft) => {
+    const grid = draft.grids?.[gridId];
+    if (!grid) throw new Error('La cuadrícula no existe.');
+    draft.grids[gridId] = {
+      ...mergeGridCells(grid, selection, draft.stage),
+      id: gridId,
+      name: grid.name
+    };
+  });
+}
+
+export function unmergeGrid(gridId, selection) {
+  return runCommand('separar celdas', (draft) => {
+    const grid = draft.grids?.[gridId];
+    if (!grid) throw new Error('La cuadrícula no existe.');
+    draft.grids[gridId] = {
+      ...unmergeGridCells(grid, selection, draft.stage),
+      id: gridId,
+      name: grid.name
+    };
+  });
+}
+
+export function assignPageGrid(pageId, gridId) {
+  return updatePage(pageId, { gridId: gridId ?? '' });
+}
+
+export function setGridSettings(patch) {
+  return runCommand('ajustar cuadrícula', (draft) => {
+    draft.gridSettings = {
+      show: true,
+      snap: true,
+      ...(draft.gridSettings ?? {}),
+      ...patch
+    };
+  });
+}
+
+export function savePageTemplate(name = '') {
+  const page = activePage();
+  if (!page) return null;
+  let template;
+  runCommand('guardar plantilla', (draft) => {
+    const pageIndex = draft.pages.findIndex((item) => item.id === page.id);
+    const source = draft.pages[pageIndex];
+    template = {
+      id: createId('tpl'),
+      name: String(name ?? '').trim() || `Plantilla ${Object.keys(draft.pageTemplates ?? {}).length + 1}`,
+      background: source.background ? structuredClone($state.snapshot(source.background)) : null,
+      transition: source.transition ?? 'cut',
+      gridId: source.gridId ?? '',
+      elements: structuredClone($state.snapshot(source.elements ?? [])),
+      createdAt: new Date().toISOString()
+    };
+    draft.pageTemplates = draft.pageTemplates ?? {};
+    draft.pageTemplates[template.id] = template;
+  });
+  return template;
+}
+
+export function applyPageTemplate(templateId, pageId = null) {
+  const targetId = pageId ?? session.activePageId;
+  let page;
+  runCommand('aplicar plantilla', (draft) => {
+    const template = draft.pageTemplates?.[templateId];
+    page = pageById(draft, targetId);
+    if (!template || !page) throw new Error('La plantilla o la página no existe.');
+    const appended = (template.elements ?? []).map((element) => {
+      const copy = duplicateElement(element);
+      copy.frame = structuredClone(element.frame);
+      copy.z = element.z ?? 0;
+      if (
+        copy.type === 'text' &&
+        copy.heading &&
+        page.elements.some((item) => item.type === 'text' && item.heading)
+      ) {
+        copy.heading = false;
+      }
+      return copy;
+    });
+    page.elements.push(...appended);
+    if (template.background?.color) {
+      page.background = structuredClone(template.background);
+    } else {
+      delete page.background;
+    }
+    page.transition = template.transition ?? 'cut';
+    page.gridId =
+      template.gridId && draft.grids?.[template.gridId] ? template.gridId : '';
+    normaliseZ(page);
+  });
+  return page;
+}
+
+export function deletePageTemplate(templateId) {
+  return runCommand('eliminar plantilla', (draft) => {
+    delete draft.pageTemplates?.[templateId];
+  });
+}
+
 export function setSiteBackground(color, { coalesceKey = null } = {}) {
   return runCommand(
     'cambiar fondo del sitio',
@@ -763,6 +907,9 @@ export function updateStageSize(width, height, { coalesceKey = null } = {}) {
     'cambiar tamaño de página',
     (draft) => {
       resizeStage(draft, width, height);
+      for (const [id, grid] of Object.entries(draft.grids ?? {})) {
+        draft.grids[id] = { ...reflowGrid(grid, draft.stage), id, name: grid.name };
+      }
     },
     { coalesceKey }
   );
