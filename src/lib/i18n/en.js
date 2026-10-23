@@ -387,7 +387,7 @@ export const en = {
 
   'library.title': 'Your projects',
   'library.lede': 'Create, save, and open your projects.',
-  'library.subtitle': 'Small sites, kept in this browser.',
+  'library.subtitle': 'Interactive collage.',
   'library.new': 'new project',
   'library.open': 'open .cajita',
   'library.import': 'import .cajita',

@@ -391,7 +391,7 @@ export const es = {
 
   'library.title': 'Tus proyectos',
   'library.lede': 'Crea, guarda y abre tus proyectos.',
-  'library.subtitle': 'Sitios pequeños, guardados en este navegador.',
+  'library.subtitle': 'Collage interactivo.',
   'library.new': 'nuevo proyecto',
   'library.open': 'abrir .cajita',
   'library.import': 'importar .cajita',
