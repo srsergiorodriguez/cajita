@@ -1,0 +1,6 @@
+@import './styles/fonts.css';
+@import './styles/tokens.css';
+@import './styles/themes/ficha.css';
+@import './styles/themes/ficha-dark.css';
+@import './styles/base.css';
+@import './styles/shell.css';

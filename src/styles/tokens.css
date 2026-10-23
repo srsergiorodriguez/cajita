@@ -1,0 +1,85 @@
+:root {
+  /* Interface scale: changed by Ajustes → Apariencia. Site content never uses it. */
+  --ui-scale: 1.2;
+
+  /* Site theme previews: project content, not editor chrome. */
+  --site-papel-bg: #f6f0e4;
+  --site-papel-ink: #1c1917;
+  --site-papel-accent: #a82a1e;
+  --site-riso-bg: #fff6ec;
+  --site-riso-ink: #1b1b1b;
+  --site-riso-accent: #e94f37;
+  --site-ficha-bg: #f7f1e5;
+  --site-ficha-ink: #24303f;
+  --site-ficha-accent: #2e5a88;
+  --site-newsprint-bg: #f2f0ea;
+  --site-newsprint-ink: #141414;
+  --site-newsprint-accent: #c1121f;
+  --site-terminal-bg: #101410;
+  --site-terminal-ink: #d8f3dc;
+  --site-terminal-accent: #95d5b2;
+  --site-blueprint-bg: #0e2a47;
+  --site-blueprint-ink: #eaf4ff;
+  --site-blueprint-accent: #7fd1e8;
+
+  /* Type */
+  --label-category-size: var(--text-xs);
+  --label-category-tracking: 0.14em;
+  --label-param-size: var(--text-2xs);
+  --label-param-tracking: 0.02em;
+  --font-ui: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-display: 'Archivo Black', 'Arial Black', sans-serif;
+  --font-serif: 'Fraunces', Georgia, serif;
+  --text-3xs: calc(8px * var(--ui-scale));
+  --text-2xs: calc(10px * var(--ui-scale));
+  --text-xs: calc(11px * var(--ui-scale));
+  --text-sm: calc(12px * var(--ui-scale));
+  --text-md: calc(13px * var(--ui-scale));
+  --text-lg: calc(15px * var(--ui-scale));
+  --text-xl: calc(20px * var(--ui-scale));
+  --text-2xl: calc(28px * var(--ui-scale));
+  --text-3xl: calc(40px * var(--ui-scale));
+  --leading-tight: 1.2;
+  --leading-ui: 1.35;
+  --leading-read: 1.55;
+
+  /* Space */
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 48px;
+  --space-9: 64px;
+
+  /* Shape */
+  --radius-0: 0;
+  --radius-1: 2px;
+  --wordmark-size: calc(26px * var(--ui-scale));
+
+  /* Shell */
+  --topbar-h: 56px;
+  --strip-h: 120px;
+  --left-w: 168px;
+  --right-w: 304px;
+
+  /* Layers */
+  --z-topbar: 20;
+  --z-panel: 30;
+  --z-overlay: 40;
+  --z-dialog: 50;
+  --z-toast: 60;
+
+  /* Motion */
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 240ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Focus */
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+}

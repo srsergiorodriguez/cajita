@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>cajita preview</title>
+  </head>
+  <body>
+    <script>
+      function renderPreview(event) {
+        if (event.origin !== window.location.origin) return;
+        if (!event.data || event.data.type !== 'cajita:preview:render') return;
+        window.removeEventListener('message', renderPreview);
+        document.open();
+        document.write(event.data.html);
+        document.close();
+        // document.open() clears window listeners; keep the shell alive for the
+        // next page in the same preview session.
+        window.addEventListener('message', renderPreview);
+      }
+      window.addEventListener('message', renderPreview);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "name": "cajita",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Una cajita para hacer sitios hipermediales pequeños",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./jsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify": "svelte-check --tsconfig ./jsconfig.json && vitest run && vite build",
+    "format": "prettier --write \"src/**/*.{js,svelte,css}\" \"tests/**/*.js\" \"*.{js,json,md}\""
+  },
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "prettier": "^3.9.10",
+    "prettier-plugin-svelte": "^4.1.1",
+    "svelte": "^5.57.2",
+    "svelte-check": "^4.7.7",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  },
+  "dependencies": {
+    "fflate": "^0.8.3",
+    "idb": "^8.0.4"
+  }
+}

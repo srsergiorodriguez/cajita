@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cajita · direcciones visuales</title>
+  <style>
+    @font-face {
+      font-family: 'Space Mono';
+      src: url('fonts/SpaceMono.ttf') format('truetype');
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: 'Space Mono';
+      src: url('fonts/SpaceMono-Bold.ttf') format('truetype');
+      font-weight: 700;
+    }
+    @font-face {
+      font-family: 'Archivo Black';
+      src: url('fonts/ArchivoBlack.ttf') format('truetype');
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px;
+      background: #f1ede4;
+      color: #191919;
+      font-family: 'Space Mono', monospace;
+    }
+    header { max-width: 1180px; margin: 0 auto 24px; }
+    h1 {
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 38px;
+      letter-spacing: -0.04em;
+      margin: 0 0 6px;
+      text-transform: lowercase;
+    }
+    .lede { margin: 0; max-width: 760px; font-size: 12px; line-height: 1.5; color: #5c554b; }
+    .note {
+      margin-top: 10px;
+      font-size: 10px;
+      color: #5c554b;
+      border-left: 3px solid #d7261e;
+      padding-left: 8px;
+    }
+    .grid {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    .card {
+      background: #fffdf7;
+      border: 2px solid #191919;
+      box-shadow: 5px 5px 0 #191919;
+      display: flex;
+      flex-direction: column;
+    }
+    .card img { display: block; width: 100%; height: auto; border-bottom: 2px solid #191919; }
+    .body { padding: 12px 14px 14px; }
+    .tag {
+      display: inline-block;
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: 1px solid #191919;
+      padding: 2px 5px;
+      margin-bottom: 8px;
+      background: #ffc43d;
+    }
+    h2 { font-size: 16px; margin: 0 0 6px; letter-spacing: -0.02em; }
+    p { font-size: 10px; line-height: 1.5; color: #4d463d; margin: 0 0 10px; }
+    a {
+      display: inline-block;
+      color: #191919;
+      font-size: 11px;
+      font-weight: 700;
+      text-decoration: none;
+      border-bottom: 2px solid #191919;
+    }
+    a:hover { background: #ffc43d; }
+    .recommend {
+      max-width: 1180px;
+      margin: 22px auto 0;
+      padding: 14px 16px;
+      background: #fffdf7;
+      border: 2px solid #191919;
+      box-shadow: 4px 4px 0 #191919;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .recommend b { background: #ffc43d; padding: 0 3px; }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      body { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>cajita · direcciones visuales</h1>
+    <p class="lede">
+      Tres lenguajes para el mismo editor: la misma estructura, la misma página de
+      ejemplo y las mismas decisiones de usabilidad. Solo cambia la superficie.
+    </p>
+    <p class="note">
+      Abre cada HTML y redimensiónalo: el escenario escala su contenido como lo hará
+      el sitio exportado. Las capturas están a 1440 × 900.
+    </p>
+  </header>
+
+  <main class="grid">
+    <article class="card">
+      <img src="shots/riso1440.png" alt="Mockup de cajita en la dirección Riso">
+      <div class="body">
+        <span class="tag">a · tema por defecto</span>
+        <h2>Riso print shop</h2>
+        <p>
+          Tintas fluorescentes, semitono, marcas de registro y papel cálido. Es la
+          dirección con más carácter propio; el escenario se siente como una hoja
+          impresa, no como un panel de administración.
+        </p>
+        <a href="riso.html">abrir mockup →</a>
+      </div>
+    </article>
+
+    <article class="card">
+      <img src="shots/archive1440.png" alt="Mockup de cajita en la dirección Archivo">
+      <div class="body">
+        <span class="tag">b · tema alterno</span>
+        <h2>Ficha / archivo</h2>
+        <p>
+          Crema, azul pizarra, líneas de catálogo y tipografía serif. La más
+          adecuada si el acento debe estar en colecciones, metadatos y lectura
+          larga; menos ruidosa, más institucional.
+        </p>
+        <a href="archive.html">abrir mockup →</a>
+      </div>
+    </article>
+
+    <article class="card">
+      <img src="shots/fotocopia1440.png" alt="Mockup de cajita en la dirección Fotocopia">
+      <div class="body">
+        <span class="tag">c · ruido</span>
+        <h2>Fotocopia</h2>
+        <p>
+          Blanco y negro, una sola tinta roja, grano de fotocopia y bordes gruesos.
+          La más punk y la más cercana a un fanzine; también la más agresiva para
+          sesiones largas de edición.
+        </p>
+        <a href="fotocopia.html">abrir mockup →</a>
+      </div>
+    </article>
+  </main>
+
+  <div class="recommend">
+    <b>Decisión:</b> se quedan los dos. <b>Riso</b> es el tema por defecto y
+    <b>Ficha</b> el alterno; se cambian desde la barra superior y se recuerdan por
+    dispositivo. Fotocopia queda como referencia, no como tema de la app. En la
+    implementación real bajaré un poco el ruido del escritorio de Riso para que
+    siga siendo cómodo en sesiones largas.
+  </div>
+</body>
+</html>

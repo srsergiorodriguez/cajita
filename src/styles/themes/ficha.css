@@ -1,0 +1,59 @@
+:root[data-theme='ficha'] {
+  color-scheme: light;
+  --bg: #e9e2d4;
+  --panel: #f7f1e5;
+  --panel-2: #fffdf7;
+  --panel-3: #efe7d8;
+  --ink: #24303f;
+  --ink-2: #35445a;
+  --muted: #736653;
+  --line: #24303f;
+  --line-soft: rgba(36, 48, 63, 0.17);
+  --desk: #d9d0bf;
+  --stage: #fffdf7;
+  --accent: #2e5a88;
+  --accent-ink: #ffffff;
+  --accent-2: #a33a2b;
+  --accent-3: #d9c9a8;
+  --guide: #2e5a88;
+  --selection: #2e5a88;
+  --selection-ink: #ffffff;
+  --active-wash: rgba(46, 90, 136, 0.1);
+  --link: #2e5a88;
+  --focus: #2e5a88;
+  --success: #3f6b4f;
+  --danger: #a33a2b;
+  --warning: #8a5a00;
+  --saved: #3f6b4f;
+  --overlay: rgba(36, 48, 63, 0.5);
+
+  --shadow-color: #24303f;
+  --border-control: 1px;
+  --border-strong: 2px;
+  --shadow-btn: 0 2px 0 rgba(36, 48, 63, 0.22);
+  --shadow-card: 0 2px 0 rgba(36, 48, 63, 0.18);
+  --shadow-stage: 0 18px 42px rgba(36, 48, 63, 0.18);
+  --toolbar-shadow: 0 2px 0 rgba(36, 48, 63, 0.16);
+
+  --font-wordmark: var(--font-serif);
+  --wordmark-weight: 700;
+  --wordmark-tracking: -0.02em;
+  --wordmark-rule: 2px solid var(--accent-2);
+  --wordmark-shadow: none;
+
+  --stamp-bg: var(--accent-2);
+  --stamp-ink: #ffffff;
+  --page-active-shadow: 0 0 0 2px var(--accent), 0 2px 0 rgba(36, 48, 63, 0.18);
+  --motif-desk:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 23px,
+      rgba(36, 48, 63, 0.055) 23px 24px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 31px,
+      rgba(36, 48, 63, 0.045) 31px 32px
+    ),
+    var(--desk);
+}
