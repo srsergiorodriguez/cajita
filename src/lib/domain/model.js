@@ -193,6 +193,7 @@ export function createProject({
         ? { width: stageWidth, height: stageHeight }
         : undefined
     ),
+    siteBackground: '#fffdf7',
     theme: SITE_THEMES[theme] ?? SITE_THEMES.papel,
     media: { ...DEFAULT_MEDIA },
     pages: [page],

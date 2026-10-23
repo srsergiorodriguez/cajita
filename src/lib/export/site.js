@@ -92,7 +92,7 @@ body{
   flex-direction:column;
   align-items:center;
   min-height:100svh;
-  background:${theme.background ?? '#f7f1e5'};
+  background:${project.siteBackground ?? theme.background ?? '#f7f1e5'};
   color:${theme.ink ?? '#24303f'};
   font-family:${BUILTIN_FAMILIES['space-mono']};
   -webkit-font-smoothing:antialiased;

@@ -9,6 +9,8 @@
   let failed = $state(false);
   let playing = $state(false);
   let loadedKey = $state('');
+  let currentTime = $state(0);
+  let duration = $state(0);
 
   $effect(() => {
     const key = `${projectId}:${assetId}`;
@@ -18,6 +20,8 @@
       url = null;
       failed = false;
       playing = false;
+      currentTime = 0;
+      duration = 0;
     }
     assetUrl(projectId, assetId)
       .then((next) => {
@@ -36,6 +40,14 @@
     if (audio) audio.loop = loop;
   });
 
+  function fmt(value) {
+    if (!Number.isFinite(value)) return '0:00';
+    const total = Math.max(0, Math.floor(value));
+    return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+  }
+
+  const progress = $derived(duration ? Math.min(100, (currentTime / duration) * 100) : 0);
+
   function toggle(event) {
     event.preventDefault();
     event.stopPropagation();
@@ -43,32 +55,52 @@
     if (audio.paused) audio.play().catch(() => {});
     else audio.pause();
   }
+
+  function seek(event) {
+    if (!audio || !duration) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const rect = event.currentTarget.getBoundingClientRect();
+    audio.currentTime =
+      Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)) * duration;
+  }
 </script>
 
 <div class="audio">
+  <audio
+    bind:this={audio}
+    src={url}
+    preload="metadata"
+    onplay={() => (playing = true)}
+    onpause={() => (playing = false)}
+    onended={() => (playing = false)}
+    ontimeupdate={(event) => (currentTime = event.currentTarget.currentTime)}
+    onloadedmetadata={(event) => (duration = event.currentTarget.duration)}
+  ></audio>
   {#if url}
-    <audio
-      bind:this={audio}
-      src={url}
-      preload="metadata"
-      onplay={() => (playing = true)}
-      onpause={() => (playing = false)}
-      onended={() => (playing = false)}
-    ></audio>
     <button
       type="button"
-      class="play"
+      class="audio-play"
       aria-label={playing ? t('media.pause') : t('media.play')}
       title={playing ? t('media.pause') : t('media.play')}
       onpointerdown={(event) => event.stopPropagation()}
       onclick={toggle}
     >
-      <Icon name={playing ? 'pause' : 'play'} size={16} />
+      <span>{playing ? '❚❚' : '▶'}</span>
     </button>
-    <span class="label">{label}</span>
-    <span class="wave" aria-hidden="true"
-      ><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span
-    >
+    <div class="audio-copy">
+      <span class="audio-label">{label}</span>
+      <div class="audio-line">
+        <button
+          type="button"
+          class="audio-bar"
+          aria-label={t('media.seek')}
+          onpointerdown={(event) => event.stopPropagation()}
+          onclick={seek}
+        ><i style:width={`${progress}%`}></i></button>
+        <span class="audio-time">{fmt(currentTime)} / {fmt(duration)}</span>
+      </div>
+    </div>
   {:else if failed}
     <span class="missing"><Icon name="sound" size={22} /> {label || 'audio'}</span>
   {:else}
@@ -80,13 +112,14 @@
   .audio {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: 1.8cqw;
     width: 100%;
     height: 100%;
-    padding: var(--space-2);
-    border: 1px solid var(--line);
-    background: var(--panel-2);
-    color: var(--ink);
+    padding: 1.5cqw 2cqw;
+    border: 1px solid #24303f;
+    background: #fffdf7;
+    color: #24303f;
+    font: 1.6cqw/1.2 'Space Mono', monospace;
     overflow: hidden;
   }
 
@@ -94,79 +127,81 @@
     display: none;
   }
 
-  .play {
+  .audio-play {
     flex: 0 0 auto;
     display: grid;
     place-items: center;
-    width: 30px;
-    height: 30px;
+    width: 5cqw;
+    height: 5cqw;
+    min-width: 26px;
+    min-height: 26px;
     padding: 0;
-    border: 1px solid var(--line);
-    border-radius: 0;
-    background: var(--panel);
-    color: var(--ink);
+    border: 0;
+    background: currentColor;
+    color: inherit;
+    font: inherit;
     cursor: pointer;
   }
 
-  .play:hover {
-    background: var(--panel-3);
+  .audio-play span {
+    color: #fffdf7;
   }
 
-  .label {
+  .audio-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7cqw;
     min-width: 0;
+    flex: 1;
+  }
+
+  .audio-label {
     overflow: hidden;
-    font-size: var(--text-2xs);
-    line-height: 1.3;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .wave {
+  .audio-line {
     display: flex;
     align-items: center;
-    gap: 2px;
-    margin-left: auto;
-    height: 22px;
+    gap: 1cqw;
   }
 
-  .wave i {
+  .audio-bar {
+    position: relative;
     display: block;
-    width: 2px;
-    height: 8px;
-    background: var(--muted);
+    flex: 1;
+    height: 2px;
+    padding: 0;
+    border: 0;
+    background: color-mix(in srgb, currentColor 22%, transparent);
+    cursor: pointer;
   }
 
-  .wave i:nth-child(2),
-  .wave i:nth-child(6) {
-    height: 15px;
+  .audio-bar i {
+    display: block;
+    height: 100%;
+    background: currentColor;
   }
-  .wave i:nth-child(3),
-  .wave i:nth-child(5) {
-    height: 21px;
-  }
-  .wave i:nth-child(4) {
-    height: 11px;
+
+  .audio-time {
+    font-size: 1.2cqw;
+    opacity: 0.72;
+    white-space: nowrap;
   }
 
   .missing,
   .loading {
     display: grid;
     place-items: center;
-    gap: var(--space-1);
+    gap: 0.8cqw;
     width: 100%;
     height: 100%;
-    color: var(--muted);
-    font-size: var(--text-2xs);
+    color: #6b6257;
+    font-size: 1.6cqw;
   }
 
   .loading {
-    background: var(--panel-3);
-    animation: shimmer 1.2s linear infinite;
-  }
-
-  @keyframes shimmer {
-    50% {
-      opacity: 0.45;
-    }
+    background: #f6f0e4;
   }
 </style>

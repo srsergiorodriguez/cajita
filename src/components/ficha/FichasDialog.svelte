@@ -341,18 +341,20 @@
   }
 
   function deriveSchema() {
-    if (!csvReport?.table?.length) return;
+    if (!csvReport?.table?.length || !csvReport.unknownHeaders?.length) return;
     const headers = csvReport.table[0];
-    const structural = new Set(['code', 'label', 'image']);
+    const existing = fields.map((field) => structuredClone($state.snapshot(field)));
+    const used = new Set(existing.map((field) => field.key));
     const proposed = [];
-    const used = new Set();
-    headers.forEach((header, index) => {
-      const clean = String(header ?? '').trim();
-      if (!clean || structural.has(clean.toLowerCase())) return;
-      let key = fichaFieldKeyFromLabel(clean);
+    for (const header of csvReport.unknownHeaders) {
+      const index = headers.findIndex(
+        (value) => String(value ?? '').trim() === String(header).trim()
+      );
+      if (index === -1) continue;
+      let key = fichaFieldKeyFromLabel(header);
       let n = 2;
       while (used.has(key)) {
-        key = `${fichaFieldKeyFromLabel(clean)}_${n}`;
+        key = `${fichaFieldKeyFromLabel(header)}_${n}`;
         n += 1;
       }
       used.add(key);
@@ -366,14 +368,12 @@
           : values.some((value) => value.length > 120)
             ? 'longtext'
             : 'text';
-      proposed.push(
-        createFichaField({ label: clean, key, type, required: false })
-      );
-    });
+      proposed.push(createFichaField({ label: header, key, type, required: false }));
+    }
     if (!proposed.length) return;
     try {
-      saveFichaSchema(proposed, { showCode: showCodeDraft });
-      schemaDraft = proposed;
+      saveFichaSchema([...existing, ...proposed], { showCode: showCodeDraft });
+      schemaDraft = [...existing, ...proposed];
       csvReport = validateFichaCsv(session.project, csvText, { mode: csvMode });
       notice = t('ficha.schemaDerived');
     } catch (err) {
@@ -984,7 +984,7 @@
                 <li>{item.line ? `${t('ficha.csvLine', { line: item.line })} ` : ''}{item.message}</li>
               {/each}
             </ul>
-            {#if fields.length === 0 && csvReport.unknownHeaders.length}
+            {#if csvReport.unknownHeaders.length}
               <Button size="sm" variant="accent" onclick={deriveSchema}>
                 {t('ficha.deriveSchema')}
               </Button>

@@ -193,6 +193,14 @@ describe('site export', () => {
     expect(html.match(/target="_blank"/g)).toHaveLength(1);
   });
 
+  it('uses a custom site background behind the stage', () => {
+    const { project } = fixture();
+    project.siteBackground = '#102030';
+    const site = buildSite(project);
+    expect(site.css).toContain('background:#102030');
+    expect(site.css).toContain('background:#fffdf7');
+  });
+
   it('writes the page transition into the exported HTML and CSS', () => {
     const { project, start } = fixture();
     start.transition = 'fade';

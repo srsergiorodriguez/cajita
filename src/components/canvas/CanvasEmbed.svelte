@@ -1,24 +1,39 @@
 <script>
   import Icon from '../ui/Icon.svelte';
-  import { embedProvider } from '../../lib/domain/embeds.js';
+  import { embedProvider, embedSrc } from '../../lib/domain/embeds.js';
 
   let { provider = 'youtube', title = '', caption = '', url = '' } = $props();
   const meta = $derived(embedProvider(provider));
   const icon = $derived(provider === 'observable' ? 'chart' : provider === 'p5' ? 'code' : 'play');
+  const src = $derived(embedSrc({ provider, url }));
+  const live = $derived(Boolean(src && (provider === 'observable' || provider === 'p5')));
 </script>
 
-<div class="embed-card">
-  <span class="provider">
-    <Icon name={icon} size={13} />
-    {meta?.label ?? provider}
-  </span>
-  <strong>{title || meta?.label || 'Embed'}</strong>
-  {#if caption}<span class="caption">{caption}</span>{/if}
-  <span class="url">{url}</span>
+<div class="embed-card" class:embed-card--live={live}>
+  {#if live}
+    <iframe
+      src={src}
+      title={caption ? `${title || meta?.label}: ${caption}` : title || meta?.label}
+      sandbox={meta?.sandbox ?? 'allow-scripts allow-same-origin'}
+      allow={meta?.allow ?? ''}
+      referrerpolicy={provider === 'p5' ? 'strict-origin-when-cross-origin' : 'no-referrer'}
+      loading="lazy"
+    ></iframe>
+    <span class="live-badge">{meta?.label ?? provider}</span>
+  {:else}
+    <span class="provider">
+      <Icon name={icon} size={13} />
+      {meta?.label ?? provider}
+    </span>
+    <strong>{title || meta?.label || 'Embed'}</strong>
+    {#if caption}<span class="caption">{caption}</span>{/if}
+    <span class="url">{url}</span>
+  {/if}
 </div>
 
 <style>
   .embed-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -30,6 +45,34 @@
     border: 1px dashed var(--line);
     background: linear-gradient(135deg, var(--panel-2), var(--panel-3));
     color: var(--ink);
+  }
+
+  .embed-card--live {
+    padding: 0;
+    border-style: solid;
+    background: #fff;
+  }
+
+  iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #fff;
+    pointer-events: none;
+  }
+
+  .live-badge {
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    padding: 2px 5px;
+    background: var(--ink);
+    color: var(--panel);
+    font-size: var(--text-3xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    pointer-events: none;
   }
 
   .provider {

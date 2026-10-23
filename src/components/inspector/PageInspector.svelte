@@ -17,6 +17,7 @@
     renamePageSlug,
     renamePageTitle,
     session,
+    setSiteBackground,
     updatePage,
     updateStageSize
   } from '../../lib/state/project.svelte.js';
@@ -104,6 +105,10 @@
     );
   }
 
+  function setSiteBackgroundColor(value) {
+    apply(() => setSiteBackground(value, { coalesceKey: 'site-bg' }));
+  }
+
   function duplicate() {
     apply(() => duplicatePage(page.id));
   }
@@ -186,6 +191,13 @@
       type="color"
       value={page.background?.color ?? '#fffdf7'}
       oninput={(event) => setBackground(event.currentTarget.value)}
+    />
+    <Field
+      label={t('inspector.siteBackground')}
+      type="color"
+      value={session.project?.siteBackground ?? '#fffdf7'}
+      hint={t('inspector.siteBackgroundHint')}
+      oninput={(event) => setSiteBackgroundColor(event.currentTarget.value)}
     />
   </Section>
 

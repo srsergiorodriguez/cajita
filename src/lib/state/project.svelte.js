@@ -711,6 +711,16 @@ export function recordPublish(entry) {
   });
 }
 
+export function setSiteBackground(color, { coalesceKey = null } = {}) {
+  return runCommand(
+    'cambiar fondo del sitio',
+    (draft) => {
+      draft.siteBackground = color;
+    },
+    { coalesceKey }
+  );
+}
+
 export function updateStageSize(width, height, { coalesceKey = null } = {}) {
   return runCommand(
     'cambiar tamaño de página',

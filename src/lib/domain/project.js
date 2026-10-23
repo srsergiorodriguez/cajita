@@ -339,6 +339,13 @@ export function validateProject(project) {
     }
   }
 
+  if (
+    project.siteBackground !== undefined &&
+    typeof project.siteBackground !== 'string'
+  ) {
+    push(errors, 'siteBackground', 'must be a color string');
+  }
+
   if (!isObject(project.theme)) {
     push(errors, 'theme', 'required');
   } else {
@@ -597,6 +604,10 @@ export function migrateProject(raw) {
       ok: true,
       project: {
         ...raw,
+        siteBackground:
+          typeof raw.siteBackground === 'string'
+            ? raw.siteBackground
+            : (raw.stage?.background?.color ?? '#fffdf7'),
         fichaSchema: isObject(raw.fichaSchema) ? raw.fichaSchema : { fields: [] },
         fichaSettings: {
           movable: false,
