@@ -21,6 +21,7 @@
     view = 'page',
     onviewchange,
     onopensettings,
+    onopentutorial,
     onopenprojectmenu,
     onundo,
     onredo,
@@ -164,6 +165,7 @@
       onclick={() => switchLocale(preferences.locale === 'es' ? 'en' : 'es')}
     />
 
+    <IconButton label={t('top.tutorial')} icon="help" onclick={onopentutorial} />
     <IconButton label={t('top.settings')} icon="settings" onclick={onopensettings} />
   </div>
 </header>

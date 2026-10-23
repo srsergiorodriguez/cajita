@@ -45,8 +45,9 @@ The interface should feel like that table, not like a SaaS dashboard:
   not build a wall of settings.
 - **Readable first.** The aesthetic is a frame for the work. If a texture,
   rotation, or colour hurts legibility, it goes.
-- **Useful constraints.** Three built-in fonts, six site palettes, six stage
-  presets, four element types. The limit is the invitation.
+- **Useful constraints.** A curated pack of 22 OFL built-in fonts, six site
+  palettes, six stage presets, and a focused element set. The limit is the
+  invitation.
 
 ### Directions considered
 
@@ -295,7 +296,7 @@ site theme's background.
 | UI / labels / body in chrome  | **Space Mono**                                                       | 400, 700         | shared by both modes; typewriter-adjacent, readable |
 | Wordmark / editorial headings | **Fraunces**                                                         | 400, 600, italic | warm serif; Ficha wordmark and site display         |
 | Stamps / short display        | **Archivo Black**                                                    | 400              | heavy, poster-like; short strings only              |
-| Export font pack              | Fraunces, Archivo Black, Space Mono, Syne, Zilla Slab, IBM Plex Mono | —                | curated, OFL, subset                                |
+| Export font pack              | 22 built-in OFL families (Anton through Zilla Slab; see `LICENSES.md`) | 400/500      | curated, subset; only used fonts are exported       |
 
 Do not add a fourth UI family. The chrome is mono + one display face; the content
 is the user's choice. The chrome uses Fraunces for the wordmark and Space Mono
@@ -359,7 +360,7 @@ swap`, and the site falls back to the theme pairing if a custom font fails.
 | Slab      | Zilla Slab    | IBM Plex Mono | archive, library          |
 
 The user picks one pairing per site; individual elements can override the family
-from the same six-font pack. This is a constraint, not a limitation to apologise
+from the same built-in OFL pack. This is a constraint, not a limitation to apologise
 for.
 
 ---

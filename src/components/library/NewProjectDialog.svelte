@@ -5,7 +5,7 @@
   import SegmentedControl from '../ui/SegmentedControl.svelte';
   import Select from '../ui/Select.svelte';
   import { t } from '../../lib/i18n/index.svelte.js';
-  import { SITE_THEMES, STAGE_PRESETS } from '../../lib/domain/model.js';
+  import { STAGE_PRESETS } from '../../lib/domain/model.js';
   import { STAGE_MAX, STAGE_MIN } from '../../lib/domain/stage.js';
   import { createAndOpenProject } from '../../lib/state/project.svelte.js';
   import { toast } from '../../lib/state/ui.svelte.js';
@@ -17,7 +17,6 @@
   let stagePreset = $state('wide');
   let stageWidth = $state(1200);
   let stageHeight = $state(800);
-  let theme = $state('papel');
   let busy = $state(false);
 
   const stageOptions = [
@@ -27,11 +26,6 @@
     })),
     { value: 'custom', label: t('new.stageCustom') }
   ];
-
-  const themeOptions = Object.keys(SITE_THEMES).map((key) => ({
-    value: key,
-    label: t(`siteTheme.${key}`)
-  }));
 
   async function create() {
     if (busy) return;
@@ -57,8 +51,7 @@
         locale,
         stagePreset: custom ? 'wide' : stagePreset,
         stageWidth: custom ? width : undefined,
-        stageHeight: custom ? height : undefined,
-        theme
+        stageHeight: custom ? height : undefined
       });
       open = false;
       title = '';
@@ -113,9 +106,6 @@
       />
     </div>
   {/if}
-  <Select label={t('new.siteTheme')} bind:value={theme} options={themeOptions} />
-  <p class="hint">{t('new.siteThemeHint')}</p>
-
   <div class="actions">
     <Button variant="ghost" onclick={() => (open = false)} disabled={busy}>
       {t('new.cancel')}
@@ -142,13 +132,6 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-2);
-  }
-
-  .hint {
-    margin: 0;
-    color: var(--muted);
-    font-size: var(--text-2xs);
-    line-height: 1.4;
   }
 
   .actions {

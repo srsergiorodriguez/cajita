@@ -9,6 +9,45 @@ families:
   (https://github.com/Omnibus-Type/ArchivoBlack).
 - **Fraunces** — Copyright 2018 The Fraunces Project Authors
   (https://github.com/undercasetype/Fraunces).
+- **Anton** — Copyright 2020 The Anton Project Authors
+  (https://github.com/googlefonts/AntonFont.git).
+- **Azeret Mono** — Copyright 2021 The Azeret Project Authors
+  (https://github.com/displaay/azeret).
+- **Bebas Neue** — Copyright © 2010 by Dharma Type.
+- **Cormorant** — Copyright 2015 The Cormorant Project Authors
+  (https://github.com/CatharsisFonts/Cormorant).
+- **Epilogue** — Copyright 2020 The Epilogue Project Authors
+  (https://github.com/Etcetera-Type-Co/Epilogue).
+- **IBM Plex Mono** — Copyright © 2017 IBM Corp. with Reserved Font Name
+  “Plex”.
+- **JetBrains Mono** — Copyright 2020 The JetBrains Mono Project Authors
+  (https://github.com/JetBrains/JetBrainsMono).
+- **Josefin Sans** — Copyright 2010 The Josefin Sans Project Authors
+  (https://github.com/ThomasJockin/JosefinSansFont-master), with Reserved Font
+  Name “Josefin Sans”.
+- **Jost** — Copyright 2020 The Jost Project Authors
+  (https://github.com/indestructible-type).
+- **Krona One** — Copyright (c) 2011 by Sorkin Type Co
+  (www.sorkintype.com), with Reserved Font Names “Krona” and “Krona One”.
+- **Lexend** — Copyright 2018 The Lexend Project Authors
+  (https://github.com/googlefonts/lexend), with Reserved Font Name
+  “RevReading Lexend”.
+- **Outfit** — Copyright 2021 The Outfit Project Authors
+  (https://github.com/Outfitio/Outfit-Fonts).
+- **Playfair Display** — Copyright 2017 The Playfair Display Project Authors
+  (https://github.com/clauseggers/Playfair-Display), with Reserved Font Name
+  “Playfair Display”.
+- **Righteous** — Copyright (c) 2011 by Brian J. Bonislawsky DBA Astigmatic
+  (AOETI), with Reserved Font Name “Righteous”.
+- **Share Tech Mono** — Copyright (c) 2012, Carrois Type Design, Ralph du
+  Carrois, with Reserved Font Name “Share”.
+- **Sora** — Copyright 2019 The Sora Project Authors
+  (https://github.com/sora-xor/sora-font).
+- **Space Grotesk** — Copyright 2020 The Space Grotesk Project Authors
+  (https://github.com/floriankarsten/space-grotesk).
+- **Syne** — Copyright 2017 The Syne Project Authors
+  (https://gitlab.com/bonjour-monde/fonderie/syne-typeface).
+- **Zilla Slab** — Copyright 2017 The Mozilla Foundation.
 
 The font files are subsetted for Latin American Spanish and basic punctuation.
 They are distributed under the SIL Open Font License, Version 1.1:

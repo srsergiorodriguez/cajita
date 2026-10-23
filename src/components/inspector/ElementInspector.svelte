@@ -144,8 +144,9 @@
     }
     if (kind === 'url') {
       const url = element.link?.kind === 'url' ? element.link.url : 'https://';
+      const newTab = element.link?.kind === 'url' ? Boolean(element.link.newTab) : false;
       urlDraft = url;
-      apply(() => updateElement(element.id, { link: { kind: 'url', url } }));
+      apply(() => updateElement(element.id, { link: { kind: 'url', url, newTab } }));
       return;
     }
     if (kind === 'meta') {
@@ -171,8 +172,19 @@
       urlError = t('link.invalid');
       return;
     }
+    const newTab = element.link?.kind === 'url' ? Boolean(element.link.newTab) : false;
     apply(() =>
-      updateElement(element.id, { link: { kind: 'url', url: urlDraft.trim() } })
+      updateElement(element.id, { link: { kind: 'url', url: urlDraft.trim(), newTab } })
+    );
+  }
+
+  function setLinkWindow(value) {
+    const url =
+      element.link?.kind === 'url' ? element.link.url : urlDraft.trim() || 'https://';
+    apply(() =>
+      updateElement(element.id, {
+        link: { kind: 'url', url, newTab: value === 'new' }
+      })
     );
   }
 
@@ -549,6 +561,18 @@
           oninput={(event) => setUrlDraft(event.currentTarget.value)}
           onchange={commitUrl}
         />
+        <div class="segmented-row">
+          <span class="param-label">{t('link.window')}</span>
+          <SegmentedControl
+            label={t('link.window')}
+            value={element.link?.kind === 'url' && element.link.newTab ? 'new' : 'same'}
+            options={[
+              { value: 'same', label: t('link.sameWindow') },
+              { value: 'new', label: t('link.newWindow') }
+            ]}
+            onchange={setLinkWindow}
+          />
+        </div>
       {:else if linkKind === 'meta'}
         <FichaCard {element} />
         <p class="hint">{t('meta.preview')}</p>

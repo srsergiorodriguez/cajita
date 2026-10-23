@@ -1,4 +1,5 @@
 import { elementToCss, pxToCqw } from '../domain/geometry.js';
+import { BUILTIN_FONTS } from '../domain/elements.js';
 import { fontFamily } from '../domain/fonts.js';
 import { assetFileName } from '../domain/assets.js';
 import { META_FIELDS } from '../domain/links.js';
@@ -10,11 +11,9 @@ import { fichaCardRows, isSafeFichaUrl } from '../domain/fichas.js';
 import { FICHA_MOVE_SCRIPT } from './ficha-move.js';
 import { AUDIO_PLAYER_SCRIPT } from './audio-player.js';
 
-const BUILTIN_FAMILIES = {
-  fraunces: "'Fraunces', Georgia, serif",
-  'archivo-black': "'Archivo Black', 'Arial Black', sans-serif",
-  'space-mono': "'Space Mono', ui-monospace, monospace"
-};
+const BUILTIN_FAMILIES = Object.fromEntries(
+  BUILTIN_FONTS.map((font) => [font.id, `'${font.family}', ${font.fallback ?? 'Georgia, serif'}`])
+);
 
 const TRANSITION_RUNTIME = `(function(){var k='cajita:transition';function mode(){return document.documentElement.getAttribute('data-transition')||'cut';}window.addEventListener('pageswap',function(){try{sessionStorage.setItem(k,mode());}catch(e){}});window.addEventListener('pagereveal',function(e){var m='';try{m=sessionStorage.getItem(k)||'';sessionStorage.removeItem(k);}catch(err){}if(m==='fade'||m==='slide'){try{if(e.viewTransition&&e.viewTransition.types)e.viewTransition.types.add(m);}catch(err){}}});})();`;
 
@@ -236,7 +235,9 @@ function linkFor(project, page, element, options) {
       ? { href: options.pageHref(project, page, target), pageId: target.id }
       : null;
   }
-  if (link.kind === 'url' && isSafeUrl(link.url)) return { href: link.url };
+  if (link.kind === 'url' && isSafeUrl(link.url)) {
+    return { href: link.url, newTab: Boolean(link.newTab) };
+  }
   return null;
 }
 
@@ -316,7 +317,8 @@ function renderElement(element, project, page, options) {
     const previewPage = options.preview && href.pageId;
     const url = previewPage ? '#' : href.href;
     const data = previewPage ? ` data-cajita-page="${escapeHtml(href.pageId)}"` : '';
-    return `<a class="el el-${element.type} el-link" href="${escapeHtml(url)}"${data} style="${style}">${content}</a>`;
+    const target = href.newTab ? ' target="_blank" rel="noopener noreferrer"' : '';
+    return `<a class="el el-${element.type} el-link" href="${escapeHtml(url)}"${data}${target} style="${style}">${content}</a>`;
   }
   return `<div class="el el-${element.type}" style="${style}">${content}</div>`;
 }

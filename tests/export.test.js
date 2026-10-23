@@ -172,6 +172,27 @@ describe('site export', () => {
     expect(html).toContain('data-audio-bar');
   });
 
+  it('opens URL links in the selected window', () => {
+    const { project, start } = fixture();
+    const external = createElement('text', {
+      project,
+      page: start,
+      text: 'Fuera'
+    });
+    external.link = { kind: 'url', url: 'https://example.com', newTab: true };
+    const same = createElement('text', {
+      project,
+      page: start,
+      text: 'Dentro'
+    });
+    same.link = { kind: 'url', url: 'https://example.com', newTab: false };
+    start.elements.push(external, same);
+    const html = buildSite(project).pages[0].html;
+    expect(html).toContain('href="https://example.com" target="_blank" rel="noopener noreferrer"');
+    expect(html.match(/href="https:\/\/example.com"/g)).toHaveLength(2);
+    expect(html.match(/target="_blank"/g)).toHaveLength(1);
+  });
+
   it('writes the page transition into the exported HTML and CSS', () => {
     const { project, start } = fixture();
     start.transition = 'fade';

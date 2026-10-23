@@ -12,6 +12,7 @@
   import PreviewDialog from './components/preview/PreviewDialog.svelte';
   import PublishDialog from './components/publish/PublishDialog.svelte';
   import ExportDialog from './components/export/ExportDialog.svelte';
+  import TutorialDialog from './components/shell/TutorialDialog.svelte';
   import ToastHost from './components/ui/ToastHost.svelte';
   import Icon from './components/ui/Icon.svelte';
   import KitchenSink from './dev/KitchenSink.svelte';
@@ -45,6 +46,7 @@
     new URLSearchParams(window.location.search).has('dev');
 
   let settingsOpen = $state(false);
+  let tutorialOpen = $state(false);
   let projectMenuOpen = $state(false);
   let previewOpen = $state(false);
   let publishOpen = $state(false);
@@ -214,6 +216,7 @@
   >
     <TopBar
       onopensettings={() => (settingsOpen = true)}
+      onopentutorial={() => (tutorialOpen = true)}
       onopenprojectmenu={() => (projectMenuOpen = true)}
       onundo={undo}
       onredo={redo}
@@ -284,7 +287,10 @@
   <PublishDialog bind:open={publishOpen} />
   <ExportDialog bind:open={exportOpen} />
 {:else}
-  <ProjectLibrary onopensettings={() => (settingsOpen = true)} />
+  <ProjectLibrary
+    onopensettings={() => (settingsOpen = true)}
+    onopentutorial={() => (tutorialOpen = true)}
+  />
 {/if}
 
 <div class="mobile-note">
@@ -294,4 +300,5 @@
 </div>
 
 <SettingsDialog bind:open={settingsOpen} />
+<TutorialDialog bind:open={tutorialOpen} />
 <ToastHost />

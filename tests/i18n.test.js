@@ -30,7 +30,6 @@ describe('i18n dictionaries', () => {
       'settings.title',
       'settings.appearance',
       'settings.about',
-      'settings.roadmap',
       'inspector.page',
       'kitchen.title'
     ];

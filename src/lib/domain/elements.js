@@ -7,14 +7,182 @@ import { shapeLabel } from './shapes.js';
  * shipped in `src/styles/fonts.css` are offered in S2.
  */
 export const BUILTIN_FONTS = Object.freeze([
-  { id: 'fraunces', label: 'Fraunces', family: 'Fraunces', pairing: 'editorial' },
+  {
+    id: 'fraunces',
+    label: 'Fraunces',
+    family: 'Fraunces',
+    fallback: "Georgia, serif",
+    pairing: 'editorial',
+    weight: 400
+  },
   {
     id: 'archivo-black',
     label: 'Archivo Black',
     family: 'Archivo Black',
-    pairing: 'poster'
+    fallback: "'Arial Black', sans-serif",
+    pairing: 'poster',
+    weight: 400
   },
-  { id: 'space-mono', label: 'Space Mono', family: 'Space Mono', pairing: 'technical' }
+  {
+    id: 'space-mono',
+    label: 'Space Mono',
+    family: 'Space Mono',
+    fallback: "ui-monospace, monospace",
+    pairing: 'technical',
+    weight: 400
+  },
+  {
+    id: 'anton',
+    label: 'Anton',
+    family: 'Anton',
+    fallback: "Impact, 'Arial Narrow', sans-serif",
+    pairing: 'poster',
+    weight: 400
+  },
+  {
+    id: 'azeret-mono',
+    label: 'Azeret Mono',
+    family: 'Azeret Mono',
+    fallback: "ui-monospace, monospace",
+    pairing: 'technical',
+    weight: 400
+  },
+  {
+    id: 'bebas-neue',
+    label: 'Bebas Neue',
+    family: 'Bebas Neue',
+    fallback: "Impact, 'Arial Narrow', sans-serif",
+    pairing: 'poster',
+    weight: 400
+  },
+  {
+    id: 'cormorant',
+    label: 'Cormorant',
+    family: 'Cormorant',
+    fallback: "Georgia, serif",
+    pairing: 'editorial',
+    weight: 400
+  },
+  {
+    id: 'epilogue',
+    label: 'Epilogue',
+    family: 'Epilogue',
+    fallback: "'Helvetica Neue', sans-serif",
+    pairing: 'editorial',
+    weight: 400
+  },
+  {
+    id: 'ibm-plex-mono',
+    label: 'IBM Plex Mono',
+    family: 'IBM Plex Mono',
+    fallback: "ui-monospace, monospace",
+    pairing: 'technical',
+    weight: 500
+  },
+  {
+    id: 'jetbrains-mono',
+    label: 'JetBrains Mono',
+    family: 'JetBrains Mono',
+    fallback: "ui-monospace, monospace",
+    pairing: 'technical',
+    weight: 500
+  },
+  {
+    id: 'josefin-sans',
+    label: 'Josefin Sans',
+    family: 'Josefin Sans',
+    fallback: "Avenir, sans-serif",
+    pairing: 'editorial',
+    weight: 400
+  },
+  {
+    id: 'jost',
+    label: 'Jost',
+    family: 'Jost',
+    fallback: "Avenir, sans-serif",
+    pairing: 'editorial',
+    weight: 400
+  },
+  {
+    id: 'krona-one',
+    label: 'Krona One',
+    family: 'Krona One',
+    fallback: "'Arial Black', sans-serif",
+    pairing: 'poster',
+    weight: 400
+  },
+  {
+    id: 'lexend',
+    label: 'Lexend',
+    family: 'Lexend',
+    fallback: "Verdana, sans-serif",
+    pairing: 'editorial',
+    weight: 400
+  },
+  {
+    id: 'outfit',
+    label: 'Outfit',
+    family: 'Outfit',
+    fallback: "Avenir, sans-serif",
+    pairing: 'editorial',
+    weight: 400
+  },
+  {
+    id: 'playfair-display',
+    label: 'Playfair Display',
+    family: 'Playfair Display',
+    fallback: "Georgia, serif",
+    pairing: 'editorial',
+    weight: 400
+  },
+  {
+    id: 'righteous',
+    label: 'Righteous',
+    family: 'Righteous',
+    fallback: "'Arial Black', sans-serif",
+    pairing: 'poster',
+    weight: 400
+  },
+  {
+    id: 'share-tech-mono',
+    label: 'Share Tech Mono',
+    family: 'Share Tech Mono',
+    fallback: "ui-monospace, monospace",
+    pairing: 'technical',
+    weight: 400
+  },
+  {
+    id: 'sora',
+    label: 'Sora',
+    family: 'Sora',
+    fallback: "Avenir, sans-serif",
+    pairing: 'technical',
+    weight: 400
+  },
+  {
+    id: 'space-grotesk',
+    label: 'Space Grotesk',
+    family: 'Space Grotesk',
+    fallback: "Helvetica, sans-serif",
+    pairing: 'technical',
+    weight: 400
+  },
+  {
+    id: 'syne',
+    label: 'Syne',
+    family: 'Syne',
+    fallback: "'Arial Black', sans-serif",
+    pairing: 'poster',
+    weight: 400
+  },
+  {
+    id: 'zilla-slab',
+    label: 'Zilla Slab',
+    family: 'Zilla Slab',
+    fallback: "Rockwell, Georgia, serif",
+    pairing: 'slab',
+    weight: 400
+  },
 ]);
 
 const BUILTIN_BY_ID = new Map(BUILTIN_FONTS.map((font) => [font.id, font]));
@@ -268,7 +436,7 @@ export function builtinFont(fontId) {
 
 export function fontStack(project, fontId) {
   const builtin = builtinFont(fontId);
-  if (builtin) return `'${builtin.family}', Georgia, serif`;
+  if (builtin) return `'${builtin.family}', ${builtin.fallback ?? 'Georgia, serif'}`;
   const custom = project?.fonts?.[fontId];
   if (custom) return `'${fontFamily(custom)}', Georgia, serif`;
   return "'Fraunces', Georgia, serif";

@@ -54,6 +54,10 @@
     <circle cx="18" cy="6" r="2.5" />
     <circle cx="12" cy="18" r="2.5" />
     <path d="m8 8 2.5 7.5M16 8l-2.5 7.5M8.5 7h7" />
+  {:else if name === 'help'}
+    <circle cx="12" cy="12" r="9" />
+    <path d="M9.5 9a2.5 2.5 0 1 1 4.2 1.8c-.8.7-1.7 1.2-1.7 2.7" />
+    <path d="M12 17h.01" />
   {:else if name === 'settings'}
     <path d="M4 7h16M4 12h16M4 17h16" />
     <circle cx="9" cy="7" r="2" fill="var(--panel)" />

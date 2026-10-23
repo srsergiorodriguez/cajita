@@ -8,16 +8,10 @@ import {
 import { isValidSlug, isReservedSlug } from './slugs.js';
 import { META_FIELDS } from './links.js';
 import { parseEmbed } from './embeds.js';
+import { BUILTIN_FONTS as BUILTIN_FONT_LIST } from './elements.js';
 import { FICHA_LIMITS, fichaFieldErrors, isSafeFichaUrl } from './fichas.js';
 
-const BUILTIN_FONTS = new Set([
-  'fraunces',
-  'archivo-black',
-  'space-mono',
-  'syne',
-  'zilla-slab',
-  'ibm-plex-mono'
-]);
+const BUILTIN_FONTS = new Set(BUILTIN_FONT_LIST.map((font) => font.id));
 
 const ASSET_KINDS = new Set(['image', 'video', 'audio', 'font']);
 const ELEMENT_TYPES = new Set([
@@ -70,6 +64,9 @@ function checkLink(link, path, project, errors) {
   } else if (link.kind === 'url') {
     if (typeof link.url !== 'string' || !/^(https?:|mailto:|tel:)/i.test(link.url)) {
       push(errors, `${path}.url`, 'must be an http(s), mailto, or tel URL');
+    }
+    if (link.newTab !== undefined && typeof link.newTab !== 'boolean') {
+      push(errors, `${path}.newTab`, 'must be a boolean');
     }
   } else if (link.kind === 'meta') {
     // The element's meta object is checked separately.

@@ -31,6 +31,8 @@
 <style>
   .segmented {
     display: inline-flex;
+    width: fit-content;
+    max-width: 100%;
     border: var(--border-control) solid var(--line);
     background: var(--panel-2);
   }

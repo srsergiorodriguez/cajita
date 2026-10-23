@@ -1628,3 +1628,17 @@ Verification: **128 tests**, 0 svelte-check warnings, build passes; screenshots
   - masked images use contain in editor/export/thumbnails.
 - About version no longer includes the sprint number; library header is “cajita”.
 - Verified the imported project in browser and screenshots.
+
+---
+
+## 2026-10-23 — S29: tutorial modal and example walkthrough
+
+- Added `TUTORIAL_STEPS`, `TutorialDialog`, and entry points in the library and
+  editor topbar.
+- Built a temporary example project with four pages, images, video, sound,
+  p5/Observable embeds, links, three fichas, and schema fields.
+- Captured ten tutorial screenshots from the live app: project library, media
+  manager, canvas, previewed embeds, map, fichas, preview, export, publish
+  (opened without submitting), and settings.
+- Added a test that every tutorial step has a screenshot and ES/EN copy.
+- Raw `forTutorial/` media is ignored; only `public/tutorial/` screenshots ship.

@@ -193,7 +193,7 @@
     <div class="row">
       <Button
         size="sm"
-        variant="ghost"
+        variant="secondary"
         onclick={() =>
           apply(() =>
             addPage(t('page.newTitle', { number: session.project.pages.length + 1 }))
@@ -207,7 +207,7 @@
       {#if !isStart}
         <Button
           size="sm"
-          variant="ghost"
+          variant="secondary"
           onclick={() => apply(() => makeStartPage(page.id))}
         >
           {t('page.makeStart')}

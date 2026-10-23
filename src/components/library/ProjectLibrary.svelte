@@ -20,7 +20,7 @@
   } from '../../lib/state/preferences.svelte.js';
   import { toast } from '../../lib/state/ui.svelte.js';
 
-  let { onopensettings } = $props();
+  let { onopensettings, onopentutorial } = $props();
   let newOpen = $state(false);
   let fileInput;
   let importing = $state(false);
@@ -162,6 +162,10 @@
         <Button onclick={openBundlePicker} disabled={importing}>
           <Icon name="folder" size={14} />
           {importing ? t('library.importing') : t('library.open')}
+        </Button>
+        <Button variant="ghost" onclick={onopentutorial}>
+          <Icon name="help" size={14} />
+          {t('library.tutorial')}
         </Button>
       </div>
     </header>

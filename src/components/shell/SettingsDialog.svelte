@@ -1,7 +1,9 @@
 <script>
   import Dialog from '../ui/Dialog.svelte';
+  import Button from '../ui/Button.svelte';
   import RangeField from '../ui/RangeField.svelte';
   import SegmentedControl from '../ui/SegmentedControl.svelte';
+  import LicensesDialog from './LicensesDialog.svelte';
   import { t } from '../../lib/i18n/index.svelte.js';
   import {
     preferences,
@@ -11,6 +13,7 @@
   } from '../../lib/state/preferences.svelte.js';
 
   let { open = $bindable(false) } = $props();
+  let licensesOpen = $state(false);
 </script>
 
 <Dialog bind:open title={t('settings.title')}>
@@ -65,10 +68,15 @@
   </section>
 
   <section class="settings-section">
-    <h2>{t('settings.roadmap')}</h2>
-    <p>{t('settings.roadmapText')}</p>
+    <h2>{t('settings.licenses')}</h2>
+    <p>{t('settings.licensesHint')}</p>
+    <Button variant="secondary" size="sm" onclick={() => (licensesOpen = true)}>
+      {t('settings.licensesOpen')}
+    </Button>
   </section>
 </Dialog>
+
+<LicensesDialog bind:open={licensesOpen} />
 
 <style>
   .settings-section {

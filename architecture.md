@@ -136,7 +136,7 @@ no user-visible benefit. If a marketing/docs site is needed later, it can live i
 a separate folder or be added with Vite multi-page input. This decision is
 reversible at low cost.
 
-The repository is GPL-3.0 (existing `LICENSE`). The **output** a user creates
+The repository is PolyForm Noncommercial 1.0.0 (`LICENSE`). The **output** a user creates
 (the exported site and its media) belongs to the user; cajita is a tool, not a
 license that spreads to their work. State this in the README and the About panel.
 
@@ -2102,7 +2102,7 @@ Exported site:
 | D7  | Preview is the export pipeline in an iframe                                                                                  | decided                |
 | D8  | GitHub Pages + PAT for v1; device flow not in v1                                                                             | **decided 2026-10-21** |
 | D9  | No SvelteKit; Vite + Svelte 5 + plain JavaScript (ESM), no TypeScript build step                                             | **decided 2026-10-22** |
-| D10 | GPL-3.0 app; user owns all output                                                                                            | decided                |
+| D10 | PolyForm Noncommercial 1.0.0 app; user owns all output                                                                       | decided                |
 | D11 | Spanish default, ES/EN switch; site locale independent                                                                       | **decided 2026-10-22** |
 | D12 | One app chrome theme, Ficha, in light/dark modes; per-device; site themes stay separate                                      | **revised 2026-10-22** |
 | D13 | Image policy: optimize non-GIF images on import to WebP q0.85, 2560 px; GIFs untouched; originals deferred                   | **decided 2026-10-22** |

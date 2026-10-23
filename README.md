@@ -48,6 +48,13 @@ canonical URL is <https://srsergiorodriguez.github.io/cajita/>.
 - Custom font files are validated, loaded with FontFace, and managed from the
   project font manager.
 
+## Tutorial
+
+Open **cómo funciona** from the project library or the help button in the editor.
+The tutorial modal walks through projects, media, composition, embeds, pages/map,
+fichas, preview, export, publishing, and settings with screenshots from the
+example project.
+
 ## Docs
 
 - [architecture.md](architecture.md) — boundaries, model, persistence, export.
@@ -58,4 +65,4 @@ canonical URL is <https://srsergiorodriguez.github.io/cajita/>.
 
 ## License
 
-GPL-3.0. The sites you make with cajita belong to you.
+PolyForm Noncommercial 1.0.0 for the cajita editor. The pages and sites you make with it are yours and may be used commercially under [OUTPUT-LICENSE.md](OUTPUT-LICENSE.md).

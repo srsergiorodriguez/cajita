@@ -1,6 +1,6 @@
 # cajita — active sprint
 
-Status: **S28 complete — user-project mask mapping, content-space masks, About copy** · 2026-10-23.
+Status: **S29 complete — in-app tutorial and example-project walkthrough** · 2026-10-23.
 S0 shell. S1 projects. S2 canvas. S3 links/map/fichas. S4 export/preview.
 S5 GitHub Pages. S6 page size. S7 metadata/SEO. S8 video/sound. S9 transitions.
 S10 media/embeds. S11 shapes. S12 fichas. S13 CSV. S14 movable. S15 table/card.
@@ -229,6 +229,44 @@ stage into a smaller viewport; page resizing no longer moves elements.
 - JS ~129.1 KB gzip; CSS ~13.7 KB gzip.
 - Screenshots: `s28-user-editor.png`, `s28-user-mask-fixed3.png`,
   `s28-mask-result.png`.
+
+
+
+---
+
+## Sprint S29 — tutorial modal
+
+**Goal:** make cajita self-explanatory without a separate manual.
+
+### Status
+
+| Area | State |
+|---|---|
+| Tutorial entry points | library + topbar help |
+| Tutorial modal | done |
+| Example project for screenshots | built and exercised |
+| Project / media / canvas / embeds / map | screenshot |
+| Fichas / preview / export / publish / settings | screenshot |
+| Tests | **142 passing** |
+| `npm run verify` | green |
+
+### Tutorial content
+
+- `TutorialDialog` uses the shared `Dialog`, `TUTORIAL_STEPS`, and the current
+  locale.
+- Ten steps: project, media, canvas, p5/Observable embeds, pages/map, fichas,
+  preview, export, publish, settings.
+- Screenshots live in `public/tutorial/` and are checked by
+  `tests/tutorial.test.js`.
+- The example project uses `forTutorial/` images, video, sound, the Observable
+  cell, and the p5 sketch. The raw 28 MB media folder is gitignored; only the
+  app-ready tutorial screenshots ship.
+
+### Outcome
+
+- `npm run verify`: **142 tests**, 0 svelte-check warnings.
+- JS ~138.9 KB gzip; CSS ~14.6 KB gzip.
+- Screenshots: `s30-tutorial-top.png`, `s30-tutorial-bottom.png`.
 
 ---
 
