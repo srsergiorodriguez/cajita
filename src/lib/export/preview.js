@@ -1,6 +1,7 @@
 import { buildSite } from './site.js';
 import { fontFaces } from './fonts.js';
 import { assetUrl } from '../state/asset-urls.svelte.js';
+import { platform } from '../platform/index.js';
 import { FICHA_MOVE_SCRIPT } from './ficha-move.js';
 import { AUDIO_PLAYER_SCRIPT } from './audio-player.js';
 
@@ -20,6 +21,7 @@ document.addEventListener('click', (event) => {
  */
 export async function buildPreview(project) {
   const usedAssets = new Map();
+  const htmlContent = new Map();
   const allAssetIds = new Set();
   for (const page of project.pages ?? []) {
     for (const element of page.elements ?? []) {
@@ -36,6 +38,11 @@ export async function buildPreview(project) {
 
   await Promise.all(
     [...allAssetIds].map(async (assetId) => {
+      const row = await platform.assets.get(project.id, assetId);
+      if (row?.meta?.kind === 'html' && row.blob) {
+        htmlContent.set(assetId, await row.blob.text());
+        return;
+      }
       const url = await assetUrl(project.id, assetId);
       if (url) usedAssets.set(assetId, url);
     })
@@ -48,6 +55,7 @@ export async function buildPreview(project) {
 
   const site = buildSite(project, {
     assetHref: (_project, _page, asset) => usedAssets.get(asset.id) ?? '',
+    htmlContent,
     preview: true,
     inlineCss: true,
     inlineScript: `${PREVIEW_SCRIPT}\n${AUDIO_PLAYER_SCRIPT}${project.fichaSettings?.movable ? `\n${FICHA_MOVE_SCRIPT}` : ''}`,

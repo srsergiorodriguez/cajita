@@ -100,7 +100,7 @@ export async function buildSiteEntries(project) {
 
   const builtinFiles = builtinFontFiles(project);
   if (builtinFiles.length) {
-    const bytes = await loadBuiltinFontBytes();
+    const bytes = await loadBuiltinFontBytes(builtinFiles);
     for (const file of builtinFiles) {
       const data = bytes.get(file.id);
       if (data) entries.set(file.path, { bytes: data, mime: 'font/woff2' });
@@ -121,9 +121,15 @@ export async function buildSiteEntries(project) {
 
 export function buildSingleFileFromEntries(project, entries, site) {
   const assetUrls = new Map();
+  const htmlContent = new Map();
   for (const asset of site.assets) {
     const file = entries.get(assetPath(asset));
-    if (file) assetUrls.set(asset.id, dataUrl(file.bytes, asset.mime));
+    if (!file) continue;
+    if (asset.kind === 'html' || asset.mime === 'text/html') {
+      htmlContent.set(asset.id, new TextDecoder().decode(file.bytes));
+    } else {
+      assetUrls.set(asset.id, dataUrl(file.bytes, asset.mime));
+    }
   }
   const builtinHref = (file) => {
     const entry = entries.get(file.path);
@@ -136,6 +142,7 @@ export function buildSingleFileFromEntries(project, entries, site) {
   const faces = fontFaces(project, { builtinHref, customHref });
   return buildSingleFile(project, {
     assetHref: (_project, _page, asset) => assetUrls.get(asset.id) ?? '',
+    htmlContent,
     builtinHref,
     customHref,
     fontFaces: faces

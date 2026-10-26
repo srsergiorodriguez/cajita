@@ -64,7 +64,7 @@ function routerScript() {
  * data-cajita-page attributes as preview; a tiny hash router shows one section.
  * Movable visitor behavior is intentionally disabled in the portable file.
  */
-export function buildSingleFile(project, { assetHref, builtinHref, customHref, fontFaces }) {
+export function buildSingleFile(project, { assetHref, builtinHref, customHref, fontFaces, htmlContent }) {
   const clean = structuredClone(project);
   const site = buildSite(clean, {
     assetHref,
@@ -72,6 +72,7 @@ export function buildSingleFile(project, { assetHref, builtinHref, customHref, f
     customHref,
     fontFaces,
     preview: true,
+    htmlContent,
     inlineCss: true,
     inlineScript: ''
   });

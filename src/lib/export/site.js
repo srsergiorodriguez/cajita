@@ -7,6 +7,7 @@ import { canonicalBase, canonicalPageUrl } from '../domain/publish/domain.js';
 import { embedProvider, embedSrc } from '../domain/embeds.js';
 import { shapeSvg } from '../domain/shapes.js';
 import { maskClipPath } from '../domain/mask.js';
+import { HTML_SANDBOX } from '../domain/html.js';
 import { fichaCardRows, isSafeFichaUrl } from '../domain/fichas.js';
 import { FICHA_MOVE_SCRIPT } from './ficha-move.js';
 import { AUDIO_PLAYER_SCRIPT } from './audio-player.js';
@@ -88,6 +89,7 @@ export function siteCss(project, { fontFaces = [] } = {}) {
 *,*::before,*::after{box-sizing:border-box;}
 html,body{margin:0;min-height:100%;}
 body{
+  --link-accent:${project.palette?.[2] ?? theme.accent ?? '#a82a1e'};
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -117,16 +119,18 @@ body.align-left{align-items:flex-start;}
   opacity:var(--opacity,1);
   margin:0;
 }
-.el-link{color:inherit;text-decoration:none;}
+.el-link{color:inherit;text-decoration:none;box-shadow:5px 5px 0 var(--link-accent);transition:box-shadow 160ms ease;}
+.el-link:hover,.el-link:focus-visible{box-shadow:8px 8px 0 var(--link-accent);outline:2px solid var(--link-accent);outline-offset:3px;}
 .el-text{white-space:pre-wrap;overflow-wrap:anywhere;overflow:visible;}
 .el-text h1,.el-text p,.el-text div{margin:0;font:inherit;white-space:pre-wrap;}
-.el-image{overflow:hidden;}
-.el-image img{display:block;width:100%;height:100%;object-fit:var(--fit,cover);}
+.el-image,.el-drawing{overflow:hidden;}
+.el-image img,.el-drawing img{display:block;width:100%;height:100%;object-fit:var(--fit,cover);}
 .el-video{overflow:hidden;background:#000;}
 .el-video video{display:block;width:100%;height:100%;object-fit:var(--fit,cover);}
 .el-audio{display:block;padding:0;background:transparent;border:0;font-size:2cqw;}
 .el-shape svg{display:block;width:100%;height:100%;overflow:visible;}
-.el-embed{overflow:hidden;background:#fff;}
+.el-embed,.el-html{overflow:hidden;background:#fff;}
+.el-html iframe{display:block;width:100%;height:100%;border:0;background:#fff;}
 .el-embed--youtube{background:#000;}
 .embed-frame{position:relative;width:100%;height:100%;background:transparent;}
 .el-embed--youtube .embed-frame{background:#000;}
@@ -174,7 +178,7 @@ body.align-left{align-items:flex-start;}
 .ficha-card{left:50%;top:50%;width:min(360px,calc(100% - 16px));transform:translate(-50%,-50%) rotate(-1deg);max-height:calc(100% - 16px);overflow:auto;z-index:1001;}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 a:focus-visible,summary:focus-visible,video:focus-visible,audio:focus-visible{outline:3px solid ${theme.accent ?? '#2e5a88'};outline-offset:3px;}
-@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important;}}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important;}.el-link{transition:none;}}
 @media (max-width: 700px){body.fit-contain .stage{width:100vw;height:auto;}}
 @view-transition{navigation:auto;}
 ::view-transition-old(root),::view-transition-new(root){animation:none;}
@@ -242,10 +246,10 @@ function linkFor(project, page, element, options) {
 }
 
 function contentFor(element, project, stage, options, page) {
-  if (element.type === 'image') {
+  if (element.type === 'image' || element.type === 'drawing') {
     const asset = project.assets?.[element.assetId];
     if (!asset) return '';
-    const mask = maskClipPath(element.mask);
+    const mask = maskClipPath(element.mask, element.maskCurve);
     return `<img src="${escapeHtml(options.assetHref(project, page, asset))}" alt="${escapeHtml(element.alt)}" loading="lazy" style="object-fit:${mask || element.fit === 'contain' ? 'contain' : 'cover'};${element.pixelated ? 'image-rendering:pixelated;' : ''}${mask ? `clip-path:${mask};` : ''}" />`;
   }
   if (element.type === 'video') {
@@ -266,6 +270,18 @@ function contentFor(element, project, stage, options, page) {
   }
   if (element.type === 'shape') {
     return shapeSvg(element);
+  }
+  if (element.type === 'html') {
+    const asset = project.assets?.[element.assetId];
+    if (!asset) return '';
+    const content = options.htmlContent?.get(asset.id);
+    const src = escapeHtml(options.assetHref(project, page, asset));
+    const title = element.title || element.caption || asset.name || 'HTML';
+    const source =
+      content !== undefined
+        ? `srcdoc="${escapeHtml(content)}"`
+        : `src="${src}"`;
+    return `<iframe ${source} title="${escapeHtml(title)}" loading="lazy" referrerpolicy="no-referrer" sandbox="${HTML_SANDBOX}"></iframe>`;
   }
   if (element.type === 'embed') {
     const src = embedSrc(element);

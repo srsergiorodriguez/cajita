@@ -1,6 +1,6 @@
 # cajita — active sprint
 
-Status: **S31 complete — layout grids and page templates** · 2026-10-23.
+Status: **S36 complete — HTML visualizations, link cues, and release 1.1** · 2026-10-26.
 S0 shell. S1 projects. S2 canvas. S3 links/map/fichas. S4 export/preview.
 S5 GitHub Pages. S6 page size. S7 metadata/SEO. S8 video/sound. S9 transitions.
 S10 media/embeds. S11 shapes. S12 fichas. S13 CSV. S14 movable. S15 table/card.
@@ -218,7 +218,7 @@ stage into a smaller viewport; page resizing no longer moves elements.
 - If asset dimensions are missing, the image’s `naturalWidth`/`naturalHeight`
   determine the aspect.
 - Masked images use `contain`, so editor/export/thumbnail masks match the modal.
-- `app.version` is now “Versión 1.0” with no sprint number; the library header
+- `app.version` is now “Versión 1.1” with no sprint number; the library header
   is just “cajita”.
 - The ficha overlap was caused by moving fichas and then using reset; reset
   restored the authored layout correctly.

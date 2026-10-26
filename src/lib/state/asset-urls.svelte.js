@@ -2,6 +2,21 @@ import { platform } from '../platform/index.js';
 
 const urls = new Map();
 const pending = new Map();
+
+function bytesToBase64(bytes) {
+  let binary = '';
+  const chunk = 0x8000;
+  for (let index = 0; index < bytes.length; index += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + chunk));
+  }
+  return btoa(binary);
+}
+
+async function dataUrlFor(blob) {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  return `data:${blob.type || 'text/html'};base64,${bytesToBase64(bytes)}`;
+}
+
 const thumbs = new Map();
 const thumbPending = new Map();
 
@@ -22,9 +37,12 @@ export function assetUrl(projectId, assetId) {
 
   const request = platform.assets
     .get(projectId, assetId)
-    .then((row) => {
+    .then(async (row) => {
       if (!row?.blob) return null;
-      const url = URL.createObjectURL(row.blob);
+      const url =
+        row.meta?.kind === 'html' || row.meta?.mime === 'text/html'
+          ? await dataUrlFor(row.blob)
+          : URL.createObjectURL(row.blob);
       urls.set(key, url);
       return url;
     })
@@ -61,7 +79,7 @@ export function thumbUrl(projectId, assetId) {
 export function clearAssetUrl(projectId, assetId) {
   const key = keyFor(projectId, assetId);
   const url = urls.get(key);
-  if (url) URL.revokeObjectURL(url);
+  if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
   urls.delete(key);
   const thumb = thumbs.get(key);
   if (thumb) URL.revokeObjectURL(thumb);

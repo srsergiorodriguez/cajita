@@ -8,7 +8,9 @@ export default defineConfig({
     port: 5173
   },
   build: {
-    target: 'es2022'
+    target: 'es2022',
+    // The editor shell is intentionally one chunk; larger feature dialogs are lazy-loaded.
+    chunkSizeWarningLimit: 550
   },
   test: {
     environment: 'node',

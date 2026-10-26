@@ -87,6 +87,10 @@
     <path d="M4 4h16v16H4zM4 10h16M4 15h16M10 4v16M15 4v16" />
   {:else if name === 'archive'}
     <path d="M3 7h18v4H3zM5 11v8h14v-8M9 15h6" />
+  {:else if name === 'html'}
+    <path d="M9 7 4 12l5 5M15 7l5 5-5 5M13 5l-2 14" />
+  {:else if name === 'pencil'}
+    <path d="M4 20c2.5-.5 4.2-1.5 5.4-3.3L19 7.2 16.8 5 7.3 14.6C5.5 15.8 4.5 17.5 4 20Z" />
   {:else if name === 'shape'}
     <circle cx="7" cy="7" r="4" />
     <path d="M15 12l5 8H10l5-8z" />

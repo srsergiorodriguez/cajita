@@ -15,6 +15,7 @@ export const AUDIO_MIMES = new Set([
   'audio/x-wav',
   'audio/mp4'
 ]);
+export const HTML_MIMES = new Set(['text/html']);
 export const FONT_MIMES = new Set([
   'font/ttf',
   'font/otf',
@@ -30,6 +31,7 @@ const EXT_BY_MIME = {
   'image/jpeg': 'jpg',
   'image/gif': 'gif',
   'image/webp': 'webp',
+  'text/html': 'html',
   'video/mp4': 'mp4',
   'video/webm': 'webm',
   'audio/mpeg': 'mp3',
@@ -49,6 +51,8 @@ const MIME_BY_EXT = {
   jpeg: 'image/jpeg',
   gif: 'image/gif',
   webp: 'image/webp',
+  html: 'text/html',
+  htm: 'text/html',
   mp4: 'video/mp4',
   webm: 'video/webm',
   mp3: 'audio/mpeg',
@@ -133,6 +137,7 @@ export function kindForMime(mime) {
   if (VIDEO_MIMES.has(mime)) return 'video';
   if (AUDIO_MIMES.has(mime)) return 'audio';
   if (FONT_MIMES.has(mime)) return 'font';
+  if (HTML_MIMES.has(mime)) return 'html';
   return null;
 }
 
@@ -175,11 +180,12 @@ export async function sha256Hex(value) {
 }
 
 export function assetCounts(project) {
-  const counts = { image: 0, video: 0, audio: 0, font: 0 };
+  const counts = { image: 0, video: 0, audio: 0, font: 0, html: 0, htmlBytes: 0 };
   let videoBytes = 0;
   for (const asset of Object.values(project?.assets ?? {})) {
     counts[asset.kind] = (counts[asset.kind] ?? 0) + 1;
     if (asset.kind === 'video') videoBytes += Number(asset.bytes) || 0;
+    if (asset.kind === 'html') counts.htmlBytes += Number(asset.bytes) || 0;
   }
   return { ...counts, videoBytes };
 }
@@ -193,7 +199,7 @@ export function assetCounts(project) {
  * @returns {{ok: true} | {ok: false, code: string, message: string}}
  */
 export function checkAssetLimit(project, kind, bytes) {
-  if (!['image', 'video', 'audio', 'font'].includes(kind)) {
+  if (!['image', 'video', 'audio', 'font', 'html'].includes(kind)) {
     return { ok: false, code: 'ASSET_UNSUPPORTED', message: 'unsupported asset kind' };
   }
   if (bytes > LIMITS.fileBytes) {
@@ -204,6 +210,9 @@ export function checkAssetLimit(project, kind, bytes) {
   }
   if (kind === 'font' && bytes > LIMITS.fontBytes) {
     return { ok: false, code: 'ASSET_TOO_LARGE', message: 'font is larger than 5 MB' };
+  }
+  if (kind === 'html' && bytes > LIMITS.htmlFileBytes) {
+    return { ok: false, code: 'ASSET_TOO_LARGE', message: 'HTML is larger than 5 MB' };
   }
 
   const counts = assetCounts(project);
@@ -221,6 +230,12 @@ export function checkAssetLimit(project, kind, bytes) {
   }
   if (kind === 'font' && counts.font >= LIMITS.fonts) {
     return { ok: false, code: 'ASSET_LIMIT', message: 'font limit reached' };
+  }
+  if (kind === 'html' && counts.html >= LIMITS.htmlFiles) {
+    return { ok: false, code: 'ASSET_LIMIT', message: 'HTML file limit reached' };
+  }
+  if (kind === 'html' && counts.htmlBytes + bytes > LIMITS.htmlBytes) {
+    return { ok: false, code: 'ASSET_LIMIT', message: 'HTML size limit reached' };
   }
 
   return { ok: true };

@@ -3,6 +3,7 @@
   import CanvasVideo from './CanvasVideo.svelte';
   import CanvasAudio from './CanvasAudio.svelte';
   import CanvasEmbed from './CanvasEmbed.svelte';
+  import CanvasHtml from './CanvasHtml.svelte';
   import ShapeArt from './ShapeArt.svelte';
   import CanvasFicha from './CanvasFicha.svelte';
   import Icon from '../ui/Icon.svelte';
@@ -386,6 +387,7 @@
         style:aspect-ratio={`${stage.width} / ${stage.height}`}
         style:width={`${stageWidth}px`}
         style:--stage-color={pageBackground}
+        style:--link-accent={session.project?.palette?.[2] ?? '#a82a1e'}
         class:placing
         onpointerdown={onStagePointerDown}
         role="application"
@@ -408,6 +410,7 @@
             <div
               class="element element--{element.type}"
               class:selected={session.selectedElementIds.includes(element.id)}
+              class:has-link={Boolean(element.link && element.link.kind !== 'none')}
               class:locked={element.locked}
               style={element.type === 'text' ? textStyle(element) : cssVars(element)}
               data-element-id={element.id}
@@ -426,7 +429,7 @@
             >
               {#if element.type === 'text'}
                 <div class="text-content">{element.text}</div>
-              {:else if element.type === 'image'}
+              {:else if element.type === 'image' || element.type === 'drawing'}
                 <CanvasAsset
                   projectId={session.project.id}
                   assetId={element.assetId}
@@ -434,6 +437,7 @@
                   alt={element.alt}
                   pixelated={element.pixelated}
                   mask={element.mask}
+                  maskCurve={element.maskCurve}
                 />
               {:else if element.type === 'video'}
                 <CanvasVideo
@@ -449,6 +453,12 @@
                   assetId={element.assetId}
                   label={element.label}
                   loop={element.loop}
+                />
+              {:else if element.type === 'html'}
+                <CanvasHtml
+                  projectId={session.project.id}
+                  assetId={element.assetId}
+                  title={element.title || element.caption || 'HTML'}
                 />
               {:else if element.type === 'embed'}
                 <CanvasEmbed
@@ -672,6 +682,10 @@
   .element.selected {
     outline: 2px solid var(--selection);
     outline-offset: 0;
+  }
+
+  .element.has-link {
+    box-shadow: 4px 4px 0 var(--link-accent, var(--selection));
   }
 
   .element.locked {

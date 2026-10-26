@@ -1673,3 +1673,71 @@ Verification: **128 tests**, 0 svelte-check warnings, build passes; screenshots
 
 - Grids are centered in the canvas using the motivomotivo-style percentage margin;
   page-size changes reflow cards and clip or drop merges that no longer fit.
+
+
+---
+
+## 2026-10-26 — S32: mask path editor
+
+- Mask nodes now insert between the correct existing nodes by clicking a segment;
+  dragging near a node still starts a drag.
+- Node handles are fixed-screen-size HTML circles rather than stretched SVG ovals.
+- Added a global `curvas` toggle using closed Catmull-Rom smoothing, flattened to a
+  polygon for portable clip-path export.
+- Added node selection, deletion, Delete/Backspace support, and history snapshots
+  that include the curve mode.
+- `maskCurve` is persisted on image elements and carried through canvas, thumbnails,
+  and site export.
+
+
+---
+
+## 2026-10-26 — S33: project palette
+
+- Added a project-level five-color palette with defaults based on the Papel palette.
+- Added palette editing and reset in the page inspector; the palette is normalized and
+  validated as five hex colors.
+- Existing projects without a palette migrate to the default palette.
+- The drawing element will use this palette next.
+
+
+---
+
+## 2026-10-26 — S34: drawing element
+
+- Ported the reference vector drawing model, deterministic 3-frame wiggle, and GIF
+  encoder into cajita.
+- Added static/animated drawing modes: static exports PNG, animated exports GIF.
+- Added the drawing modal with brush, texture, eraser, size, project palette colors,
+  undo, clear, and live animation.
+- Drawings are stored as editable stroke documents plus a 1024 px image asset with
+  a 512 px thumbnail.
+- Added the `drawing` element, image-like masking/fit/pixelated controls, canvas
+  rendering, export, thumbnails, duplication, and page-template support.
+- Added drawing model/encoder tests.
+
+
+---
+
+## 2026-10-26 — S35: HTML visualizations
+
+- Added an `html` asset kind and a `visualization`-style HTML element.
+- Added self-contained `.html` upload with a 5 MB per-file, 20 MB total, and
+  20-file project limit.
+- HTML runs in a sandboxed iframe without same-origin access, in the editor,
+  preview, full export, and single-file export.
+- Added an explicit security confirmation and a warning that relative assets are
+  not supported.
+- Added HTML element controls, thumbnails, validation, and export tests.
+
+
+---
+
+## 2026-10-26 — S36: release 1.1
+
+- Link cues use a persistent hard accent shadow, with a stronger hover/focus shadow
+  and outline, in editor, preview, exports, and page thumbnails.
+- HTML visualizations use srcdoc in editor/preview/single-file and a separate
+  asset file in the full ZIP, avoiding large data-URL failures.
+- Drawing export sizing fixed for the `.el-drawing` class.
+- Release version is 1.1.0.

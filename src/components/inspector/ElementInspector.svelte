@@ -30,6 +30,7 @@
   let urlError = $state('');
   let confirming = $state(false);
   let maskOpen = $state(false);
+  let drawingOpen = $state(false);
 
   $effect(() => {
     if (element) {
@@ -281,8 +282,13 @@
     </Section>
   {/if}
 
-  {#if element.type === 'image'}
-    <Section label={t('image.title')}>
+  {#if element.type === 'image' || element.type === 'drawing'}
+    <Section label={element.type === 'drawing' ? t('drawing.title') : t('image.title')}>
+      {#if element.type === 'drawing'}
+        <Button size="sm" variant="secondary" onclick={() => (drawingOpen = true)}>
+          {t('drawing.edit')}
+        </Button>
+      {/if}
       <Field
         label={t('image.alt')}
         value={element.alt}
@@ -460,6 +466,22 @@
     </Section>
   {/if}
 
+  {#if element.type === 'html'}
+    <Section label={t('html.title')}>
+      <Field
+        label={t('html.elementTitle')}
+        value={element.title ?? ''}
+        oninput={(event) => setField('title', event.currentTarget.value)}
+      />
+      <Field
+        label={t('html.caption')}
+        value={element.caption ?? ''}
+        oninput={(event) => setField('caption', event.currentTarget.value)}
+      />
+      <p class="hint">{t('html.elementHint')}</p>
+    </Section>
+  {/if}
+
   {#if element.type === 'embed'}
     <Section
       label={t(
@@ -594,6 +616,11 @@
   {/if}
 
   <ImageMaskDialog bind:open={maskOpen} {element} />
+  {#if drawingOpen}
+    {#await import('../drawing/DrawingDialog.svelte') then { default: DrawingDialog }}
+      <DrawingDialog bind:open={drawingOpen} {element} />
+    {/await}
+  {/if}
 
   <Section label={t('element.actions')}>
     <div class="action-grid">

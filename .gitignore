@@ -4,6 +4,7 @@
 
 # cajita
 forTutorial/
+aventuraForReference/
 *.cajita
 .cajita/
 .tmp/

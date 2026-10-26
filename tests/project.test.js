@@ -34,6 +34,7 @@ describe('project model', () => {
     expect(project.startPageId).toBe(project.pages[0].id);
     expect(project.stage.width).toBe(1200);
     expect(project.theme.name).toBe('papel');
+    expect(project.palette).toHaveLength(5);
     expect(project.grids).toEqual({});
     expect(project.gridSettings).toEqual({ show: true, snap: true });
     expect(project.pageTemplates).toEqual({});
@@ -63,6 +64,14 @@ describe('project model', () => {
     expect(stage.width).toBe(1080);
     expect(stage.height).toBe(1080);
     expect(stage.fit).toBe('width');
+  });
+
+  it('requires five palette colors', () => {
+    const project = projectFixture();
+    project.palette = ['#fffdf7', '#1c1917', '#a82a1e'];
+    const result = validateProject(project);
+    expect(result.ok).toBe(false);
+    expect(result.errors.some((error) => error.path === 'palette')).toBe(true);
   });
 
   it('accepts a page grid reference and rejects a missing one', () => {

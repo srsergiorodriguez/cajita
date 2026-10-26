@@ -25,7 +25,10 @@ export const LIMITS = Object.freeze({
   imageQuality: 0.85,
   highImageQuality: 0.92,
   highImageMaxEdge: 3200,
-  importFiles: 2000
+  importFiles: 2000,
+  htmlFileBytes: 5 * 1024 * 1024,
+  htmlFiles: 20,
+  htmlBytes: 20 * 1024 * 1024
 });
 
 export const STAGE_PRESETS = Object.freeze([
@@ -53,6 +56,26 @@ export const DEFAULT_MEDIA = Object.freeze({
   imageQuality: 'web',
   maxEdge: LIMITS.imageMaxEdge
 });
+
+
+export const DEFAULT_PALETTE = Object.freeze([
+  '#fffdf7',
+  '#1c1917',
+  '#a82a1e',
+  '#d9a441',
+  '#2e5a88'
+]);
+
+export function normalisePalette(colors) {
+  if (
+    Array.isArray(colors) &&
+    colors.length === 5 &&
+    colors.every((color) => typeof color === 'string' && /^#[0-9a-f]{6}$/i.test(color))
+  ) {
+    return colors.map((color) => color.toLowerCase());
+  }
+  return [...DEFAULT_PALETTE];
+}
 
 export const DEFAULT_LOCALE = 'es';
 
@@ -149,9 +172,11 @@ export function createProject({
         : undefined
     ),
     siteBackground: '#fffdf7',
+    palette: [...DEFAULT_PALETTE],
     grids: {},
     gridSettings: { show: true, snap: true },
     pageTemplates: {},
+    drawings: {},
     theme: SITE_THEMES.papel,
     media: { ...DEFAULT_MEDIA },
     pages: [page],

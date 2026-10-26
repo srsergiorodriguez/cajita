@@ -1037,7 +1037,7 @@ mi-sitio.cajita
 {
   "format": "cajita-bundle",
   "version": 1,
-  "createdWith": "cajita 1.0.0",
+  "createdWith": "cajita 1.1.0",
   "createdAt": "2026-10-21T23:00:00.000Z",
   "project": "project.json",
   "projectHash": "sha256:…",

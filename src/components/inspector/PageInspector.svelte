@@ -20,10 +20,12 @@
     renamePageSlug,
     renamePageTitle,
     session,
+    resetPalette,
     setGridSettings,
     setSiteBackground,
     assignPageGrid,
     updatePage,
+    updatePalette,
     updateStageSize
   } from '../../lib/state/project.svelte.js';
   import { toast } from '../../lib/state/ui.svelte.js';
@@ -304,6 +306,26 @@
   <GridsDialog bind:open={gridsOpen} />
   <PageTemplatesDialog bind:open={templatesOpen} {page} />
 
+  <Section label={t('palette.title')}>
+    <div class="palette-grid">
+      {#each session.project?.palette ?? [] as color, index}
+        <label class="palette-swatch">
+          <input
+            type="color"
+            value={color}
+            aria-label={t('palette.color', { number: index + 1 })}
+            oninput={(event) => apply(() => updatePalette(index, event.currentTarget.value))}
+          />
+          <span>{String(index + 1).padStart(2, '0')}</span>
+        </label>
+      {/each}
+    </div>
+    <p class="hint">{t('palette.hint')}</p>
+    <Button size="sm" variant="ghost" onclick={() => apply(resetPalette)}>
+      {t('palette.reset')}
+    </Button>
+  </Section>
+
   <Section label={t('layers.title')}>
     <LayersList {page} />
   </Section>
@@ -433,5 +455,29 @@
     color: var(--muted);
     font-size: var(--text-2xs);
     line-height: 1.4;
+  }
+  .palette-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+  .palette-swatch {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+  .palette-swatch input {
+    width: 100%;
+    height: 34px;
+    padding: 2px;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    cursor: pointer;
+  }
+  .palette-swatch span {
+    color: var(--muted);
+    font-size: var(--text-3xs);
+    text-align: center;
   }
 </style>

@@ -10,17 +10,20 @@ import { META_FIELDS } from './links.js';
 import { parseEmbed } from './embeds.js';
 import { BUILTIN_FONTS as BUILTIN_FONT_LIST } from './elements.js';
 import { normaliseGrid } from './grid.js';
+import { normalisePalette } from './model.js';
 import { FICHA_LIMITS, fichaFieldErrors, isSafeFichaUrl } from './fichas.js';
 
 const BUILTIN_FONTS = new Set(BUILTIN_FONT_LIST.map((font) => font.id));
 
-const ASSET_KINDS = new Set(['image', 'video', 'audio', 'font']);
+const ASSET_KINDS = new Set(['image', 'video', 'audio', 'font', 'html']);
 const ELEMENT_TYPES = new Set([
   'image',
+  'drawing',
   'text',
   'video',
   'audio',
   'embed',
+  'html',
   'shape',
   'ficha'
 ]);
@@ -127,14 +130,34 @@ function checkElement(element, pageIndex, elementIndex, project, errors, heading
     }
   }
 
-  if (element.type === 'image') {
+  if (element.type === 'html') {
+    checkAssetRef(element.assetId, 'html', `${path}.assetId`, project, errors);
+    if (element.title !== undefined && typeof element.title !== 'string') {
+      push(errors, `${path}.title`, 'must be a string');
+    }
+    if (element.caption !== undefined && typeof element.caption !== 'string') {
+      push(errors, `${path}.caption`, 'must be a string');
+    }
+  }
+
+  if (element.type === 'image' || element.type === 'drawing') {
     checkAssetRef(element.assetId, 'image', `${path}.assetId`, project, errors);
+    if (element.type === 'drawing') {
+      if (typeof element.drawingId !== 'string' || !element.drawingId) {
+        push(errors, `${path}.drawingId`, 'required');
+      } else if (!project.drawings?.[element.drawingId]) {
+        push(errors, `${path}.drawingId`, 'drawing does not exist');
+      }
+    }
     if (typeof element.alt !== 'string')
       push(errors, `${path}.alt`, 'required for images');
     if (element.fit && !['cover', 'contain'].includes(element.fit)) {
       push(errors, `${path}.fit`, 'must be cover or contain');
     }
     if (element.mask !== undefined) {
+      if (typeof element.maskCurve !== 'undefined' && typeof element.maskCurve !== 'boolean') {
+        push(errors, `${path}.maskCurve`, 'must be a boolean');
+      }
       if (!Array.isArray(element.mask)) {
         push(errors, `${path}.mask`, 'must be an array');
       } else if (element.mask.length ? element.mask.length < 3 : false) {
@@ -355,6 +378,16 @@ export function validateProject(project) {
     push(errors, 'siteBackground', 'must be a color string');
   }
 
+  if (
+    !Array.isArray(project.palette) ||
+    project.palette.length !== 5 ||
+    project.palette.some(
+      (color) => typeof color !== 'string' || !/^#[0-9a-f]{6}$/i.test(color)
+    )
+  ) {
+    push(errors, 'palette', 'must contain 5 hex colors');
+  }
+
   if (project.grids !== undefined) {
     if (!isObject(project.grids)) {
       push(errors, 'grids', 'must be an object');
@@ -394,6 +427,9 @@ export function validateProject(project) {
   if (project.pageTemplates !== undefined && !isObject(project.pageTemplates)) {
     push(errors, 'pageTemplates', 'must be an object');
   }
+  if (project.drawings !== undefined && !isObject(project.drawings)) {
+    push(errors, 'drawings', 'must be an object');
+  }
 
   if (!isObject(project.theme)) {
     push(errors, 'theme', 'required');
@@ -422,7 +458,7 @@ export function validateProject(project) {
   if (!isObject(project.assets)) {
     push(errors, 'assets', 'must be an object');
   } else {
-    const counts = { image: 0, video: 0, audio: 0, font: 0 };
+    const counts = { image: 0, video: 0, audio: 0, font: 0, html: 0, htmlBytes: 0 };
     let videoBytes = 0;
     for (const [id, asset] of Object.entries(project.assets)) {
       if (!isObject(asset)) {
@@ -446,8 +482,12 @@ export function validateProject(project) {
         if (asset.kind === 'font' && asset.bytes > LIMITS.fontBytes) {
           push(errors, `assets.${id}.bytes`, 'font larger than 5 MB');
         }
+        if (asset.kind === 'html' && asset.bytes > LIMITS.htmlFileBytes) {
+          push(errors, `assets.${id}.bytes`, 'HTML larger than 5 MB');
+        }
       }
       if (counts[asset.kind] !== undefined) counts[asset.kind] += 1;
+      if (asset.kind === 'html') counts.htmlBytes += Number(asset.bytes) || 0;
       if (asset.kind === 'video') videoBytes += Number(asset.bytes) || 0;
     }
 
@@ -455,6 +495,8 @@ export function validateProject(project) {
     if (counts.audio > LIMITS.audio) push(errors, 'assets', 'too many audio files');
     if (counts.video > LIMITS.videos) push(errors, 'assets', 'too many videos');
     if (counts.font > LIMITS.fonts) push(errors, 'assets', 'too many fonts');
+    if (counts.html > LIMITS.htmlFiles) push(errors, 'assets', 'too many HTML files');
+    if (counts.htmlBytes > LIMITS.htmlBytes) push(errors, 'assets', 'HTML total is too large');
     if (videoBytes > LIMITS.videoBytes)
       push(errors, 'assets', 'video total is too large');
   }
@@ -664,6 +706,7 @@ export function migrateProject(raw) {
           typeof raw.siteBackground === 'string'
             ? raw.siteBackground
             : (raw.stage?.background?.color ?? '#fffdf7'),
+        palette: normalisePalette(raw.palette),
         theme:
           isObject(raw.theme) && SITE_THEMES[raw.theme.name]
             ? raw.theme
@@ -685,6 +728,7 @@ export function migrateProject(raw) {
           ...(isObject(raw.gridSettings) ? raw.gridSettings : {})
         },
         pageTemplates: isObject(raw.pageTemplates) ? raw.pageTemplates : {},
+        drawings: isObject(raw.drawings) ? raw.drawings : {},
         pages: Array.isArray(raw.pages)
           ? raw.pages.map((page) => ({ ...page, gridId: page.gridId ?? '' }))
           : raw.pages,

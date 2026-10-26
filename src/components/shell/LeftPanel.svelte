@@ -5,6 +5,7 @@
   import FichasDialog from '../ficha/FichasDialog.svelte';
   import {
     addElement,
+    importHtmlFile,
     importMedia,
     session
   } from '../../lib/state/project.svelte.js';
@@ -17,6 +18,8 @@
   let embedProvider = $state('youtube');
   let shapeOpen = $state(false);
   let fichasOpen = $state(false);
+  let drawingOpen = $state(false);
+  let htmlBusy = $state(false);
 
   const MEDIA_ACCEPT = {
     image: 'image/png,image/jpeg,image/gif,image/webp',
@@ -85,6 +88,25 @@
     if (!event.target.closest('.shape-picker, .shape-tool')) shapeOpen = false;
   }
 
+  async function addHtml() {
+    if (!session.project || htmlBusy) return;
+    htmlBusy = true;
+    try {
+      const files = await platform.files.pickFiles({
+        accept: '.html,text/html',
+        multiple: false
+      });
+      if (!files.length) return;
+      if (!window.confirm(t('html.security'))) return;
+      await importHtmlFile(files[0]);
+      toast(t('html.imported'), 'success');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : String(error), 'error');
+    } finally {
+      htmlBusy = false;
+    }
+  }
+
   const tools = [
     { icon: 'image', label: 'left.image', action: addImage },
     { icon: 'text', label: 'left.text', action: addText },
@@ -93,6 +115,8 @@
     { icon: 'play', label: 'embed.youtube', action: () => openEmbed('youtube') },
     { icon: 'chart', label: 'embed.observable', action: () => openEmbed('observable') },
     { icon: 'code', label: 'embed.p5', action: () => openEmbed('p5') },
+    { icon: 'pencil', label: 'drawing.tool', action: () => (drawingOpen = true) },
+    { icon: 'html', label: 'html.tool', action: addHtml },
     { icon: 'shape', label: 'shape.tool', action: () => (shapeOpen = !shapeOpen) },
     { icon: 'archive', label: 'ficha.tool', action: () => (fichasOpen = true) }
   ];
@@ -151,6 +175,11 @@
 
   <EmbedDialog bind:open={embedOpen} provider={embedProvider} />
   <FichasDialog bind:open={fichasOpen} />
+  {#if drawingOpen}
+    {#await import('../drawing/DrawingDialog.svelte') then { default: DrawingDialog }}
+      <DrawingDialog bind:open={drawingOpen} />
+    {/await}
+  {/if}
 </aside>
 <svelte:window onpointerdown={closeShapePicker} />
 

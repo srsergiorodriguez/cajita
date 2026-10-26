@@ -54,17 +54,23 @@
 >
   <div
     class="miniature-stage"
-    style={`width:min(100cqw, calc(100cqh * ${stage.width / stage.height}));aspect-ratio:${stage.width}/${stage.height};background:${page?.background?.color ?? stage.background?.color ?? '#fffdf7'}`}
+    style={`width:min(100cqw, calc(100cqh * ${stage.width / stage.height}));aspect-ratio:${stage.width}/${stage.height};background:${page?.background?.color ?? stage.background?.color ?? '#fffdf7'};--mini-link-accent:${project?.palette?.[2] ?? '#a82a1e'}`}
   >
   {#each elements as element (element.id)}
-    <div class="mini-el" style={camera(element)} title={elementName(element)}>
-      {#if element.type === 'image' || element.type === 'video' || element.type === 'ficha'}
+    <div
+      class="mini-el"
+      class:mini-link={Boolean(element.link && element.link.kind !== 'none')}
+      style={camera(element)}
+      title={elementName(element)}
+    >
+      {#if element.type === 'image' || element.type === 'drawing' || element.type === 'video' || element.type === 'ficha'}
         {@const asset = imageAsset(element)}
         {#if asset}
           <AssetThumb
             {asset}
             projectId={project.id}
-            mask={element.type === 'image' ? element.mask : []}
+            mask={element.type === 'image' || element.type === 'drawing' ? element.mask : []}
+            maskCurve={element.maskCurve}
             fit={element.fit ?? 'cover'}
           />
         {:else if element.type === 'video'}
@@ -87,6 +93,8 @@
           stroke={element.stroke}
           strokeWidth={element.strokeWidth}
         />
+      {:else if element.type === 'html'}
+        <span class="mini-icon mini-embed"><Icon name="html" size={11} /><b>HTML</b></span>
       {:else if element.type === 'embed'}
         <span class="mini-icon mini-embed">
           <Icon name={element.provider === 'observable' ? 'chart' : element.provider === 'p5' ? 'code' : 'play'} size={11} />
@@ -117,6 +125,9 @@
     position: absolute;
     overflow: hidden;
     transform-origin: center;
+  }
+  .mini-el.mini-link {
+    box-shadow: 2px 2px 0 var(--mini-link-accent, var(--selection));
   }
   .mini-el :global(.asset-thumb),
   .mini-el :global(img) {
@@ -150,6 +161,11 @@
   .mini-embed {
     background: var(--panel);
     border: 1px solid var(--line-soft);
+  }
+  .mini-embed b {
+    font-size: 0.6em;
+    font-weight: 400;
+    letter-spacing: 0.08em;
   }
   .mini-empty {
     display: block;

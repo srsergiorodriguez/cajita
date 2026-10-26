@@ -3,8 +3,16 @@
   import { assetUrl } from '../../lib/state/asset-urls.svelte.js';
   import { maskClipPath } from '../../lib/domain/mask.js';
 
-  let { projectId, assetId, fit = 'cover', alt = '', pixelated = false, mask = [] } = $props();
-  const clip = $derived(maskClipPath(mask));
+  let {
+    projectId,
+    assetId,
+    fit = 'cover',
+    alt = '',
+    pixelated = false,
+    mask = [],
+    maskCurve = false
+  } = $props();
+  const clip = $derived(maskClipPath(mask, maskCurve));
   let url = $state(null);
   let failed = $state(false);
   let loadedKey = $state('');

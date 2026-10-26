@@ -1,7 +1,7 @@
 import { platform } from '../platform/index.js';
-import { createId, createProject, projectStats } from '../domain/model.js';
+import { LIMITS, createId, createProject, projectStats } from '../domain/model.js';
 import { parseProject, touchProject, validateProject } from '../domain/project.js';
-import { checkAssetLimit, findAssetByHash } from '../domain/assets.js';
+import { checkAssetLimit, findAssetByHash, sha256Hex } from '../domain/assets.js';
 import {
   appendPage,
   deletePage as deletePageInDraft,
@@ -18,6 +18,7 @@ import {
 import { createElement, duplicateElement, mediaFrame } from '../domain/elements.js';
 import { resizeStage } from '../domain/stage.js';
 import { normaliseGrid, reflowGrid, mergeGridCells, unmergeGridCells } from '../domain/grid.js';
+import { DEFAULT_PALETTE } from '../domain/model.js';
 import { normalizeCustomDomain } from '../domain/publish/domain.js';
 import { appendPublishHistory } from '../domain/publish/history.js';
 import { githubPagesUrl } from '../domain/publish/plan.js';
@@ -747,6 +748,138 @@ export function recordPublish(entry) {
       draft.publish.lastPublishedAt = entry.at;
     }
   });
+}
+
+export function updatePalette(index, color, { coalesceKey = null } = {}) {
+  return runCommand(
+    'editar paleta',
+    (draft) => {
+      draft.palette = [...(draft.palette ?? DEFAULT_PALETTE)];
+      draft.palette[index] = color;
+    },
+    { coalesceKey: coalesceKey ?? `palette:${index}` }
+  );
+}
+
+export function resetPalette() {
+  return runCommand('restaurar paleta', (draft) => {
+    draft.palette = [...DEFAULT_PALETTE];
+  });
+}
+
+export async function importHtmlFile(file) {
+  if (!session.project) throw new Error('No hay un proyecto abierto.');
+  if (!/\.html?$/i.test(file.name)) {
+    throw new Error('Elige un archivo .html.');
+  }
+  if (file.size > LIMITS.htmlFileBytes) {
+    throw new Error('El archivo HTML supera los 5 MB.');
+  }
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const hash = await sha256Hex(bytes);
+  let asset = findAssetByHash(session.project, hash);
+  if (!asset) {
+    const limit = checkAssetLimit(session.project, 'html', bytes.byteLength);
+    if (!limit.ok) throw new Error(limit.message);
+    asset = {
+      id: createId('a'),
+      hash,
+      kind: 'html',
+      name: file.name,
+      mime: 'text/html',
+      bytes: bytes.byteLength,
+      createdAt: new Date().toISOString()
+    };
+    await platform.assets.put(
+      session.project.id,
+      asset,
+      new Blob([bytes], { type: 'text/html' })
+    );
+  }
+  let element;
+  runCommand('añadir HTML', (draft) => {
+    draft.assets[asset.id] = asset;
+    const page = pageById(draft, session.activePageId) ?? draft.pages[0];
+    element = createElement('html', {
+      project: draft,
+      page,
+      stage: draft.stage,
+      asset,
+      title: file.name.replace(/\.html?$/i, '')
+    });
+    page.elements.push(element);
+    normaliseZ(page);
+  });
+  return element;
+}
+
+export async function saveDrawingInProject({
+  elementId = null,
+  drawingId = null,
+  drawing,
+  blob,
+  thumb = null,
+  mime = 'image/gif',
+  name = 'dibujo.gif',
+  alt = ''
+} = {}) {
+  if (!session.project) throw new Error('No hay un proyecto abierto.');
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  const hash = await sha256Hex(bytes);
+  let asset = findAssetByHash(session.project, hash);
+  if (!asset) {
+    const thumbHash = thumb ? await sha256Hex(await thumb.arrayBuffer()) : '';
+    asset = {
+      id: createId('a'),
+      hash,
+      kind: 'image',
+      name,
+      mime,
+      bytes: bytes.byteLength,
+      width: 1024,
+      height: 1024,
+      source: 'drawing',
+      createdAt: new Date().toISOString()
+    };
+    await platform.assets.put(session.project.id, asset, blob, thumb, thumbHash);
+  }
+  let elementResult = null;
+  runCommand('guardar dibujo', (draft) => {
+    const id = drawingId ?? createId('drw');
+    draft.drawings = draft.drawings ?? {};
+    draft.drawings[id] = {
+      ...structuredClone(drawing),
+      id,
+      updatedAt: new Date().toISOString()
+    };
+    draft.assets[asset.id] = asset;
+    if (elementId) {
+      const page = draft.pages.find((item) =>
+        item.elements.some((child) => child.id === elementId)
+      );
+      const element = page?.elements.find((child) => child.id === elementId);
+      if (!element) throw new Error('El elemento de dibujo no existe.');
+      element.assetId = asset.id;
+      element.drawingId = id;
+      element.alt = alt || element.alt || 'Dibujo';
+      element.animated = drawing.animated !== false;
+      elementResult = element;
+    } else {
+      const page = pageById(draft, session.activePageId) ?? draft.pages[0];
+      elementResult = createElement('drawing', {
+        project: draft,
+        page,
+        stage: draft.stage,
+        asset,
+        drawingId: id,
+        alt: alt || 'Dibujo',
+        animated: drawing.animated !== false
+      });
+      page.elements.push(elementResult);
+      normaliseZ(page);
+    }
+  });
+  return elementResult;
 }
 
 export function createGrid() {

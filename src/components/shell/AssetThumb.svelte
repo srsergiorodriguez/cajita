@@ -3,8 +3,8 @@
   import Icon from '../ui/Icon.svelte';
   import { maskClipPath } from '../../lib/domain/mask.js';
 
-  let { asset, projectId, mask = [], fit = 'cover' } = $props();
-  const clip = $derived(maskClipPath(mask));
+  let { asset, projectId, mask = [], maskCurve = false, fit = 'cover' } = $props();
+  const clip = $derived(maskClipPath(mask, maskCurve));
   let url = $state(null);
   let loadedKey = $state('');
 

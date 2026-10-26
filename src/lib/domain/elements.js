@@ -214,6 +214,17 @@ export function defaultFrame(stage, type = 'text', index = 0) {
       rotation: 0
     };
   }
+  if (type === 'drawing') {
+    const size = Math.min(420, stage.width * 0.38, stage.height * 0.38);
+    return {
+      x: (stage.width - size) / 2 + offset,
+      y: (stage.height - size) / 2 + offset,
+      w: size,
+      h: size,
+      rotation: 0
+    };
+  }
+
   if (type === 'ficha') {
     const w = Math.min(320, stage.width * 0.34);
     const h = Math.min(400, stage.height * 0.46);
@@ -237,7 +248,7 @@ export function defaultFrame(stage, type = 'text', index = 0) {
     };
   }
 
-  if (type === 'embed') {
+  if (type === 'html' || type === 'embed') {
     const w = Math.min(720, stage.width * 0.6);
     const h = w * 0.5625;
     return {
@@ -322,6 +333,9 @@ export function createElement(type, options = {}) {
     title = '',
     caption = '',
     fichaId = '',
+    drawingId = '',
+    alt = '',
+    animated = true,
     name = '',
     shape = 'circle',
     fill = '',
@@ -362,6 +376,21 @@ export function createElement(type, options = {}) {
     };
   }
 
+  if (type === 'drawing') {
+    return {
+      ...base,
+      type: 'drawing',
+      assetId: asset?.id ?? '',
+      drawingId,
+      alt: alt || asset?.name || 'Dibujo',
+      animated,
+      fit: 'cover',
+      pixelated: true,
+      mask: [],
+      maskCurve: false
+    };
+  }
+
   if (type === 'video') {
     return {
       ...base,
@@ -375,6 +404,16 @@ export function createElement(type, options = {}) {
     };
   }
 
+  if (type === 'html') {
+    return {
+      ...base,
+      type: 'html',
+      assetId: asset?.id ?? '',
+      title: title || asset?.name || 'HTML',
+      caption
+    };
+  }
+
   if (type === 'embed') {
     return {
       ...base,
@@ -383,6 +422,17 @@ export function createElement(type, options = {}) {
       url,
       title: title || (provider === 'observable' ? 'Observable' : 'YouTube'),
       caption
+    };
+  }
+
+  if (type === 'drawing') {
+    const size = Math.min(420, stage.width * 0.38, stage.height * 0.38);
+    return {
+      x: (stage.width - size) / 2 + offset,
+      y: (stage.height - size) / 2 + offset,
+      w: size,
+      h: size,
+      rotation: 0
     };
   }
 

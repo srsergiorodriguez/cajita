@@ -222,9 +222,9 @@ export const BUILTIN_FONT_FILES = Object.freeze([
   },
 ]);
 
-export async function loadBuiltinFontBytes() {
+export async function loadBuiltinFontBytes(files = BUILTIN_FONT_FILES) {
   const entries = await Promise.all(
-    BUILTIN_FONT_FILES.map(async (font) => {
+    files.map(async (font) => {
       const response = await fetch(font.url);
       if (!response.ok) throw new Error(`No se pudo cargar ${font.path}.`);
       return [font.id, new Uint8Array(await response.arrayBuffer())];
