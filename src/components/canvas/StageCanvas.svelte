@@ -685,7 +685,24 @@
   }
 
   .element.has-link {
-    box-shadow: 4px 4px 0 var(--link-accent, var(--selection));
+    transition: filter 160ms ease, opacity 160ms ease;
+  }
+
+  .element.has-link:hover {
+    filter: brightness(1.1);
+  }
+
+  .element--text.has-link:hover,
+  .element--text.has-link:focus-within {
+    opacity: 0.86;
+  }
+
+  .element--text.has-link:hover .text-content,
+  .element--text.has-link:focus-within .text-content {
+    text-decoration: underline;
+    text-decoration-color: var(--link-accent, var(--selection));
+    text-decoration-thickness: max(1px, 0.08em);
+    text-underline-offset: 0.16em;
   }
 
   .element.locked {

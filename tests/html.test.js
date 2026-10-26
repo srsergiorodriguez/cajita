@@ -33,6 +33,9 @@ describe('HTML visualization', () => {
     expect(site.css).toContain('.el-html iframe');
     expect(site.css).toContain('.el-drawing img');
     expect(site.css).toContain('.el-link:hover');
+    expect(site.css).toContain('filter:brightness(1.1)');
+    expect(site.css).toContain('.el-text.el-link:hover');
+    expect(site.css).toContain('text-decoration-color:var(--link-accent)');
   });
 
   it('has a 5 MB per-file limit', () => {

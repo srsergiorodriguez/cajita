@@ -54,12 +54,11 @@
 >
   <div
     class="miniature-stage"
-    style={`width:min(100cqw, calc(100cqh * ${stage.width / stage.height}));aspect-ratio:${stage.width}/${stage.height};background:${page?.background?.color ?? stage.background?.color ?? '#fffdf7'};--mini-link-accent:${project?.palette?.[2] ?? '#a82a1e'}`}
+    style={`width:min(100cqw, calc(100cqh * ${stage.width / stage.height}));aspect-ratio:${stage.width}/${stage.height};background:${page?.background?.color ?? stage.background?.color ?? '#fffdf7'}`}
   >
   {#each elements as element (element.id)}
     <div
       class="mini-el"
-      class:mini-link={Boolean(element.link && element.link.kind !== 'none')}
       style={camera(element)}
       title={elementName(element)}
     >
@@ -125,9 +124,6 @@
     position: absolute;
     overflow: hidden;
     transform-origin: center;
-  }
-  .mini-el.mini-link {
-    box-shadow: 2px 2px 0 var(--mini-link-accent, var(--selection));
   }
   .mini-el :global(.asset-thumb),
   .mini-el :global(img) {

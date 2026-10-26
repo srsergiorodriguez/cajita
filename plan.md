@@ -218,7 +218,7 @@ stage into a smaller viewport; page resizing no longer moves elements.
 - If asset dimensions are missing, the image’s `naturalWidth`/`naturalHeight`
   determine the aspect.
 - Masked images use `contain`, so editor/export/thumbnail masks match the modal.
-- `app.version` is now “Versión 1.1” with no sprint number; the library header
+- `app.version` is now “Versión 1.1.1” with no sprint number; the library header
   is just “cajita”.
 - The ficha overlap was caused by moving fichas and then using reset; reset
   restored the authored layout correctly.

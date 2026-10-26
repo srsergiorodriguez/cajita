@@ -1741,3 +1741,11 @@ Verification: **128 tests**, 0 svelte-check warnings, build passes; screenshots
   asset file in the full ZIP, avoiding large data-URL failures.
 - Drawing export sizing fixed for the `.el-drawing` class.
 - Release version is 1.1.0.
+
+
+---
+
+## 2026-10-26 — 1.1.1
+
+- Link hover cue for media uses brightness; text links add a stronger opacity
+  shift and accent underline because brightness cannot lighten black.
