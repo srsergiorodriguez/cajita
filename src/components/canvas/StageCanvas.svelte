@@ -4,6 +4,8 @@
   import CanvasAudio from './CanvasAudio.svelte';
   import CanvasEmbed from './CanvasEmbed.svelte';
   import CanvasHtml from './CanvasHtml.svelte';
+  import CanvasFichaCollection from './CanvasFichaCollection.svelte';
+  import ButtonComposition from './ButtonComposition.svelte';
   import ShapeArt from './ShapeArt.svelte';
   import CanvasFicha from './CanvasFicha.svelte';
   import Icon from '../ui/Icon.svelte';
@@ -473,7 +475,16 @@
                   fill={element.fill}
                   stroke={element.stroke}
                   strokeWidth={element.strokeWidth}
+                  radius={element.radius}
                 />
+              {:else if element.type === 'button'}
+                <ButtonComposition
+                  project={session.project}
+                  button={element.button}
+                  state="idle"
+                />
+              {:else if element.type === 'fichaCollection'}
+                <CanvasFichaCollection project={session.project} {element} />
               {:else if element.type === 'ficha'}
                 <CanvasFicha
                   projectId={session.project.id}

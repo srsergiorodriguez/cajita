@@ -3,6 +3,7 @@
   import IconButton from '../ui/IconButton.svelte';
   import EmbedDialog from '../embed/EmbedDialog.svelte';
   import FichasDialog from '../ficha/FichasDialog.svelte';
+  import ButtonStudio from '../button/ButtonStudio.svelte';
   import {
     addElement,
     importHtmlFile,
@@ -19,6 +20,7 @@
   let shapeOpen = $state(false);
   let fichasOpen = $state(false);
   let drawingOpen = $state(false);
+  let buttonOpen = $state(false);
   let htmlBusy = $state(false);
 
   const MEDIA_ACCEPT = {
@@ -116,6 +118,7 @@
     { icon: 'chart', label: 'embed.observable', action: () => openEmbed('observable') },
     { icon: 'code', label: 'embed.p5', action: () => openEmbed('p5') },
     { icon: 'pencil', label: 'drawing.tool', action: () => (drawingOpen = true) },
+    { icon: 'button', label: 'button.tool', action: () => (buttonOpen = true) },
     { icon: 'html', label: 'html.tool', action: addHtml },
     { icon: 'shape', label: 'shape.tool', action: () => (shapeOpen = !shapeOpen) },
     { icon: 'archive', label: 'ficha.tool', action: () => (fichasOpen = true) }
@@ -180,6 +183,7 @@
       <DrawingDialog bind:open={drawingOpen} />
     {/await}
   {/if}
+  <ButtonStudio bind:open={buttonOpen} />
 </aside>
 <svelte:window onpointerdown={closeShapePicker} />
 

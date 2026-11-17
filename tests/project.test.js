@@ -35,6 +35,7 @@ describe('project model', () => {
     expect(project.stage.width).toBe(1200);
     expect(project.theme.name).toBe('papel');
     expect(project.palette).toHaveLength(5);
+    expect(project.fichaStyle.background).toBe('#fffdf7');
     expect(project.grids).toEqual({});
     expect(project.gridSettings).toEqual({ show: true, snap: true });
     expect(project.pageTemplates).toEqual({});

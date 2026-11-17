@@ -1749,3 +1749,16 @@ Verification: **128 tests**, 0 svelte-check warnings, build passes; screenshots
 
 - Link hover cue for media uses brightness; text links add a stronger opacity
   shift and accent underline because brightness cannot lighten black.
+
+
+---
+
+## 2026-11-16 — S38: release 1.2
+
+- Rounded corners for rectangle and triangle shapes, including triangle corner paths.
+- Current-page outgoing map arrows use the accent color and a dedicated marker.
+- Project-level ficha card style with background, ink, border, radius, and heading/body fonts.
+- Ficha collection element with searchable, filterable compact archive cards.
+- Button element with idle/hover/pressed compositions of text, shapes, images, and drawings,
+  a dedicated Button Studio, CSS-only state switching, and optional links.
+- Release version is 1.2.0.

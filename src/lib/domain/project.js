@@ -11,6 +11,9 @@ import { parseEmbed } from './embeds.js';
 import { BUILTIN_FONTS as BUILTIN_FONT_LIST } from './elements.js';
 import { normaliseGrid } from './grid.js';
 import { normalisePalette } from './model.js';
+import { normaliseFichaStyle, DEFAULT_FICHA_STYLE } from './ficha-style.js';
+import { normaliseFichaCollection } from './ficha-collection.js';
+import { BUTTON_CHILD_TYPES, BUTTON_STATES, normaliseButton } from './button.js';
 import { FICHA_LIMITS, fichaFieldErrors, isSafeFichaUrl } from './fichas.js';
 
 const BUILTIN_FONTS = new Set(BUILTIN_FONT_LIST.map((font) => font.id));
@@ -25,7 +28,9 @@ const ELEMENT_TYPES = new Set([
   'embed',
   'html',
   'shape',
-  'ficha'
+  'ficha',
+  'fichaCollection',
+  'button'
 ]);
 const PAIRINGS = new Set(['editorial', 'poster', 'technical', 'slab']);
 
@@ -209,6 +214,12 @@ function checkElement(element, pageIndex, elementIndex, project, errors, heading
     ) {
       push(errors, `${path}.strokeWidth`, 'must be 0–40');
     }
+    if (
+      element.radius !== undefined &&
+      (typeof element.radius !== 'number' || element.radius < 0 || element.radius > 50)
+    ) {
+      push(errors, `${path}.radius`, 'must be 0–50');
+    }
   }
 
   if (element.type === 'embed') {
@@ -222,6 +233,94 @@ function checkElement(element, pageIndex, elementIndex, project, errors, heading
     }
     if (element.caption !== undefined && typeof element.caption !== 'string') {
       push(errors, `${path}.caption`, 'must be a string');
+    }
+  }
+
+  if (element.type === 'button') {
+    const button = element.button;
+    if (!isObject(button) || !isObject(button.states)) {
+      push(errors, `${path}.button`, 'must contain states');
+    } else {
+      for (const state of BUTTON_STATES) {
+        if (!Array.isArray(button.states[state])) {
+          push(errors, `${path}.button.states.${state}`, 'must be an array');
+          continue;
+        }
+        button.states[state].forEach((child, childIndex) => {
+          const childPath = `${path}.button.states.${state}[${childIndex}]`;
+          if (!isObject(child) || !BUTTON_CHILD_TYPES.includes(child.type)) {
+            push(errors, childPath, 'unknown button child');
+            return;
+          }
+          const frame = child.frame;
+          if (
+            !isObject(frame) ||
+            ['x', 'y', 'w', 'h', 'rotation'].some((key) => !isFiniteNumber(frame[key])) ||
+            frame.w <= 0 ||
+            frame.h <= 0
+          ) {
+            push(errors, `${childPath}.frame`, 'must be a valid relative frame');
+          }
+          if (child.type === 'image' || child.type === 'drawing') {
+            checkAssetRef(child.assetId, 'image', `${childPath}.assetId`, project, errors);
+            if (child.type === 'drawing' && !project.drawings?.[child.drawingId]) {
+              push(errors, `${childPath}.drawingId`, 'drawing does not exist');
+            }
+          }
+          if (child.type === 'shape') {
+            if (!/^#[0-9a-f]{6}$/i.test(child.fill ?? '')) {
+              push(errors, `${childPath}.fill`, 'must be a hex color');
+            }
+            if (!/^#[0-9a-f]{6}$/i.test(child.stroke ?? '')) {
+              push(errors, `${childPath}.stroke`, 'must be a hex color');
+            }
+          }
+          if (child.type === 'text') {
+            if (typeof child.text !== 'string' || typeof child.font !== 'string') {
+              push(errors, childPath, 'text and font are required');
+            }
+            for (const key of ['fontSize', 'lineHeight', 'letterSpacing', 'padding']) {
+              if (!isFiniteNumber(child[key])) {
+                push(errors, `${childPath}.${key}`, 'must be a number');
+              }
+            }
+          }
+        });
+      }
+    }
+    if (typeof element.label !== 'string') {
+      push(errors, `${path}.label`, 'must be a string');
+    }
+  }
+
+  if (element.type === 'fichaCollection') {
+    const collection = element.collection;
+    if (!isObject(collection)) {
+      push(errors, `${path}.collection`, 'must be an object');
+    } else {
+      if (typeof collection.search !== 'boolean') {
+        push(errors, `${path}.collection.search`, 'must be a boolean');
+      }
+      if (typeof collection.showCode !== 'boolean') {
+        push(errors, `${path}.collection.showCode`, 'must be a boolean');
+      }
+      if (typeof collection.columns !== 'number' || collection.columns < 1 || collection.columns > 6) {
+        push(errors, `${path}.collection.columns`, 'must be 1–6');
+      }
+      if (!['code', 'label'].includes(collection.sort)) {
+        push(errors, `${path}.collection.sort`, 'must be code or label');
+      }
+      if (
+        !Array.isArray(collection.filterFieldIds) ||
+        collection.filterFieldIds.some(
+          (id) => typeof id !== 'string' || !project.fichaSchema?.fields?.some((field) => field.id === id)
+        )
+      ) {
+        push(errors, `${path}.collection.filterFieldIds`, 'must reference schema fields');
+      }
+      if (typeof collection.emptyText !== 'string') {
+        push(errors, `${path}.collection.emptyText`, 'must be a string');
+      }
     }
   }
 
@@ -582,6 +681,26 @@ export function validateProject(project) {
     }
   }
 
+  if (project.fichaStyle !== undefined) {
+    const style = project.fichaStyle;
+    if (
+      !isObject(style) ||
+      !/^#[0-9a-f]{6}$/i.test(style.background ?? '') ||
+      !/^#[0-9a-f]{6}$/i.test(style.ink ?? '') ||
+      !/^#[0-9a-f]{6}$/i.test(style.accent ?? '') ||
+      !BUILTIN_FONTS.has(style.headingFont) ||
+      !BUILTIN_FONTS.has(style.bodyFont) ||
+      typeof style.borderWidth !== 'number' ||
+      style.borderWidth < 0 ||
+      style.borderWidth > 8 ||
+      typeof style.radius !== 'number' ||
+      style.radius < 0 ||
+      style.radius > 40
+    ) {
+      push(errors, 'fichaStyle', 'invalid ficha card style');
+    }
+  }
+
   if (project.fichaSettings !== undefined) {
     if (
       !isObject(project.fichaSettings) ||
@@ -738,6 +857,9 @@ export function migrateProject(raw) {
           showCode: true,
           ...(isObject(raw.fichaSettings) ? raw.fichaSettings : {})
         },
+        fichaStyle: normaliseFichaStyle(
+          isObject(raw.fichaStyle) ? raw.fichaStyle : DEFAULT_FICHA_STYLE
+        ),
         fichas: isObject(raw.fichas) ? raw.fichas : {}
       }
     };

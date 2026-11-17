@@ -4,6 +4,7 @@ import { assetUrl } from '../state/asset-urls.svelte.js';
 import { platform } from '../platform/index.js';
 import { FICHA_MOVE_SCRIPT } from './ficha-move.js';
 import { AUDIO_PLAYER_SCRIPT } from './audio-player.js';
+import { FICHA_FILTER_SCRIPT } from './ficha-filter.js';
 
 export const PREVIEW_SCRIPT = `
 document.addEventListener('click', (event) => {
@@ -26,6 +27,18 @@ export async function buildPreview(project) {
   for (const page of project.pages ?? []) {
     for (const element of page.elements ?? []) {
       if (element.assetId) allAssetIds.add(element.assetId);
+      if (element.type === 'button') {
+        for (const children of Object.values(element.button?.states ?? {})) {
+          for (const child of children ?? []) {
+            if (child.assetId) allAssetIds.add(child.assetId);
+          }
+        }
+      }
+      if (element.type === 'fichaCollection') {
+        for (const record of Object.values(project.fichas ?? {})) {
+          if (record.assetId) allAssetIds.add(record.assetId);
+        }
+      }
       if (element.type === 'ficha') {
         const assetId = project.fichas?.[element.fichaId]?.assetId;
         if (assetId) allAssetIds.add(assetId);
@@ -58,7 +71,7 @@ export async function buildPreview(project) {
     htmlContent,
     preview: true,
     inlineCss: true,
-    inlineScript: `${PREVIEW_SCRIPT}\n${AUDIO_PLAYER_SCRIPT}${project.fichaSettings?.movable ? `\n${FICHA_MOVE_SCRIPT}` : ''}`,
+    inlineScript: `${PREVIEW_SCRIPT}\n${AUDIO_PLAYER_SCRIPT}\n${FICHA_FILTER_SCRIPT}${project.fichaSettings?.movable ? `\n${FICHA_MOVE_SCRIPT}` : ''}`,
     fontFaces: faces
   });
 

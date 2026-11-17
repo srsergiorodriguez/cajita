@@ -9,14 +9,19 @@
   import Icon from '../ui/Icon.svelte';
   import { t } from '../../lib/i18n/index.svelte.js';
   import {
+    addFichaCollection,
     addFichaElement,
     addFichaRecord,
     deleteFichaRecord,
+    resetFichaStyle,
     saveFichaSchema,
     session,
+    updateFichaStyle,
     setFichasMovable,
     updateFichaRecord
   } from '../../lib/state/project.svelte.js';
+  import { BUILTIN_FONTS } from '../../lib/domain/elements.js';
+  import { DEFAULT_FICHA_STYLE } from '../../lib/domain/ficha-style.js';
   import {
     createFichaField,
     defaultFichaValues,
@@ -64,6 +69,8 @@
   let showCodeDraft = $state(true);
 
   const project = $derived(session.project);
+  const fichaStyle = $derived(project?.fichaStyle ?? DEFAULT_FICHA_STYLE);
+  const styleFonts = BUILTIN_FONTS.map((font) => ({ value: font.id, label: font.label }));
   const fields = $derived(project?.fichaSchema?.fields ?? []);
   const records = $derived(
     Object.values(project?.fichas ?? {}).sort((a, b) =>
@@ -588,6 +595,36 @@
     }
   }
 
+  function insertCollection() {
+    error = '';
+    try {
+      addFichaCollection();
+      open = false;
+      toast(t('ficha.collectionInserted'), 'success');
+    } catch (err) {
+      error = err instanceof Error ? err.message : String(err);
+    }
+  }
+
+  function setStyleField(key, value) {
+    error = '';
+    try {
+      updateFichaStyle({ [key]: value }, { coalesceKey: `ficha-style:${key}` });
+    } catch (err) {
+      error = err instanceof Error ? err.message : String(err);
+    }
+  }
+
+  function resetStyle() {
+    error = '';
+    try {
+      resetFichaStyle();
+      notice = t('ficha.styleReset');
+    } catch (err) {
+      error = err instanceof Error ? err.message : String(err);
+    }
+  }
+
   function setMovable(event) {
     error = '';
     try {
@@ -635,6 +672,13 @@
       onclick={() => switchTab('schema')}
     >
       {t('ficha.schema')}<span>{fields.length}</span>
+    </button>
+    <button
+      type="button"
+      class:active={tab === 'style'}
+      onclick={() => switchTab('style')}
+    >
+      {t('ficha.style')}
     </button>
   </div>
 
@@ -768,6 +812,69 @@
           <span>{t('ficha.movable')}</span>
         </label>
         <p class="hint">{t('ficha.movableHint')}</p>
+      </div>
+    </div>
+  {:else if tab === 'style'}
+    <div class="style-panel">
+      <p class="hint">{t('ficha.styleHint')}</p>
+      <div class="style-colors">
+        <Field
+          label={t('ficha.styleBackground')}
+          type="color"
+          value={fichaStyle.background}
+          oninput={(event) => setStyleField('background', event.currentTarget.value)}
+        />
+        <Field
+          label={t('ficha.styleInk')}
+          type="color"
+          value={fichaStyle.ink}
+          oninput={(event) => setStyleField('ink', event.currentTarget.value)}
+        />
+        <Field
+          label={t('ficha.styleAccent')}
+          type="color"
+          value={fichaStyle.accent}
+          oninput={(event) => setStyleField('accent', event.currentTarget.value)}
+        />
+      </div>
+      <div class="style-grid">
+        <Select
+          label={t('ficha.styleHeading')}
+          value={fichaStyle.headingFont}
+          options={styleFonts}
+          onchange={(value) => setStyleField('headingFont', value)}
+        />
+        <Select
+          label={t('ficha.styleBody')}
+          value={fichaStyle.bodyFont}
+          options={styleFonts}
+          onchange={(value) => setStyleField('bodyFont', value)}
+        />
+        <Field
+          label={t('ficha.styleBorder')}
+          type="number"
+          min="0"
+          max="8"
+          value={fichaStyle.borderWidth}
+          oninput={(event) => setStyleField('borderWidth', Number(event.currentTarget.value))}
+        />
+        <Field
+          label={t('ficha.styleRadius')}
+          type="number"
+          min="0"
+          max="40"
+          value={fichaStyle.radius}
+          oninput={(event) => setStyleField('radius', Number(event.currentTarget.value))}
+        />
+      </div>
+      <div class="style-preview" style={`--ficha-bg:${fichaStyle.background};--ficha-ink:${fichaStyle.ink};--ficha-accent:${fichaStyle.accent};--ficha-border:${fichaStyle.borderWidth}px;--ficha-radius:${fichaStyle.radius}px;--ficha-heading:${styleFonts.find((font) => font.value === fichaStyle.headingFont)?.label ?? 'Fraunces'};--ficha-body:${styleFonts.find((font) => font.value === fichaStyle.bodyFont)?.label ?? 'Space Mono'}`}>
+        <span>{t('ficha.stylePreviewLabel')}</span>
+        <strong>{t('ficha.stylePreviewTitle')}</strong>
+        <small>{t('ficha.stylePreviewMeta')}</small>
+      </div>
+      <div class="form-actions">
+        <span></span>
+        <Button size="sm" variant="ghost" onclick={resetStyle}>{t('ficha.styleReset')}</Button>
       </div>
     </div>
   {:else if tab === 'table'}
@@ -1060,6 +1167,9 @@
           />
           <Button size="sm" variant="ghost" onclick={startNew}>
             <Icon name="plus" size={12} />{t('ficha.new')}
+          </Button>
+          <Button size="sm" variant="secondary" onclick={insertCollection}>
+            {t('ficha.collectionInsert')}
           </Button>
           <div class="csv-actions">
             <button type="button" onclick={chooseCsv} disabled={csvBusy}>
@@ -1810,5 +1920,48 @@
   .action-group {
     display: flex;
     gap: var(--space-2);
+  }
+  .style-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+  .style-colors {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+  .style-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+  .style-preview {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    max-width: 360px;
+    padding: 18px;
+    background: var(--ficha-bg);
+    color: var(--ficha-ink);
+    border: var(--ficha-border) solid var(--ficha-accent);
+    border-radius: var(--ficha-radius);
+  }
+  .style-preview span {
+    font-family: var(--ficha-body);
+    font-size: var(--text-2xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.65;
+  }
+  .style-preview strong {
+    font-family: var(--ficha-heading);
+    font-size: var(--text-xl);
+    line-height: 1.05;
+  }
+  .style-preview small {
+    font-family: var(--ficha-body);
+    font-size: var(--text-xs);
   }
 </style>

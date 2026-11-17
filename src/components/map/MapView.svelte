@@ -50,6 +50,7 @@
           graph.nodes.findIndex((node) => node.pageId === edge.pageId) % columns;
         return {
           ...edge,
+          current: edge.pageId === session.activePageId,
           ...routeEdge({
             from,
             to,
@@ -125,9 +126,24 @@
           >
             <path d="M0 0 8 4 0 8z" fill="var(--muted)" />
           </marker>
+          <marker
+            id="map-arrow-current"
+            viewBox="0 0 8 8"
+            refX="7"
+            refY="4"
+            markerWidth="8"
+            markerHeight="8"
+            orient="auto-start-reverse"
+          >
+            <path d="M0 0 8 4 0 8z" fill="var(--accent)" />
+          </marker>
         </defs>
         {#each wires as wire (wire.pageId + wire.elementId)}
-          <path d={wire.d} marker-end="url(#map-arrow)" />
+          <path
+            d={wire.d}
+            class:current={wire.current}
+            marker-end={wire.current ? 'url(#map-arrow-current)' : 'url(#map-arrow)'}
+          />
         {/each}
       </svg>
 
@@ -264,6 +280,12 @@
     stroke-width: 1.5;
     stroke-linejoin: round;
     opacity: 0.65;
+  }
+
+  .wires > path.current {
+    stroke: var(--accent);
+    stroke-width: 2.4;
+    opacity: 1;
   }
 
   .map-card {

@@ -8,9 +8,13 @@ import { embedProvider, embedSrc } from '../domain/embeds.js';
 import { shapeSvg } from '../domain/shapes.js';
 import { maskClipPath } from '../domain/mask.js';
 import { HTML_SANDBOX } from '../domain/html.js';
+import { DEFAULT_FICHA_STYLE, normaliseFichaStyle } from '../domain/ficha-style.js';
 import { fichaCardRows, isSafeFichaUrl } from '../domain/fichas.js';
 import { FICHA_MOVE_SCRIPT } from './ficha-move.js';
 import { AUDIO_PLAYER_SCRIPT } from './audio-player.js';
+import { FICHA_FILTER_SCRIPT } from './ficha-filter.js';
+import { fichaCollectionHtml } from './ficha-collection.js';
+import { buttonHtml } from './button.js';
 
 const BUILTIN_FAMILIES = Object.fromEntries(
   BUILTIN_FONTS.map((font) => [font.id, `'${font.family}', ${font.fallback ?? 'Georgia, serif'}`])
@@ -77,6 +81,9 @@ export function siteCss(project, { fontFaces = [] } = {}) {
   const theme = project.theme ?? {};
   const stage = project.stage ?? {};
   const ratio = (stage.width || 1200) / (stage.height || 800);
+  const fichaStyle = normaliseFichaStyle(project.fichaStyle ?? DEFAULT_FICHA_STYLE);
+  const fichaHeading = BUILTIN_FAMILIES[fichaStyle.headingFont] ?? BUILTIN_FAMILIES.fraunces;
+  const fichaBody = BUILTIN_FAMILIES[fichaStyle.bodyFont] ?? BUILTIN_FAMILIES['space-mono'];
   const fonts = fontFaces
     .map(
       (font) =>
@@ -90,6 +97,13 @@ export function siteCss(project, { fontFaces = [] } = {}) {
 html,body{margin:0;min-height:100%;}
 body{
   --link-accent:${project.palette?.[2] ?? theme.accent ?? '#a82a1e'};
+  --ficha-bg:${fichaStyle.background};
+  --ficha-ink:${fichaStyle.ink};
+  --ficha-accent:${fichaStyle.accent};
+  --ficha-border:${fichaStyle.borderWidth}px;
+  --ficha-radius:${fichaStyle.radius}px;
+  --ficha-heading:${fichaHeading};
+  --ficha-body:${fichaBody};
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -125,7 +139,19 @@ body.align-left{align-items:flex-start;}
 .el-link:focus-visible{outline:2px solid var(--link-accent);outline-offset:3px;}
 .el-text{white-space:pre-wrap;overflow-wrap:anywhere;overflow:visible;}
 .el-text h1,.el-text p,.el-text div{margin:0;font:inherit;white-space:pre-wrap;}
-.el-image,.el-drawing{overflow:hidden;}
+.el-image,.el-drawing,.el-button{overflow:hidden;}
+.el-button{display:block;text-decoration:none;color:inherit;container-type:size;}
+.button-shell,.button-state{position:absolute;inset:0;}
+.button-state{display:none;}
+.button-state--idle{display:block;}
+.el-button:hover .button-state--idle,.el-button:focus-visible .button-state--idle{display:none;}
+.el-button:hover .button-state--hover,.el-button:focus-visible .button-state--hover{display:block;}
+.el-button:active .button-state--idle,.el-button:active .button-state--hover{display:none;}
+.el-button:active .button-state--pressed{display:block;}
+.el-button:focus-visible{outline:2px solid var(--link-accent);outline-offset:3px;}
+.button-child{position:absolute;overflow:hidden;}
+.button-child svg{display:block;width:100%;height:100%;overflow:visible;}
+.button-text{display:flex;align-items:center;width:100%;height:100%;overflow:hidden;overflow-wrap:anywhere;}
 .el-image img,.el-drawing img{display:block;width:100%;height:100%;object-fit:var(--fit,cover);}
 .el-video{overflow:hidden;background:#000;}
 .el-video video{display:block;width:100%;height:100%;object-fit:var(--fit,cover);}
@@ -162,22 +188,41 @@ body.align-left{align-items:flex-start;}
 .el-ficha>summary{display:block;width:100%;height:100%;list-style:none;cursor:pointer;}
 .el-ficha>summary::-webkit-details-marker{display:none;}
 .el-ficha>summary img{display:block;width:100%;height:100%;object-fit:cover;}
-.ficha-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100%;height:100%;padding:12px;background:#fffdf7;border:2px solid currentColor;text-align:center;}
-.ficha-empty span{font-size:10px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;}
-.ficha-empty strong{font-family:'Fraunces',Georgia,serif;font-size:20px;line-height:1.05;}
-.ficha-code{margin:0 0 10px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;opacity:.65;}
+.ficha-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100%;height:100%;padding:12px;background:var(--ficha-bg);color:var(--ficha-ink);border:var(--ficha-border) solid var(--ficha-accent);border-radius:var(--ficha-radius);text-align:center;}
+.ficha-empty span{font-family:var(--ficha-body);font-size:10px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;}
+.ficha-empty strong{font-family:var(--ficha-heading);font-size:20px;line-height:1.05;}
+.ficha-code{margin:0 0 10px;font-family:var(--ficha-body);font-size:10px;letter-spacing:.08em;text-transform:uppercase;opacity:.65;}
 .meta-card{
   position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%) rotate(-1deg);
-  width:min(360px, 80vw);padding:18px;background:#fffdf7;color:#24303f;
-  border:2px solid #24303f;box-shadow:0 18px 42px rgba(0,0,0,.2);z-index:1000;
+  width:min(360px, 80vw);padding:18px;background:var(--ficha-bg);color:var(--ficha-ink);
+  border:var(--ficha-border) solid var(--ficha-accent);border-radius:var(--ficha-radius);box-shadow:0 18px 42px rgba(0,0,0,.2);z-index:1000;
 }
-.meta-card h2{margin:0 0 8px;font-family:'Fraunces',Georgia,serif;font-size:24px;line-height:1.05;}
+.meta-card h2{margin:0 0 8px;font-family:var(--ficha-heading);font-size:24px;line-height:1.05;}
 .meta-card dl{display:grid;grid-template-columns:80px 1fr;gap:4px 10px;margin:0;}
-.meta-card dt{font-size:10px;text-transform:uppercase;letter-spacing:.08em;opacity:.65;}
-.meta-card dd{margin:0;font-size:12px;line-height:1.4;overflow-wrap:anywhere;}
-.ficha-reset{position:absolute;right:10px;bottom:10px;z-index:1002;padding:3px 7px;border:1px solid currentColor;background:rgba(255,253,247,.86);color:#24303f;font:11px/1.2 'Space Mono',monospace;letter-spacing:.04em;text-transform:lowercase;cursor:pointer;}
-.ficha-reset:hover{background:#fffdf7;}
+.meta-card dt{font-family:var(--ficha-body);font-size:10px;text-transform:uppercase;letter-spacing:.08em;opacity:.65;}
+.meta-card dd{margin:0;font-family:var(--ficha-body);font-size:12px;line-height:1.4;overflow-wrap:anywhere;}
+.meta-card a{color:var(--ficha-accent);text-underline-offset:2px;}
+.ficha-reset{position:absolute;right:10px;bottom:10px;z-index:1002;padding:3px 7px;border:1px solid var(--ficha-accent);background:var(--ficha-bg);color:var(--ficha-ink);font:11px/1.2 'Space Mono',monospace;letter-spacing:.04em;text-transform:lowercase;cursor:pointer;}
+.ficha-reset:hover{filter:brightness(1.05);}
 .ficha-card{left:50%;top:50%;width:min(360px,calc(100% - 16px));transform:translate(-50%,-50%) rotate(-1deg);max-height:calc(100% - 16px);overflow:auto;z-index:1001;}
+.ficha-archive{display:flex;flex-direction:column;gap:1.2cqw;width:100%;height:100%;overflow:hidden;color:var(--ficha-ink);}
+.ficha-archive-toolbar{display:flex;align-items:end;flex-wrap:wrap;gap:1cqw;padding-bottom:.8cqw;border-bottom:1px solid color-mix(in srgb,var(--ficha-accent) 35%,transparent);}
+.ficha-archive-toolbar input[type=search]{min-width:12cqw;flex:1 1 14cqw;padding:.6cqw .8cqw;border:1px solid var(--ficha-accent);background:var(--ficha-bg);color:var(--ficha-ink);font:1.25cqw 'Space Mono',monospace;}
+.ficha-archive-filter{display:flex;flex-direction:column;gap:.3cqw;font:1.05cqw 'Space Mono',monospace;text-transform:uppercase;letter-spacing:.06em;}
+.ficha-archive-filter select{padding:.45cqw .6cqw;border:1px solid var(--ficha-accent);background:var(--ficha-bg);color:var(--ficha-ink);font:1.15cqw 'Space Mono',monospace;}
+.ficha-archive-count{margin-left:auto;font:1.1cqw 'Space Mono',monospace;opacity:.7;}
+.ficha-archive-grid{display:grid;grid-template-columns:repeat(var(--ficha-columns,3),minmax(0,1fr));gap:1.2cqw;align-content:start;overflow:auto;min-height:0;padding-right:.4cqw;}
+.ficha-archive-card{display:flex;flex-direction:column;overflow:hidden;border:var(--ficha-border) solid var(--ficha-accent);border-radius:var(--ficha-radius);background:var(--ficha-bg);color:var(--ficha-ink);}
+.ficha-archive-card[hidden]{display:none;}
+.ficha-archive-image{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:color-mix(in srgb,var(--ficha-bg) 70%,var(--ficha-ink));}
+.ficha-archive-image--empty{display:grid;place-items:center;font:1.2cqw 'Space Mono',monospace;text-transform:uppercase;letter-spacing:.1em;opacity:.5;}
+.ficha-archive-copy{display:flex;flex-direction:column;gap:.45cqw;padding:1cqw;}
+.ficha-archive-code{font:1cqw 'Space Mono',monospace;letter-spacing:.08em;text-transform:uppercase;opacity:.65;}
+.ficha-archive-copy strong{font-family:var(--ficha-heading);font-size:1.7cqw;line-height:1.05;font-weight:700;}
+.ficha-archive-copy dl{display:grid;grid-template-columns:auto 1fr;gap:.2cqw .7cqw;margin:.4cqw 0 0;}
+.ficha-archive-copy dt{font:1cqw 'Space Mono',monospace;text-transform:uppercase;letter-spacing:.06em;opacity:.6;}
+.ficha-archive-copy dd{margin:0;font:1.1cqw 'Space Mono',monospace;line-height:1.3;overflow-wrap:anywhere;}
+.ficha-archive-empty{margin:auto;padding:2cqw;font:1.4cqw 'Space Mono',monospace;text-align:center;opacity:.65;}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 a:focus-visible,summary:focus-visible,video:focus-visible,audio:focus-visible{outline:3px solid ${theme.accent ?? '#2e5a88'};outline-offset:3px;}
 @media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important;}.el-link{transition:none;filter:none;}}
@@ -273,6 +318,12 @@ function contentFor(element, project, stage, options, page) {
   if (element.type === 'shape') {
     return shapeSvg(element);
   }
+  if (element.type === 'fichaCollection') {
+    return fichaCollectionHtml(project, page, element, options);
+  }
+  if (element.type === 'button') {
+    return buttonHtml(project, page, element, options);
+  }
   if (element.type === 'html') {
     const asset = project.assets?.[element.assetId];
     if (!asset) return '';
@@ -300,6 +351,23 @@ function renderElement(element, project, page, options) {
   const stage = project.stage;
   if (element.type === 'embed') {
     return `<div class="el el-embed el-embed--${element.provider}" style="${styleFor(element, stage)}">${contentFor(element, project, stage, options, page)}</div>`;
+  }
+
+  if (element.type === 'fichaCollection') {
+    return `<div class="el el-ficha-collection" style="${styleFor(element, stage)}">${contentFor(element, project, stage, options, page)}</div>`;
+  }
+
+  if (element.type === 'button') {
+    const href = linkFor(project, page, element, options);
+    const content = contentFor(element, project, stage, options, page);
+    if (href) {
+      const previewPage = options.preview && href.pageId;
+      const url = previewPage ? '#' : href.href;
+      const data = previewPage ? ` data-cajita-page="${escapeHtml(href.pageId)}"` : '';
+      const target = href.newTab ? ' target="_blank" rel="noopener noreferrer"' : '';
+      return `<a class="el el-button" href="${escapeHtml(url)}"${data}${target} aria-label="${escapeHtml(element.label || 'Botón')}" style="${styleFor(element, stage)}">${content}</a>`;
+    }
+    return `<div class="el el-button" aria-label="${escapeHtml(element.label || 'Botón')}" style="${styleFor(element, stage)}">${content}</div>`;
   }
 
   if (element.type === 'ficha') {
@@ -467,7 +535,7 @@ export function buildSite(project, options = {}) {
     { path: 'cajita.css', content: css, mime: 'text/css' },
     {
       path: 'cajita.js',
-      content: `${AUDIO_PLAYER_SCRIPT}\n${project.fichaSettings?.movable ? `${FICHA_MOVE_SCRIPT}\n` : ''}`,
+      content: `${AUDIO_PLAYER_SCRIPT}\n${FICHA_FILTER_SCRIPT}\n${project.fichaSettings?.movable ? `${FICHA_MOVE_SCRIPT}\n` : ''}`,
       mime: 'text/javascript'
     },
     { path: 'robots.txt', content: robotsTxt(project), mime: 'text/plain' },
@@ -496,6 +564,18 @@ export function usedAssets(project) {
   for (const page of project.pages ?? []) {
     for (const element of page.elements ?? []) {
       if (element.assetId) ids.add(element.assetId);
+      if (element.type === 'button') {
+        for (const children of Object.values(element.button?.states ?? {})) {
+          for (const child of children ?? []) {
+            if (child.assetId) ids.add(child.assetId);
+          }
+        }
+      }
+      if (element.type === 'fichaCollection') {
+        for (const record of Object.values(project.fichas ?? {})) {
+          if (record.assetId) ids.add(record.assetId);
+        }
+      }
       if (element.type === 'ficha') {
         const assetId = project.fichas?.[element.fichaId]?.assetId;
         if (assetId) ids.add(assetId);
@@ -525,6 +605,12 @@ export function usedBuiltinFontIds(project) {
     for (const element of page.elements ?? []) {
       if (element.type === 'text' && BUILTIN_FAMILIES[element.font])
         ids.add(element.font);
+    }
+    if (project.fichaStyle?.headingFont && BUILTIN_FAMILIES[project.fichaStyle.headingFont]) {
+      ids.add(project.fichaStyle.headingFont);
+    }
+    if (project.fichaStyle?.bodyFont && BUILTIN_FAMILIES[project.fichaStyle.bodyFont]) {
+      ids.add(project.fichaStyle.bodyFont);
     }
   }
   return [...ids];

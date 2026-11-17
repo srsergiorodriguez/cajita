@@ -7,10 +7,11 @@
   import Select from '../ui/Select.svelte';
   import FichaCard from '../cards/FichaCard.svelte';
   import ImageMaskDialog from './ImageMaskDialog.svelte';
+  import ButtonStudio from '../button/ButtonStudio.svelte';
   import { t } from '../../lib/i18n/index.svelte.js';
   import { BUILTIN_FONTS } from '../../lib/domain/elements.js';
   import { emptyMeta, hasMetaContent } from '../../lib/domain/links.js';
-  import { fichaCardRows, fichaRecord } from '../../lib/domain/fichas.js';
+  import { fichaCardRows, fichaFields, fichaRecord } from '../../lib/domain/fichas.js';
   import {
     activePage,
     deleteElements,
@@ -31,6 +32,8 @@
   let confirming = $state(false);
   let maskOpen = $state(false);
   let drawingOpen = $state(false);
+  let buttonOpen = $state(false);
+  const collection = $derived(element.collection ?? {});
 
   $effect(() => {
     if (element) {
@@ -81,6 +84,21 @@
     } catch (error) {
       toast(error instanceof Error ? error.message : String(error), 'error');
     }
+  }
+
+  function setCollection(patch) {
+    apply(() =>
+      updateElement(element.id, {
+        collection: { ...collection, ...patch }
+      })
+    );
+  }
+
+  function toggleFilterField(fieldId, checked) {
+    const ids = new Set(collection.filterFieldIds ?? []);
+    if (checked) ids.add(fieldId);
+    else ids.delete(fieldId);
+    setCollection({ filterFieldIds: [...ids] });
   }
 
   function setFrame(key, value) {
@@ -431,6 +449,76 @@
     </Section>
   {/if}
 
+  {#if element.type === 'button'}
+    <Section label={t('button.title')}>
+      <Field
+        label={t('button.label')}
+        value={element.label ?? ''}
+        oninput={(event) => setField('label', event.currentTarget.value)}
+      />
+      <Button size="sm" variant="secondary" onclick={() => (buttonOpen = true)}>
+        {t('button.edit')}
+      </Button>
+      <p class="hint">{t('button.inspectorHint')}</p>
+    </Section>
+  {/if}
+
+  {#if element.type === 'fichaCollection'}
+    <Section label={t('ficha.collection')}>
+      <label class="check">
+        <input
+          type="checkbox"
+          checked={collection.search !== false}
+          onchange={(event) => setCollection({ search: event.currentTarget.checked })}
+        />
+        <span>{t('ficha.collectionSearch')}</span>
+      </label>
+      <label class="check">
+        <input
+          type="checkbox"
+          checked={collection.showCode !== false}
+          onchange={(event) => setCollection({ showCode: event.currentTarget.checked })}
+        />
+        <span>{t('ficha.collectionCode')}</span>
+      </label>
+      <Field
+        label={t('ficha.collectionColumns')}
+        type="number"
+        min="1"
+        max="6"
+        value={collection.columns ?? 3}
+        oninput={(event) => setCollection({ columns: Number(event.currentTarget.value) })}
+      />
+      <Select
+        label={t('ficha.collectionSort')}
+        value={collection.sort ?? 'code'}
+        options={[
+          { value: 'code', label: t('ficha.code') },
+          { value: 'label', label: t('ficha.label') }
+        ]}
+        onchange={(value) => setCollection({ sort: value })}
+      />
+      <Field
+        label={t('ficha.collectionEmpty')}
+        value={collection.emptyText ?? ''}
+        oninput={(event) => setCollection({ emptyText: event.currentTarget.value })}
+      />
+      <p class="hint">{t('ficha.collectionFilters')}</p>
+      <div class="collection-filters">
+        {#each fichaFields(session.project) as field (field.id)}
+          <label class="check">
+            <input
+              type="checkbox"
+              checked={(collection.filterFieldIds ?? []).includes(field.id)}
+              onchange={(event) => toggleFilterField(field.id, event.currentTarget.checked)}
+            />
+            <span>{field.label || field.key}</span>
+          </label>
+        {/each}
+      </div>
+    </Section>
+  {/if}
+
   {#if element.type === 'shape'}
     <Section label={t('shape.title')}>
       <SegmentedControl
@@ -463,6 +551,17 @@
         max="40"
         oninput={(event) => setField('strokeWidth', Number(event.currentTarget.value))}
       />
+      {#if element.shape !== 'circle'}
+        <Field
+          label={t('shape.radius')}
+          type="number"
+          value={element.radius ?? 0}
+          min="0"
+          max="50"
+          suffix="%"
+          oninput={(event) => setField('radius', Number(event.currentTarget.value))}
+        />
+      {/if}
     </Section>
   {/if}
 
@@ -596,7 +695,7 @@
           />
         </div>
       {:else if linkKind === 'meta'}
-        <FichaCard {element} />
+        <FichaCard {element} project={session.project} />
         <p class="hint">{t('meta.preview')}</p>
       {/if}
     </Section>
@@ -621,6 +720,7 @@
       <DrawingDialog bind:open={drawingOpen} {element} />
     {/await}
   {/if}
+  <ButtonStudio bind:open={buttonOpen} {element} />
 
   <Section label={t('element.actions')}>
     <div class="action-grid">
@@ -804,5 +904,14 @@
     gap: var(--space-2);
     padding-top: var(--space-2);
     border-top: 1px solid var(--line-soft);
+  }
+  .collection-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-height: 160px;
+    overflow: auto;
+    padding: var(--space-2);
+    border: 1px solid var(--line-soft);
   }
 </style>

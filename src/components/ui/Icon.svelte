@@ -87,6 +87,9 @@
     <path d="M4 4h16v16H4zM4 10h16M4 15h16M10 4v16M15 4v16" />
   {:else if name === 'archive'}
     <path d="M3 7h18v4H3zM5 11v8h14v-8M9 15h6" />
+  {:else if name === 'button'}
+    <rect x="3" y="7" width="18" height="10" rx="3" />
+    <path d="M8 12h8" />
   {:else if name === 'html'}
     <path d="M9 7 4 12l5 5M15 7l5 5-5 5M13 5l-2 14" />
   {:else if name === 'pencil'}

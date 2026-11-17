@@ -9,6 +9,18 @@ export function builtinFontFiles(project) {
       used.add(element.font);
     }
   }
+  for (const page of project.pages ?? []) {
+    for (const element of page.elements ?? []) {
+      if (element.type !== 'button') continue;
+      for (const children of Object.values(element.button?.states ?? {})) {
+        for (const child of children ?? []) {
+          if (child.type === 'text' && child.font) used.add(child.font);
+        }
+      }
+    }
+  }
+  if (project.fichaStyle?.headingFont) used.add(project.fichaStyle.headingFont);
+  if (project.fichaStyle?.bodyFont) used.add(project.fichaStyle.bodyFont);
   const files = [];
   for (const file of BUILTIN_FONT_FILES) {
     if (!used.has(file.id)) continue;

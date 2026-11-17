@@ -1,6 +1,8 @@
 import { createId } from './model.js';
 import { fontFamily } from './fonts.js';
 import { shapeLabel } from './shapes.js';
+import { DEFAULT_FICHA_COLLECTION, normaliseFichaCollection } from './ficha-collection.js';
+import { DEFAULT_BUTTON, normaliseButton } from './button.js';
 
 /**
  * Built-in font IDs are stored in text elements. Only the families actually
@@ -203,6 +205,18 @@ export function defaultTextStyle(project) {
 
 export function defaultFrame(stage, type = 'text', index = 0) {
   const offset = (index % 4) * 24;
+  if (type === 'button') {
+    const w = Math.min(360, stage.width * 0.32);
+    const h = Math.min(96, stage.height * 0.18);
+    return {
+      x: (stage.width - w) / 2 + offset,
+      y: (stage.height - h) / 2 + offset,
+      w,
+      h,
+      rotation: 0
+    };
+  }
+
   if (type === 'image') {
     const w = Math.min(520, stage.width * 0.46);
     const h = Math.min(360, stage.height * 0.46);
@@ -214,6 +228,18 @@ export function defaultFrame(stage, type = 'text', index = 0) {
       rotation: 0
     };
   }
+  if (type === 'fichaCollection') {
+    const w = Math.min(920, stage.width * 0.78);
+    const h = Math.min(620, stage.height * 0.72);
+    return {
+      x: (stage.width - w) / 2 + offset,
+      y: (stage.height - h) / 2 + offset,
+      w,
+      h,
+      rotation: 0
+    };
+  }
+
   if (type === 'drawing') {
     const size = Math.min(420, stage.width * 0.38, stage.height * 0.38);
     return {
@@ -334,6 +360,9 @@ export function createElement(type, options = {}) {
     caption = '',
     fichaId = '',
     drawingId = '',
+    collection = DEFAULT_FICHA_COLLECTION,
+    button = DEFAULT_BUTTON,
+    buttonLabel = '',
     alt = '',
     animated = true,
     name = '',
@@ -341,6 +370,7 @@ export function createElement(type, options = {}) {
     fill = '',
     stroke = '',
     strokeWidth = 0,
+    radius = 0,
     id
   } = options;
 
@@ -425,14 +455,20 @@ export function createElement(type, options = {}) {
     };
   }
 
-  if (type === 'drawing') {
-    const size = Math.min(420, stage.width * 0.38, stage.height * 0.38);
+  if (type === 'fichaCollection') {
     return {
-      x: (stage.width - size) / 2 + offset,
-      y: (stage.height - size) / 2 + offset,
-      w: size,
-      h: size,
-      rotation: 0
+      ...base,
+      type: 'fichaCollection',
+      collection: normaliseFichaCollection(collection)
+    };
+  }
+
+  if (type === 'button') {
+    return {
+      ...base,
+      type: 'button',
+      label: buttonLabel || 'Botón',
+      button: normaliseButton(button)
     };
   }
 
@@ -451,7 +487,8 @@ export function createElement(type, options = {}) {
       shape,
       fill: fill || project?.theme?.accent || '#a82a1e',
       stroke: stroke || project?.theme?.ink || '#1c1917',
-      strokeWidth
+      strokeWidth,
+      radius
     };
   }
 

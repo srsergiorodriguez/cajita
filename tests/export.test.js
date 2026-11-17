@@ -193,6 +193,23 @@ describe('site export', () => {
     expect(html.match(/target="_blank"/g)).toHaveLength(1);
   });
 
+  it('uses the project ficha card style in exported CSS', () => {
+    const { project } = fixture();
+    project.fichaStyle = {
+      background: '#101820',
+      ink: '#fefefe',
+      accent: '#ff6600',
+      headingFont: 'fraunces',
+      bodyFont: 'space-mono',
+      borderWidth: 3,
+      radius: 12
+    };
+    const site = buildSite(project);
+    expect(site.css).toContain('--ficha-bg:#101820');
+    expect(site.css).toContain('--ficha-accent:#ff6600');
+    expect(site.css).toContain('--ficha-radius:12px');
+  });
+
   it('uses a custom site background behind the stage', () => {
     const { project } = fixture();
     project.siteBackground = '#102030';

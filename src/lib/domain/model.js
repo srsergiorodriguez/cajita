@@ -1,4 +1,5 @@
 import { makeSlug } from './slugs.js';
+import { DEFAULT_FICHA_STYLE } from './ficha-style.js';
 
 export const PROJECT_FORMAT = 'cajita';
 export const PROJECT_VERSION = 1;
@@ -183,6 +184,7 @@ export function createProject({
     assets: {},
     fichaSchema: { fields: [] },
     fichaSettings: { movable: false, showCode: true },
+    fichaStyle: { ...DEFAULT_FICHA_STYLE },
     fichas: {},
     redirects: [],
     fonts: {},

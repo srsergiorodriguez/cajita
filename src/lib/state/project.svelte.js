@@ -19,6 +19,7 @@ import { createElement, duplicateElement, mediaFrame } from '../domain/elements.
 import { resizeStage } from '../domain/stage.js';
 import { normaliseGrid, reflowGrid, mergeGridCells, unmergeGridCells } from '../domain/grid.js';
 import { DEFAULT_PALETTE } from '../domain/model.js';
+import { DEFAULT_FICHA_STYLE, normaliseFichaStyle } from '../domain/ficha-style.js';
 import { normalizeCustomDomain } from '../domain/publish/domain.js';
 import { appendPublishHistory } from '../domain/publish/history.js';
 import { githubPagesUrl } from '../domain/publish/plan.js';
@@ -334,11 +335,15 @@ export function addElement(type, options = {}) {
       title: options.title ?? '',
       caption: options.caption ?? '',
       fichaId: options.fichaId ?? '',
+      button: options.button,
+      buttonLabel: options.buttonLabel ?? '',
+      collection: options.collection,
       name: options.name ?? '',
       shape: options.shape ?? 'circle',
       fill: options.fill ?? '',
       stroke: options.stroke ?? '',
       strokeWidth: options.strokeWidth ?? 0,
+      radius: options.radius ?? 0,
       index: page.elements.length
     });
     page.elements.push(element);
@@ -811,6 +816,40 @@ export async function importHtmlFile(file) {
     normaliseZ(page);
   });
   return element;
+}
+
+export function addFichaCollection() {
+  let element;
+  runCommand('añadir colección de fichas', (draft) => {
+    const page = pageById(draft, session.activePageId) ?? draft.pages[0];
+    element = createElement('fichaCollection', {
+      project: draft,
+      page,
+      stage: draft.stage
+    });
+    page.elements.push(element);
+    normaliseZ(page);
+  });
+  return element;
+}
+
+export function updateFichaStyle(patch, { coalesceKey = null } = {}) {
+  return runCommand(
+    'estilo de fichas',
+    (draft) => {
+      draft.fichaStyle = normaliseFichaStyle({
+        ...(draft.fichaStyle ?? DEFAULT_FICHA_STYLE),
+        ...patch
+      });
+    },
+    { coalesceKey }
+  );
+}
+
+export function resetFichaStyle() {
+  return runCommand('restaurar estilo de fichas', (draft) => {
+    draft.fichaStyle = { ...DEFAULT_FICHA_STYLE };
+  });
 }
 
 export async function saveDrawingInProject({

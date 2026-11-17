@@ -1,6 +1,7 @@
 <script>
   import AssetThumb from './AssetThumb.svelte';
   import ShapeArt from '../canvas/ShapeArt.svelte';
+  import ButtonComposition from '../canvas/ButtonComposition.svelte';
   import Icon from '../ui/Icon.svelte';
   import { elementName, fontStack } from '../../lib/domain/elements.js';
 
@@ -91,7 +92,16 @@
           fill={element.fill}
           stroke={element.stroke}
           strokeWidth={element.strokeWidth}
+          radius={element.radius}
         />
+      {:else if element.type === 'button'}
+        <ButtonComposition project={project} button={element.button} state="idle" />
+      {:else if element.type === 'fichaCollection'}
+        <span class="mini-collection">
+          {#each Object.values(project?.fichas ?? {}).slice(0, 6) as record (record.id)}
+            <i></i>
+          {/each}
+        </span>
       {:else if element.type === 'html'}
         <span class="mini-icon mini-embed"><Icon name="html" size={11} /><b>HTML</b></span>
       {:else if element.type === 'embed'}
@@ -163,6 +173,21 @@
     font-weight: 400;
     letter-spacing: 0.08em;
   }
+  .mini-collection {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    width: 100%;
+    height: 100%;
+    padding: 4px;
+    background: var(--ficha-bg, #fffdf7);
+  }
+  .mini-collection i {
+    display: block;
+    background: var(--ficha-accent, var(--line));
+    opacity: 0.35;
+  }
+
   .mini-empty {
     display: block;
     width: 100%;
