@@ -11,7 +11,21 @@
   } from '../../lib/state/project.svelte.js';
   import { toast } from '../../lib/state/ui.svelte.js';
 
-  let { page } = $props();
+  let {
+    page = null,
+    elements = null,
+    selectedIds = null,
+    onselect = null,
+    onreorder = null,
+    onrename = null,
+    onupdate = null,
+    labelFor = null,
+    presorted = false,
+    canRename = true,
+    canLock = true,
+    canHide = true,
+    emptyText = null
+  } = $props();
 
   let draggingId = $state(null);
   let dropIndex = $state(-1);
@@ -19,9 +33,11 @@
   let nameDraft = $state('');
   let nameInput = $state(null);
 
+  const source = $derived(elements ?? page?.elements ?? []);
   const layers = $derived(
-    [...(page?.elements ?? [])].sort((a, b) => (b.z ?? 0) - (a.z ?? 0))
+    presorted ? [...source] : [...source].sort((a, b) => (b.z ?? 0) - (a.z ?? 0))
   );
+  const activeIds = $derived(selectedIds ?? session.selectedElementIds);
 
   function iconFor(element) {
     if (element.type === 'text') return 'text';
@@ -29,6 +45,10 @@
     if (element.type === 'video') return 'video';
     if (element.type === 'shape') return 'shape';
     if (element.type === 'ficha') return 'archive';
+    if (element.type === 'fichaCollection') return 'archive';
+    if (element.type === 'drawing') return 'pencil';
+    if (element.type === 'composition') return element.composition?.preset === 'animation' ? 'play' : 'button';
+    if (element.type === 'html') return 'code';
     if (element.type === 'embed')
       return element.provider === 'observable' ? 'chart' : 'play';
     return 'sound';
@@ -43,7 +63,7 @@
   }
 
   function toggleLayer(element, key) {
-    apply(() => updateElement(element.id, { [key]: !element[key] }));
+    apply(() => (onupdate ? onupdate(element.id, { [key]: !element[key] }) : updateElement(element.id, { [key]: !element[key] })));
   }
 
   async function beginRename(element) {
@@ -59,7 +79,7 @@
     const id = renamingId;
     const nextName = nameDraft.trim();
     renamingId = null;
-    apply(() => updateElement(id, { name: nextName }));
+    apply(() => (onrename ? onrename(id, nextName) : updateElement(id, { name: nextName })));
   }
 
   function cancelRename() {
@@ -114,14 +134,14 @@
     if (from < insert) insert -= 1;
     insert = Math.max(0, Math.min(ids.length, insert));
     ids.splice(insert, 0, draggingId);
-    apply(() => reorderLayers(ids));
+    apply(() => (onreorder ? onreorder(ids) : reorderLayers(ids)));
     finishDrag();
   }
 </script>
 
 <div class="layers" role="list" ondragover={dragOverList} ondrop={drop}>
   {#if layers.length === 0}
-    <p class="empty">{t('layers.empty')}</p>
+    <p class="empty">{emptyText ?? t('layers.empty')}</p>
   {:else}
     {#each layers as element, index (element.id)}
       {#if draggingId && dropIndex === index}
@@ -130,7 +150,7 @@
       <div
         class="layer"
         role="listitem"
-        class:active={session.selectedElementIds.includes(element.id)}
+        class:active={activeIds.includes(element.id)}
         class:dragging={draggingId === element.id}
         draggable={renamingId !== element.id}
         ondragstart={(event) => startDrag(event, element)}
@@ -161,18 +181,34 @@
           <button
             type="button"
             class="layer-main"
-            title={t('layers.renameHint')}
-            onclick={() => selectElement(element.id, { additive: false })}
+            title={canRename ? t('layers.renameHint') : undefined}
+            onclick={() => (onselect ? onselect(element.id) : selectElement(element.id, { additive: false }))}
             ondblclick={(event) => {
+              if (!canRename) return;
               event.stopPropagation();
               void beginRename(element);
             }}
           >
             <Icon name="grip" size={12} />
             <Icon name={iconFor(element)} size={13} />
-            <span class="layer-name">{elementName(element, layers.length - index)}</span>
+            <span class="layer-name">{labelFor ? labelFor(element) : elementName(element, layers.length - index)}</span>
           </button>
         {/if}
+        {#if canRename}
+        <button
+          type="button"
+          class="layer-control"
+          aria-label={t('layers.rename')}
+          title={t('layers.rename')}
+          onclick={(event) => {
+            event.stopPropagation();
+            void beginRename(element);
+          }}
+        >
+          <Icon name="pencil" size={12} />
+        </button>
+        {/if}
+        {#if canLock}
         <button
           type="button"
           class="layer-control"
@@ -186,6 +222,8 @@
         >
           <Icon name="lock" size={12} />
         </button>
+        {/if}
+        {#if canHide}
         <button
           type="button"
           class="layer-control"
@@ -199,6 +237,7 @@
         >
           <Icon name="eye" size={12} />
         </button>
+        {/if}
       </div>
     {/each}
     {#if draggingId && dropIndex === layers.length}

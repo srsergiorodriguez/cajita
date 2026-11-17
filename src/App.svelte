@@ -273,7 +273,7 @@
       onclick={() => toggleCollapsed('strip')}
     >
       <Icon name="chevron-up" size={13} />
-      <span>{t('strip.pages')}</span>
+      <span>{t('strip.pagesAndMedia')}</span>
     </button>
   </div>
 

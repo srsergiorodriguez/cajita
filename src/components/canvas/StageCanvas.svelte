@@ -5,7 +5,7 @@
   import CanvasEmbed from './CanvasEmbed.svelte';
   import CanvasHtml from './CanvasHtml.svelte';
   import CanvasFichaCollection from './CanvasFichaCollection.svelte';
-  import ButtonComposition from './ButtonComposition.svelte';
+  import CompositionView from './CompositionView.svelte';
   import ShapeArt from './ShapeArt.svelte';
   import CanvasFicha from './CanvasFicha.svelte';
   import Icon from '../ui/Icon.svelte';
@@ -40,6 +40,7 @@
   import { elementName, fontStack, mediaFrame } from '../../lib/domain/elements.js';
   import { snapFrameMove, snapFrameResize } from '../../lib/domain/grid.js';
   import GridOverlay from './GridOverlay.svelte';
+  import SelectionFrame from './SelectionFrame.svelte';
   import { toast } from '../../lib/state/ui.svelte.js';
 
   let stageEl = $state(null);
@@ -476,12 +477,14 @@
                   stroke={element.stroke}
                   strokeWidth={element.strokeWidth}
                   radius={element.radius}
+                  aspect={element.frame.w / element.frame.h}
                 />
-              {:else if element.type === 'button'}
-                <ButtonComposition
+              {:else if element.type === 'composition'}
+                <CompositionView
                   project={session.project}
-                  button={element.button}
-                  state="idle"
+                  composition={element.composition}
+                  frameId={element.composition?.frames?.[0]?.id}
+                  aspect={element.frame.w / element.frame.h}
                 />
               {:else if element.type === 'fichaCollection'}
                 <CanvasFichaCollection project={session.project} {element} />
@@ -501,63 +504,12 @@
         {/each}
 
         {#if primary}
-          <div class="selection" class:locked={primary.locked} style={cssVars(primary)}>
-            <button
-              type="button"
-              class="handle h-nw"
-              aria-label={t('canvas.resize')}
-              onpointerdown={(event) => startResize(event, 'nw')}
-            ></button>
-            <button
-              type="button"
-              class="handle h-n"
-              aria-label={t('canvas.resize')}
-              onpointerdown={(event) => startResize(event, 'n')}
-            ></button>
-            <button
-              type="button"
-              class="handle h-ne"
-              aria-label={t('canvas.resize')}
-              onpointerdown={(event) => startResize(event, 'ne')}
-            ></button>
-            <button
-              type="button"
-              class="handle h-e"
-              aria-label={t('canvas.resize')}
-              onpointerdown={(event) => startResize(event, 'e')}
-            ></button>
-            <button
-              type="button"
-              class="handle h-se"
-              aria-label={t('canvas.resize')}
-              onpointerdown={(event) => startResize(event, 'se')}
-            ></button>
-            <button
-              type="button"
-              class="handle h-s"
-              aria-label={t('canvas.resize')}
-              onpointerdown={(event) => startResize(event, 's')}
-            ></button>
-            <button
-              type="button"
-              class="handle h-sw"
-              aria-label={t('canvas.resize')}
-              onpointerdown={(event) => startResize(event, 'sw')}
-            ></button>
-            <button
-              type="button"
-              class="handle h-w"
-              aria-label={t('canvas.resize')}
-              onpointerdown={(event) => startResize(event, 'w')}
-            ></button>
-            <span class="rotate-line"></span>
-            <button
-              type="button"
-              class="rotate-handle"
-              aria-label={t('canvas.rotate')}
-              onpointerdown={startRotate}
-            ></button>
-          </div>
+          <SelectionFrame
+            style={cssVars(primary)}
+            locked={primary.locked}
+            onresize={startResize}
+            onrotate={startRotate}
+          />
         {/if}
 
         {#if editor.guides.x !== null}
@@ -752,104 +704,6 @@
 
   .element--ficha {
     overflow: visible;
-  }
-
-  .selection {
-    position: absolute;
-    left: var(--x);
-    top: var(--y);
-    z-index: 100;
-    width: var(--w);
-    height: var(--h);
-    transform: rotate(var(--rot));
-    border: 2px solid var(--selection);
-    pointer-events: none;
-  }
-
-  .selection.locked .handle,
-  .selection.locked .rotate-handle,
-  .selection.locked .rotate-line {
-    display: none;
-  }
-
-  .handle {
-    position: absolute;
-    padding: 0;
-    width: 9px;
-    height: 9px;
-    border: 2px solid var(--line);
-    background: var(--panel-2);
-    pointer-events: auto;
-  }
-
-  .h-nw {
-    left: -5px;
-    top: -5px;
-    cursor: nwse-resize;
-  }
-  .h-n {
-    left: 50%;
-    top: -5px;
-    margin-left: -4px;
-    cursor: ns-resize;
-  }
-  .h-ne {
-    right: -5px;
-    top: -5px;
-    cursor: nesw-resize;
-  }
-  .h-e {
-    right: -5px;
-    top: 50%;
-    margin-top: -4px;
-    cursor: ew-resize;
-  }
-  .h-se {
-    right: -5px;
-    bottom: -5px;
-    cursor: nwse-resize;
-  }
-  .h-s {
-    left: 50%;
-    bottom: -5px;
-    margin-left: -4px;
-    cursor: ns-resize;
-  }
-  .h-sw {
-    left: -5px;
-    bottom: -5px;
-    cursor: nesw-resize;
-  }
-  .h-w {
-    left: -5px;
-    top: 50%;
-    margin-top: -4px;
-    cursor: ew-resize;
-  }
-
-  .rotate-line {
-    position: absolute;
-    left: 50%;
-    top: -26px;
-    width: 1px;
-    height: 24px;
-    background: var(--selection);
-    pointer-events: none;
-  }
-
-  .rotate-handle {
-    position: absolute;
-    padding: 0;
-    left: 50%;
-    top: -34px;
-    width: 12px;
-    height: 12px;
-    margin-left: -6px;
-    border: 2px solid var(--line);
-    border-radius: 50%;
-    background: var(--accent);
-    pointer-events: auto;
-    cursor: grab;
   }
 
   .guide {

@@ -27,7 +27,7 @@ export function buildBundleManifest(project, assets, options) {
   return {
     format: BUNDLE_FORMAT,
     version: BUNDLE_VERSION,
-    createdWith: options.appVersion ?? 'cajita 1.2.0',
+    createdWith: options.appVersion ?? 'cajita 1.3.0',
     createdAt: options.createdAt,
     project: 'project.json',
     projectHash: options.projectHash,

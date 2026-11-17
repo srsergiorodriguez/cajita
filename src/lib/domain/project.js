@@ -13,7 +13,7 @@ import { normaliseGrid } from './grid.js';
 import { normalisePalette } from './model.js';
 import { normaliseFichaStyle, DEFAULT_FICHA_STYLE } from './ficha-style.js';
 import { normaliseFichaCollection } from './ficha-collection.js';
-import { BUTTON_CHILD_TYPES, BUTTON_STATES, normaliseButton } from './button.js';
+import { COMPOSITION_CHILD_TYPES, compositionFrameLimit, normaliseComposition } from './composition.js';
 import { FICHA_LIMITS, fichaFieldErrors, isSafeFichaUrl } from './fichas.js';
 
 const BUILTIN_FONTS = new Set(BUILTIN_FONT_LIST.map((font) => font.id));
@@ -30,7 +30,7 @@ const ELEMENT_TYPES = new Set([
   'shape',
   'ficha',
   'fichaCollection',
-  'button'
+  'composition'
 ]);
 const PAIRINGS = new Set(['editorial', 'poster', 'technical', 'slab']);
 
@@ -236,30 +236,51 @@ function checkElement(element, pageIndex, elementIndex, project, errors, heading
     }
   }
 
-  if (element.type === 'button') {
-    const button = element.button;
-    if (!isObject(button) || !isObject(button.states)) {
-      push(errors, `${path}.button`, 'must contain states');
+  if (element.type === 'composition') {
+    const composition = element.composition;
+    if (!isObject(composition) || !Array.isArray(composition.frames) || !composition.frames.length) {
+      push(errors, `${path}.composition`, 'must contain frames');
+    } else if (composition.frames.length > compositionFrameLimit(composition.preset)) {
+      push(errors, `${path}.composition.frames`, `must have at most ${compositionFrameLimit(composition.preset)} frames`);
     } else {
-      for (const state of BUTTON_STATES) {
-        if (!Array.isArray(button.states[state])) {
-          push(errors, `${path}.button.states.${state}`, 'must be an array');
-          continue;
+      const frameIds = new Set(composition.frames.map((frame) => frame?.id));
+      if (new Set(composition.frames.map((frame) => frame?.id)).size !== composition.frames.length) {
+        push(errors, `${path}.composition.frames`, 'frame ids must be unique');
+      }
+      composition.frames.forEach((frame, frameIndex) => {
+        const framePath = `${path}.composition.frames[${frameIndex}]`;
+        if (!isObject(frame) || typeof frame.id !== 'string') {
+          push(errors, framePath, 'must have an id');
+          return;
         }
-        button.states[state].forEach((child, childIndex) => {
-          const childPath = `${path}.button.states.${state}[${childIndex}]`;
-          if (!isObject(child) || !BUTTON_CHILD_TYPES.includes(child.type)) {
-            push(errors, childPath, 'unknown button child');
+        if (typeof frame.name !== 'string') push(errors, `${framePath}.name`, 'must be a string');
+        if (!isFiniteNumber(frame.duration) || frame.duration < 50) {
+          push(errors, `${framePath}.duration`, 'must be at least 50ms');
+        }
+        if (!Array.isArray(frame.children)) {
+          push(errors, `${framePath}.children`, 'must be an array');
+          return;
+        }
+        frame.children.forEach((child, childIndex) => {
+          const childPath = `${framePath}.children[${childIndex}]`;
+          if (!isObject(child) || !COMPOSITION_CHILD_TYPES.includes(child.type)) {
+            push(errors, childPath, 'unknown composition child');
             return;
           }
-          const frame = child.frame;
+          const childFrame = child.frame;
           if (
-            !isObject(frame) ||
-            ['x', 'y', 'w', 'h', 'rotation'].some((key) => !isFiniteNumber(frame[key])) ||
-            frame.w <= 0 ||
-            frame.h <= 0
+            !isObject(childFrame) ||
+            ['x', 'y', 'w', 'h', 'rotation'].some((key) => !isFiniteNumber(childFrame[key])) ||
+            childFrame.w <= 0 ||
+            childFrame.h <= 0
           ) {
             push(errors, `${childPath}.frame`, 'must be a valid relative frame');
+          }
+          if (child.locked !== undefined && typeof child.locked !== 'boolean') {
+            push(errors, `${childPath}.locked`, 'must be a boolean');
+          }
+          if (child.hidden !== undefined && typeof child.hidden !== 'boolean') {
+            push(errors, `${childPath}.hidden`, 'must be a boolean');
           }
           if (child.type === 'image' || child.type === 'drawing') {
             checkAssetRef(child.assetId, 'image', `${childPath}.assetId`, project, errors);
@@ -268,29 +289,36 @@ function checkElement(element, pageIndex, elementIndex, project, errors, heading
             }
           }
           if (child.type === 'shape') {
-            if (!/^#[0-9a-f]{6}$/i.test(child.fill ?? '')) {
-              push(errors, `${childPath}.fill`, 'must be a hex color');
-            }
-            if (!/^#[0-9a-f]{6}$/i.test(child.stroke ?? '')) {
-              push(errors, `${childPath}.stroke`, 'must be a hex color');
-            }
+            if (!/^#[0-9a-f]{6}$/i.test(child.fill ?? '')) push(errors, `${childPath}.fill`, 'must be a hex color');
+            if (!/^#[0-9a-f]{6}$/i.test(child.stroke ?? '')) push(errors, `${childPath}.stroke`, 'must be a hex color');
           }
           if (child.type === 'text') {
-            if (typeof child.text !== 'string' || typeof child.font !== 'string') {
-              push(errors, childPath, 'text and font are required');
-            }
+            if (typeof child.text !== 'string' || typeof child.font !== 'string') push(errors, childPath, 'text and font are required');
             for (const key of ['fontSize', 'lineHeight', 'letterSpacing', 'padding']) {
-              if (!isFiniteNumber(child[key])) {
-                push(errors, `${childPath}.${key}`, 'must be a number');
-              }
+              if (!isFiniteNumber(child[key])) push(errors, `${childPath}.${key}`, 'must be a number');
             }
           }
         });
+      });
+      if (
+        !isObject(composition.interactions) ||
+        !frameIds.has(composition.interactions.hover) ||
+        !frameIds.has(composition.interactions.pressed)
+      ) {
+        push(errors, `${path}.composition.interactions`, 'must reference frames');
+      }
+      if (!isObject(composition.timeline)) {
+        push(errors, `${path}.composition.timeline`, 'must be an object');
+      } else {
+        if (typeof composition.timeline.autoplay !== 'boolean') {
+          push(errors, `${path}.composition.timeline.autoplay`, 'must be a boolean');
+        }
+        if (typeof composition.timeline.loop !== 'boolean') {
+          push(errors, `${path}.composition.timeline.loop`, 'must be a boolean');
+        }
       }
     }
-    if (typeof element.label !== 'string') {
-      push(errors, `${path}.label`, 'must be a string');
-    }
+    if (typeof element.label !== 'string') push(errors, `${path}.label`, 'must be a string');
   }
 
   if (element.type === 'fichaCollection') {
@@ -806,6 +834,18 @@ export function validateProject(project) {
  * @param {object} raw
  * @returns {{ok: boolean, project?: object, errors: Array<{path: string, message: string}>}}
  */
+function migrateElement(element) {
+  if (element?.type !== 'button') return element;
+  const clean = normaliseComposition(element.button);
+  return {
+    ...element,
+    type: 'composition',
+    label: element.label || 'Botón',
+    preset: 'button',
+    composition: { ...clean, preset: 'button' }
+  };
+}
+
 export function migrateProject(raw) {
   if (!isObject(raw)) {
     return { ok: false, errors: [{ path: '', message: 'project must be an object' }] };
@@ -849,7 +889,13 @@ export function migrateProject(raw) {
         pageTemplates: isObject(raw.pageTemplates) ? raw.pageTemplates : {},
         drawings: isObject(raw.drawings) ? raw.drawings : {},
         pages: Array.isArray(raw.pages)
-          ? raw.pages.map((page) => ({ ...page, gridId: page.gridId ?? '' }))
+          ? raw.pages.map((page) => ({
+              ...page,
+              gridId: page.gridId ?? '',
+              elements: Array.isArray(page.elements)
+                ? page.elements.map(migrateElement)
+                : page.elements
+            }))
           : raw.pages,
         fichaSchema: isObject(raw.fichaSchema) ? raw.fichaSchema : { fields: [] },
         fichaSettings: {

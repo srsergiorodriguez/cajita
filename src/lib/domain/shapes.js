@@ -64,7 +64,8 @@ function roundedPolygon(points, radius) {
   return parts.join(' ');
 }
 
-export function shapeMarkup(element) {
+export function shapeMarkup(element, aspect = 1) {
+  const width = 100 * Math.max(0.05, Number(aspect) || 1);
   const shape = isShape(element.shape) ? element.shape : 'circle';
   const radius = shapeRadius(element.radius);
   const stroke =
@@ -72,17 +73,21 @@ export function shapeMarkup(element) {
   const strokeWidth = Number(element.strokeWidth) > 0 ? Number(element.strokeWidth) : 0;
   const common = `fill="${element.fill}" stroke="${stroke}"${strokeWidth ? ` stroke-width="${strokeWidth}" vector-effect="non-scaling-stroke" stroke-linejoin="round"` : ''}`;
   if (shape === 'square') {
-    return `<rect x="0" y="0" width="100" height="100" rx="${radius}" ry="${radius}" ${common} />`;
+    return `<rect x="0" y="0" width="${width}" height="100" rx="${radius}" ry="${radius}" ${common} />`;
   }
   if (shape === 'triangle') {
     if (radius <= 0) {
-      return `<polygon points="50,0 100,100 0,100" ${common} />`;
+      return `<polygon points="${width / 2},0 ${width},100 0,100" ${common} />`;
     }
-    return `<path d="${roundedPolygon([[50, 0], [100, 100], [0, 100]], radius)}" ${common} />`;
+    return `<path d="${roundedPolygon([[width / 2, 0], [width, 100], [0, 100]], radius)}" ${common} />`;
   }
-  return `<circle cx="50" cy="50" r="50" ${common} />`;
+  if (Math.abs(width - 100) < 0.001) {
+    return `<circle cx="50" cy="50" r="50" ${common} />`;
+  }
+  return `<ellipse cx="${width / 2}" cy="50" rx="${width / 2}" ry="50" ${common} />`;
 }
 
-export function shapeSvg(element) {
-  return `<svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Forma" focusable="false">${shapeMarkup(element)}</svg>`;
+export function shapeSvg(element, aspect = element?.frame?.w && element?.frame?.h ? element.frame.w / element.frame.h : 1) {
+  const width = 100 * Math.max(0.05, Number(aspect) || 1);
+  return `<svg viewBox="0 0 ${width} 100" preserveAspectRatio="none" role="img" aria-label="Forma" focusable="false">${shapeMarkup(element, aspect)}</svg>`;
 }

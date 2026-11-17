@@ -6,7 +6,7 @@
   let {
     projectId,
     assetId,
-    fit = 'cover',
+    fit = 'contain',
     alt = '',
     pixelated = false,
     mask = [],

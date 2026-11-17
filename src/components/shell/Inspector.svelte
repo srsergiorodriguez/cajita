@@ -59,6 +59,10 @@
     if (node.type === 'image') return t('image.title');
     if (node.type === 'video') return t('video.title');
     if (node.type === 'audio') return t('audio.title');
+    if (node.type === 'drawing') return t('drawing.title');
+    if (node.type === 'html') return t('html.title');
+    if (node.type === 'fichaCollection') return t('ficha.collection');
+    if (node.type === 'composition') return t('composition.title');
     return node.type;
   }
 

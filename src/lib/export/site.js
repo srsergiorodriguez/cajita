@@ -13,8 +13,9 @@ import { fichaCardRows, isSafeFichaUrl } from '../domain/fichas.js';
 import { FICHA_MOVE_SCRIPT } from './ficha-move.js';
 import { AUDIO_PLAYER_SCRIPT } from './audio-player.js';
 import { FICHA_FILTER_SCRIPT } from './ficha-filter.js';
+import { COMPOSITION_SCRIPT } from './composition-script.js';
 import { fichaCollectionHtml } from './ficha-collection.js';
-import { buttonHtml } from './button.js';
+import { compositionHtml } from './composition.js';
 
 const BUILTIN_FAMILIES = Object.fromEntries(
   BUILTIN_FONTS.map((font) => [font.id, `'${font.family}', ${font.fallback ?? 'Georgia, serif'}`])
@@ -77,7 +78,7 @@ export function isSafeUrl(url) {
   return /^(https?:|mailto:|tel:)/i.test(String(url ?? ''));
 }
 
-export function siteCss(project, { fontFaces = [] } = {}) {
+export function siteCss(project, { fontFaces = [], preview = false } = {}) {
   const theme = project.theme ?? {};
   const stage = project.stage ?? {};
   const ratio = (stage.width || 1200) / (stage.height || 800);
@@ -124,6 +125,7 @@ body{
 body.fit-width .stage{width:clamp(${stage.minWidth ?? 360}px, 100vw, ${stage.maxWidth ?? 1280}px);}
 body.fit-width{justify-content:flex-start;}
 body.align-left{align-items:flex-start;}
+${preview ? `body.preview .stage{width:min(100vw, ${stage.maxWidth ?? 1280}px, calc(100svh * ${ratio})) !important;}` : ''}
 .el{
   position:absolute;
   left:var(--x);top:var(--y);
@@ -139,20 +141,21 @@ body.align-left{align-items:flex-start;}
 .el-link:focus-visible{outline:2px solid var(--link-accent);outline-offset:3px;}
 .el-text{white-space:pre-wrap;overflow-wrap:anywhere;overflow:visible;}
 .el-text h1,.el-text p,.el-text div{margin:0;font:inherit;white-space:pre-wrap;}
-.el-image,.el-drawing,.el-button{overflow:hidden;}
-.el-button{display:block;text-decoration:none;color:inherit;container-type:size;}
-.button-shell,.button-state{position:absolute;inset:0;}
-.button-state{display:none;}
-.button-state--idle{display:block;}
-.el-button:hover .button-state--idle,.el-button:focus-visible .button-state--idle{display:none;}
-.el-button:hover .button-state--hover,.el-button:focus-visible .button-state--hover{display:block;}
-.el-button:active .button-state--idle,.el-button:active .button-state--hover{display:none;}
-.el-button:active .button-state--pressed{display:block;}
-.el-button:focus-visible{outline:2px solid var(--link-accent);outline-offset:3px;}
-.button-child{position:absolute;overflow:hidden;}
-.button-child svg{display:block;width:100%;height:100%;overflow:visible;}
-.button-text{display:flex;align-items:center;width:100%;height:100%;overflow:hidden;overflow-wrap:anywhere;}
-.el-image img,.el-drawing img{display:block;width:100%;height:100%;object-fit:var(--fit,cover);}
+.el-image,.el-drawing,.el-composition{overflow:hidden;}
+.el-composition{display:block;text-decoration:none;color:inherit;container-type:size;}
+.composition-shell{position:absolute;inset:0;}
+.composition-frame{position:absolute;inset:0;display:none;}
+.composition--button .composition-frame.is-idle{display:block;}
+.composition--button:hover .composition-frame.is-idle,.composition--button:focus-visible .composition-frame.is-idle{display:none;}
+.composition--button:hover .composition-frame.is-hover,.composition--button:focus-visible .composition-frame.is-hover{display:block;}
+.composition--button:active .composition-frame.is-idle,.composition--button:active .composition-frame.is-hover{display:none;}
+.composition--button:active .composition-frame.is-pressed{display:block;}
+.composition--animation .composition-frame.is-active{display:block;}
+.el-composition:focus-visible{outline:2px solid var(--link-accent);outline-offset:3px;}
+.composition-child{position:absolute;overflow:hidden;}
+.composition-child svg{display:block;width:100%;height:100%;overflow:visible;}
+.composition-text{display:flex;align-items:center;width:100%;height:100%;overflow:hidden;overflow-wrap:anywhere;}
+.el-image img,.el-drawing img{display:block;width:100%;height:100%;object-fit:var(--fit,contain);}
 .el-video{overflow:hidden;background:#000;}
 .el-video video{display:block;width:100%;height:100%;object-fit:var(--fit,cover);}
 .el-audio{display:block;padding:0;background:transparent;border:0;font-size:2cqw;}
@@ -321,8 +324,8 @@ function contentFor(element, project, stage, options, page) {
   if (element.type === 'fichaCollection') {
     return fichaCollectionHtml(project, page, element, options);
   }
-  if (element.type === 'button') {
-    return buttonHtml(project, page, element, options);
+  if (element.type === 'composition') {
+    return compositionHtml(project, page, element, options);
   }
   if (element.type === 'html') {
     const asset = project.assets?.[element.assetId];
@@ -357,17 +360,18 @@ function renderElement(element, project, page, options) {
     return `<div class="el el-ficha-collection" style="${styleFor(element, stage)}">${contentFor(element, project, stage, options, page)}</div>`;
   }
 
-  if (element.type === 'button') {
+  if (element.type === 'composition') {
     const href = linkFor(project, page, element, options);
     const content = contentFor(element, project, stage, options, page);
-    if (href) {
+    const app = element.composition?.preset === 'animation' ? 'div' : href ? 'a' : 'div';
+    if (app === 'a') {
       const previewPage = options.preview && href.pageId;
       const url = previewPage ? '#' : href.href;
       const data = previewPage ? ` data-cajita-page="${escapeHtml(href.pageId)}"` : '';
       const target = href.newTab ? ' target="_blank" rel="noopener noreferrer"' : '';
-      return `<a class="el el-button" href="${escapeHtml(url)}"${data}${target} aria-label="${escapeHtml(element.label || 'Botón')}" style="${styleFor(element, stage)}">${content}</a>`;
+      return `<a class="el el-composition" href="${escapeHtml(url)}"${data}${target} aria-label="${escapeHtml(element.label || 'Composición')}" style="${styleFor(element, stage)}">${content}</a>`;
     }
-    return `<div class="el el-button" aria-label="${escapeHtml(element.label || 'Botón')}" style="${styleFor(element, stage)}">${content}</div>`;
+    return `<div class="el el-composition" aria-label="${escapeHtml(element.label || 'Composición')}" style="${styleFor(element, stage)}">${content}</div>`;
   }
 
   if (element.type === 'ficha') {
@@ -468,7 +472,7 @@ ${cssTag}
 ${jsTag}
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 fill=%22${encodeURIComponent(project.theme?.accent ?? '#2e5a88')}%22/></svg>" />
 </head>
-<body class="fit-${escapeHtml(project.stage.fit)} align-${escapeHtml(project.stage.align)}"${project.fichaSettings?.movable ? ` data-ficha-movable="true" data-ficha-project="${escapeHtml(project.id)}" data-ficha-page="${escapeHtml(page.id)}"` : ''} style="background:${escapeHtml(pageBackground)}">
+<body class="fit-${escapeHtml(project.stage.fit)} align-${escapeHtml(project.stage.align)}${options.preview ? ' preview' : ''}"${project.fichaSettings?.movable ? ` data-ficha-movable="true" data-ficha-project="${escapeHtml(project.id)}" data-ficha-page="${escapeHtml(page.id)}"` : ''} style="background:${escapeHtml(project.siteBackground ?? project.theme?.background ?? '#f7f1e5')}">
 <main class="stage" style="--stage-w:${stage.width};--stage-h:${stage.height};background:${escapeHtml(pageBackground)}">
 ${heading}${elements}${project.fichaSettings?.movable && elements.includes('el-ficha') ? `<button class="ficha-reset" type="button" data-ficha-reset>${escapeHtml(project.locale === 'en' ? 'reset fichas' : 'reiniciar fichas')}</button>` : ''}
 </main>
@@ -504,7 +508,10 @@ export function buildSite(project, options = {}) {
     pageHref,
     ...options
   };
-  const css = siteCss(project, { fontFaces: options.fontFaces ?? [] });
+  const css = siteCss(project, {
+    fontFaces: options.fontFaces ?? [],
+    preview: Boolean(options.preview)
+  });
   const pages = project.pages.map((page) => ({
     page,
     path: pagePath(project, page),
@@ -535,7 +542,7 @@ export function buildSite(project, options = {}) {
     { path: 'cajita.css', content: css, mime: 'text/css' },
     {
       path: 'cajita.js',
-      content: `${AUDIO_PLAYER_SCRIPT}\n${FICHA_FILTER_SCRIPT}\n${project.fichaSettings?.movable ? `${FICHA_MOVE_SCRIPT}\n` : ''}`,
+      content: `${AUDIO_PLAYER_SCRIPT}\n${FICHA_FILTER_SCRIPT}\n${COMPOSITION_SCRIPT}\n${project.fichaSettings?.movable ? `${FICHA_MOVE_SCRIPT}\n` : ''}`,
       mime: 'text/javascript'
     },
     { path: 'robots.txt', content: robotsTxt(project), mime: 'text/plain' },
@@ -564,9 +571,9 @@ export function usedAssets(project) {
   for (const page of project.pages ?? []) {
     for (const element of page.elements ?? []) {
       if (element.assetId) ids.add(element.assetId);
-      if (element.type === 'button') {
-        for (const children of Object.values(element.button?.states ?? {})) {
-          for (const child of children ?? []) {
+      if (element.type === 'composition') {
+        for (const frame of element.composition?.frames ?? []) {
+          for (const child of frame.children ?? []) {
             if (child.assetId) ids.add(child.assetId);
           }
         }

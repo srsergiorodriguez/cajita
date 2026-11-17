@@ -2,7 +2,7 @@ import { createId } from './model.js';
 import { fontFamily } from './fonts.js';
 import { shapeLabel } from './shapes.js';
 import { DEFAULT_FICHA_COLLECTION, normaliseFichaCollection } from './ficha-collection.js';
-import { DEFAULT_BUTTON, normaliseButton } from './button.js';
+import { createComposition, normaliseComposition } from './composition.js';
 
 /**
  * Built-in font IDs are stored in text elements. Only the families actually
@@ -205,9 +205,9 @@ export function defaultTextStyle(project) {
 
 export function defaultFrame(stage, type = 'text', index = 0) {
   const offset = (index % 4) * 24;
-  if (type === 'button') {
-    const w = Math.min(360, stage.width * 0.32);
-    const h = Math.min(96, stage.height * 0.18);
+  if (type === 'composition') {
+    const w = 300;
+    const h = 100;
     return {
       x: (stage.width - w) / 2 + offset,
       y: (stage.height - h) / 2 + offset,
@@ -361,8 +361,9 @@ export function createElement(type, options = {}) {
     fichaId = '',
     drawingId = '',
     collection = DEFAULT_FICHA_COLLECTION,
-    button = DEFAULT_BUTTON,
-    buttonLabel = '',
+    composition = null,
+    compositionPreset = 'blank',
+    compositionLabel = '',
     alt = '',
     animated = true,
     name = '',
@@ -400,7 +401,7 @@ export function createElement(type, options = {}) {
       type: 'image',
       assetId: asset?.id ?? '',
       alt: asset?.name ?? '',
-      fit: 'cover',
+      fit: 'contain',
       pixelated: false,
       mask: []
     };
@@ -414,7 +415,7 @@ export function createElement(type, options = {}) {
       drawingId,
       alt: alt || asset?.name || 'Dibujo',
       animated,
-      fit: 'cover',
+      fit: 'contain',
       pixelated: true,
       mask: [],
       maskCurve: false
@@ -463,12 +464,15 @@ export function createElement(type, options = {}) {
     };
   }
 
-  if (type === 'button') {
+  if (type === 'composition') {
+    const data = composition ?? createComposition(compositionPreset);
+    const clean = normaliseComposition(data);
     return {
       ...base,
-      type: 'button',
-      label: buttonLabel || 'Botón',
-      button: normaliseButton(button)
+      type: 'composition',
+      label: compositionLabel || (clean.preset === 'animation' ? 'Animación' : 'Botón'),
+      preset: clean.preset,
+      composition: clean
     };
   }
 

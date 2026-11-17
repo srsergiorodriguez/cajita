@@ -37,6 +37,19 @@ describe('shapes', () => {
     );
   });
 
+  it('uses a matching viewBox for non-square shapes', () => {
+    const markup = shapeMarkup(
+      { shape: 'square', fill: '#a82a1e', stroke: '#1c1917', radius: 24 },
+      2
+    );
+    const svg = shapeSvg(
+      { shape: 'square', fill: '#a82a1e', stroke: '#1c1917', radius: 24 },
+      2
+    );
+    expect(markup).toContain('width="200"');
+    expect(svg).toContain('viewBox="0 0 200 100"');
+  });
+
   it('leaves circles unchanged when a radius is supplied', () => {
     const markup = shapeMarkup({
       shape: 'circle',

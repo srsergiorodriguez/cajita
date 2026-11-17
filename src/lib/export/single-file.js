@@ -2,6 +2,7 @@ import { buildSite } from './site.js';
 import { AUDIO_PLAYER_SCRIPT } from './audio-player.js';
 import { FICHA_MOVE_SCRIPT } from './ficha-move.js';
 import { FICHA_FILTER_SCRIPT } from './ficha-filter.js';
+import { COMPOSITION_SCRIPT } from './composition-script.js';
 
 function escapeAttribute(value) {
   return String(value ?? '')
@@ -102,7 +103,7 @@ export function buildSingleFile(project, { assetHref, builtinHref, customHref, f
 </head>
 <body class="fit-${escapeAttribute(clean.stage.fit)} align-${escapeAttribute(clean.stage.align)}">
 ${sections}
-<script>${clean.fichaSettings?.movable ? `${FICHA_MOVE_SCRIPT}\n` : ''}${routerScript()}\n${FICHA_FILTER_SCRIPT}\n${AUDIO_PLAYER_SCRIPT}</script>
+<script>${clean.fichaSettings?.movable ? `${FICHA_MOVE_SCRIPT}\n` : ''}${routerScript()}\n${FICHA_FILTER_SCRIPT}\n${COMPOSITION_SCRIPT}\n${AUDIO_PLAYER_SCRIPT}</script>
 </body>
 </html>`;
 }

@@ -2,8 +2,6 @@
   import Icon from '../ui/Icon.svelte';
   import IconButton from '../ui/IconButton.svelte';
   import EmbedDialog from '../embed/EmbedDialog.svelte';
-  import FichasDialog from '../ficha/FichasDialog.svelte';
-  import ButtonStudio from '../button/ButtonStudio.svelte';
   import {
     addElement,
     importHtmlFile,
@@ -20,7 +18,8 @@
   let shapeOpen = $state(false);
   let fichasOpen = $state(false);
   let drawingOpen = $state(false);
-  let buttonOpen = $state(false);
+  let compositionOpen = $state(false);
+  let compositionPreset = $state('button');
   let htmlBusy = $state(false);
 
   const MEDIA_ACCEPT = {
@@ -109,20 +108,50 @@
     }
   }
 
-  const tools = [
-    { icon: 'image', label: 'left.image', action: addImage },
-    { icon: 'text', label: 'left.text', action: addText },
-    { icon: 'video', label: 'left.video', action: addVideo },
-    { icon: 'sound', label: 'left.sound', action: addSound },
-    { icon: 'play', label: 'embed.youtube', action: () => openEmbed('youtube') },
-    { icon: 'chart', label: 'embed.observable', action: () => openEmbed('observable') },
-    { icon: 'code', label: 'embed.p5', action: () => openEmbed('p5') },
-    { icon: 'pencil', label: 'drawing.tool', action: () => (drawingOpen = true) },
-    { icon: 'button', label: 'button.tool', action: () => (buttonOpen = true) },
-    { icon: 'html', label: 'html.tool', action: addHtml },
-    { icon: 'shape', label: 'shape.tool', action: () => (shapeOpen = !shapeOpen) },
-    { icon: 'archive', label: 'ficha.tool', action: () => (fichasOpen = true) }
+  const toolGroups = [
+    {
+      id: 'basics',
+      label: 'left.group.basics',
+      tools: [
+        { icon: 'text', label: 'left.text', action: addText },
+        { icon: 'image', label: 'left.image', action: addImage },
+        { icon: 'shape', label: 'shape.tool', action: () => (shapeOpen = !shapeOpen), shape: true },
+        { icon: 'pencil', label: 'drawing.tool', action: () => (drawingOpen = true) }
+      ]
+    },
+    {
+      id: 'media',
+      label: 'left.group.media',
+      tools: [
+        { icon: 'video', label: 'left.video', action: addVideo },
+        { icon: 'sound', label: 'left.sound', action: addSound }
+      ]
+    },
+    {
+      id: 'interaction',
+      label: 'left.group.interaction',
+      tools: [
+        { icon: 'button', label: 'composition.button', action: () => { compositionPreset = 'button'; compositionOpen = true; } },
+        { icon: 'play', label: 'composition.animation', action: () => { compositionPreset = 'animation'; compositionOpen = true; } }
+      ]
+    },
+    {
+      id: 'insert',
+      label: 'left.group.insert',
+      tools: [
+        { icon: 'play', label: 'embed.youtube', action: () => openEmbed('youtube') },
+        { icon: 'chart', label: 'embed.observable', action: () => openEmbed('observable') },
+        { icon: 'code', label: 'embed.p5', action: () => openEmbed('p5') },
+        { icon: 'html', label: 'html.tool', action: addHtml }
+      ]
+    },
+    {
+      id: 'data',
+      label: 'left.group.data',
+      tools: [{ icon: 'archive', label: 'ficha.tool', action: () => (fichasOpen = true) }]
+    }
   ];
+
 </script>
 
 <aside class="left-panel" aria-label={t('left.add')}>
@@ -139,51 +168,62 @@
   </div>
 
   <section class="panel-section">
-    <div class="tools">
-      {#each tools as tool}
-        <button
-          class="tool"
-          class:shape-tool={tool.icon === 'shape'}
-          type="button"
-          disabled={tool.disabled}
-          title={tool.disabled ? t('top.soon') : t(tool.label)}
-          onclick={tool.action}
-          aria-expanded={tool.icon === 'shape' ? shapeOpen : undefined}
-        >
-          <Icon name={tool.icon} size={14} />
-          <span>{t(tool.label)}</span>
-        </button>
-      {/each}
-    </div>
-    {#if shapeOpen}
-      <div class="shape-picker" role="menu" aria-label={t('shape.tool')}>
-        {#each [['circle', 'shape.circle'], ['square', 'shape.square'], ['triangle', 'shape.triangle']] as [kind, label] (kind)}
-          <button
-            type="button"
-            class="shape-choice"
-            role="menuitem"
-            onclick={() => addShape(kind)}
-          >
-            <span
-              class="shape-glyph"
-              class:shape-glyph--circle={kind === 'circle'}
-              class:shape-glyph--triangle={kind === 'triangle'}
-            ></span>
-            <span>{t(label)}</span>
-          </button>
-        {/each}
+    {#each toolGroups as group (group.id)}
+      <div class="tool-group" class:tool-group--first={group.id === 'basics'}>
+        <span class="group-label">{t(group.label)}</span>
+        <div class="tools">
+          {#each group.tools as tool}
+            <button
+              class="tool"
+              type="button"
+              title={t(tool.label)}
+              onclick={tool.action}
+              aria-expanded={tool.shape ? shapeOpen : undefined}
+            >
+              <Icon name={tool.icon} size={14} />
+              <span>{t(tool.label)}</span>
+            </button>
+          {/each}
+        </div>
+        {#if group.id === 'basics' && shapeOpen}
+          <div class="shape-picker" role="menu" aria-label={t('shape.tool')}>
+            {#each [['circle', 'shape.circle'], ['square', 'shape.square'], ['triangle', 'shape.triangle']] as [kind, label] (kind)}
+              <button
+                type="button"
+                class="shape-choice"
+                role="menuitem"
+                onclick={() => addShape(kind)}
+              >
+                <span
+                  class="shape-glyph"
+                  class:shape-glyph--circle={kind === 'circle'}
+                  class:shape-glyph--triangle={kind === 'triangle'}
+                ></span>
+                <span>{t(label)}</span>
+              </button>
+            {/each}
+          </div>
+        {/if}
       </div>
-    {/if}
+    {/each}
   </section>
 
   <EmbedDialog bind:open={embedOpen} provider={embedProvider} />
-  <FichasDialog bind:open={fichasOpen} />
+  {#if fichasOpen}
+    {#await import('../ficha/FichasDialog.svelte') then { default: FichasDialog }}
+      <FichasDialog bind:open={fichasOpen} />
+    {/await}
+  {/if}
   {#if drawingOpen}
     {#await import('../drawing/DrawingDialog.svelte') then { default: DrawingDialog }}
       <DrawingDialog bind:open={drawingOpen} />
     {/await}
   {/if}
-  <ButtonStudio bind:open={buttonOpen} />
+  {#if compositionOpen}
+    {#await import('../button/CompositionStudio.svelte') then { default: CompositionStudio }}
+      <CompositionStudio bind:open={compositionOpen} preset={compositionPreset} />
+    {/await}
+  {/if}
 </aside>
 <svelte:window onpointerdown={closeShapePicker} />
 
@@ -205,15 +245,36 @@
   }
 
   .panel-section {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     padding: var(--space-3) var(--space-4);
     border-top: 1px solid var(--line-soft);
+  }
+
+  .tool-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+  }
+
+  .tool-group--first {
+    margin-top: 0;
+  }
+
+  .group-label {
+    color: var(--muted);
+    font-family: var(--font-ui);
+    font-size: var(--text-3xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
 
   .tools {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--space-2);
-    margin-top: var(--space-2);
   }
 
   .tool {

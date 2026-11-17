@@ -335,8 +335,9 @@ export function addElement(type, options = {}) {
       title: options.title ?? '',
       caption: options.caption ?? '',
       fichaId: options.fichaId ?? '',
-      button: options.button,
-      buttonLabel: options.buttonLabel ?? '',
+      composition: options.composition,
+      compositionPreset: options.compositionPreset ?? 'blank',
+      compositionLabel: options.compositionLabel ?? '',
       collection: options.collection,
       name: options.name ?? '',
       shape: options.shape ?? 'circle',
@@ -889,6 +890,7 @@ export async function saveDrawingInProject({
     draft.drawings[id] = {
       ...structuredClone(drawing),
       id,
+      assetId: asset.id,
       updatedAt: new Date().toISOString()
     };
     draft.assets[asset.id] = asset;

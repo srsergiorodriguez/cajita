@@ -7,7 +7,6 @@
   import Select from '../ui/Select.svelte';
   import FichaCard from '../cards/FichaCard.svelte';
   import ImageMaskDialog from './ImageMaskDialog.svelte';
-  import ButtonStudio from '../button/ButtonStudio.svelte';
   import { t } from '../../lib/i18n/index.svelte.js';
   import { BUILTIN_FONTS } from '../../lib/domain/elements.js';
   import { emptyMeta, hasMetaContent } from '../../lib/domain/links.js';
@@ -134,6 +133,16 @@
     apply(() => updateElement(element.id, { [key]: value }));
   }
 
+  function setName(value) {
+    apply(() =>
+      updateElement(
+        element.id,
+        { name: value },
+        { coalesceKey: `name:${element.id}` }
+      )
+    );
+  }
+
   function setNumberField(key, value) {
     const number = Number(value);
     if (!Number.isFinite(number)) return;
@@ -228,6 +237,15 @@
 </script>
 
 <div class="inspector-body">
+  <Section label={t('element.title')}>
+    <Field
+      label={t('element.name')}
+      value={element.name ?? ''}
+      placeholder={t('element.namePlaceholder')}
+      oninput={(event) => setName(event.currentTarget.value)}
+    />
+  </Section>
+
   {#if element.type === 'text'}
     <Section label={t('text.title')}>
       <label class="text-label">
@@ -449,17 +467,17 @@
     </Section>
   {/if}
 
-  {#if element.type === 'button'}
-    <Section label={t('button.title')}>
+  {#if element.type === 'composition'}
+    <Section label={t('composition.title')}>
       <Field
-        label={t('button.label')}
+        label={t('composition.label')}
         value={element.label ?? ''}
         oninput={(event) => setField('label', event.currentTarget.value)}
       />
       <Button size="sm" variant="secondary" onclick={() => (buttonOpen = true)}>
-        {t('button.edit')}
+        {t('composition.edit')}
       </Button>
-      <p class="hint">{t('button.inspectorHint')}</p>
+      <p class="hint">{t('composition.inspectorHint')}</p>
     </Section>
   {/if}
 
@@ -720,7 +738,11 @@
       <DrawingDialog bind:open={drawingOpen} {element} />
     {/await}
   {/if}
-  <ButtonStudio bind:open={buttonOpen} {element} />
+  {#if buttonOpen}
+    {#await import('../button/CompositionStudio.svelte') then { default: CompositionStudio }}
+      <CompositionStudio bind:open={buttonOpen} {element} />
+    {/await}
+  {/if}
 
   <Section label={t('element.actions')}>
     <div class="action-grid">

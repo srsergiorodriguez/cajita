@@ -2,21 +2,21 @@
   import ShapeArt from './ShapeArt.svelte';
   import CanvasAsset from './CanvasAsset.svelte';
   import { fontStack } from '../../lib/domain/elements.js';
-  import { buttonChildStyle, buttonState, normaliseButton } from '../../lib/domain/button.js';
+  import { compositionChildStyle, frameById } from '../../lib/domain/composition.js';
 
   let {
     project,
-    button,
-    state = 'idle',
-    fallback = true,
+    composition,
+    frameId = null,
     selectedId = null,
     editable = false,
-    onselect = null
+    aspect = 1,
+    onselect = null,
+    onedit = null
   } = $props();
 
-  const children = $derived(
-    fallback ? buttonState(button, state) : (normaliseButton(button).states[state] ?? [])
-  );
+  const frame = $derived(frameById(composition, frameId));
+  const children = $derived((frame?.children ?? []).filter((child) => !child.hidden));
 
   function textStyle(child) {
     return [
@@ -34,18 +34,24 @@
   }
 </script>
 
-<div class="button-composition" class:editable>
+<div class="composition-view" class:editable>
   {#each children as child (child.id)}
     <div
-      class="button-child"
+      class="composition-child"
       class:selected={selectedId === child.id}
-      style={buttonChildStyle(child)}
+      style={compositionChildStyle(child)}
       role={editable ? 'button' : 'presentation'}
       onpointerdown={(event) => {
         if (!editable) return;
         event.preventDefault();
         event.stopPropagation();
-        onselect?.(child.id, event);
+        if (!child.locked) onselect?.(child.id, event);
+      }}
+      ondblclick={(event) => {
+        if (!editable || child.type !== 'text' || child.locked) return;
+        event.preventDefault();
+        event.stopPropagation();
+        onedit?.(child.id);
       }}
     >
       {#if child.type === 'shape'}
@@ -55,6 +61,7 @@
           stroke={child.stroke}
           strokeWidth={child.strokeWidth}
           radius={child.radius}
+          aspect={(Number(aspect) || 1) * (child.frame.w / child.frame.h)}
         />
       {:else if child.type === 'image' || child.type === 'drawing'}
         <CanvasAsset
@@ -65,14 +72,14 @@
           pixelated={child.pixelated}
         />
       {:else}
-        <span class="button-text" style={textStyle(child)}>{child.text}</span>
+        <span class="composition-text" style={textStyle(child)}>{child.text}</span>
       {/if}
     </div>
   {/each}
 </div>
 
 <style>
-  .button-composition {
+  .composition-view {
     position: relative;
     width: 100%;
     height: 100%;
@@ -80,28 +87,24 @@
     container-type: size;
     pointer-events: none;
   }
-  .button-composition.editable {
+  .composition-view.editable {
     pointer-events: auto;
   }
-  .button-child {
+  .composition-child {
     position: absolute;
     overflow: hidden;
   }
-  .button-child.selected {
+  .composition-child.selected {
     outline: 2px solid var(--selection);
     outline-offset: -1px;
-    cursor: grab;
   }
-  .button-child:active {
-    cursor: grabbing;
-  }
-  .button-child :global(svg) {
+  .composition-child :global(svg) {
     display: block;
     width: 100%;
     height: 100%;
     overflow: visible;
   }
-  .button-text {
+  .composition-text {
     display: flex;
     align-items: center;
     width: 100%;

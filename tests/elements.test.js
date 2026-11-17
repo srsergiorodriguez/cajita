@@ -86,8 +86,20 @@ describe('element factory', () => {
     p.pages[0].elements.push(el);
     expect(el.type).toBe('shape');
     expect(el.shape).toBe('triangle');
+    expect(el.radius).toBe(0);
     expect(el.fill).toBe(p.theme.accent);
     expect(validateProject(p).ok).toBe(true);
+  });
+
+  it('defaults new images to contain fit', () => {
+    const p = project();
+    const el = createElement('image', {
+      project: p,
+      page: p.pages[0],
+      asset: { id: 'a_1', name: 'foto.jpg', width: 100, height: 100 }
+    });
+    p.assets.a_1 = { id: 'a_1', kind: 'image', name: 'foto.jpg', mime: 'image/jpeg', bytes: 1, hash: 'h' };
+    expect(el.fit).toBe('contain');
   });
 
   it('duplicates with a new id and an offset', () => {

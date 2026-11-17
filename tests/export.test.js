@@ -218,6 +218,16 @@ describe('site export', () => {
     expect(site.css).toContain('background:#fffdf7');
   });
 
+  it('uses the site background around a fitted preview stage', () => {
+    const { project } = fixture();
+    project.siteBackground = '#102030';
+    const site = buildSite(project, { preview: true });
+    expect(site.pages[0].html).toContain('preview');
+    expect(site.pages[0].html).toContain('background:#102030');
+    expect(site.css).toContain('body.preview .stage');
+    expect(site.css).toContain('100svh');
+  });
+
   it('writes the page transition into the exported HTML and CSS', () => {
     const { project, start } = fixture();
     start.transition = 'fade';

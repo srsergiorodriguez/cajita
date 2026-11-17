@@ -1762,3 +1762,22 @@ Verification: **128 tests**, 0 svelte-check warnings, build passes; screenshots
 - Button element with idle/hover/pressed compositions of text, shapes, images, and drawings,
   a dedicated Button Studio, CSS-only state switching, and optional links.
 - Release version is 1.2.0.
+
+
+---
+
+## 2026-11-17 — S39: release 1.3
+
+- Generalized compositions: buttons are fixed three-state editors; animations use
+  ordered frames, F1…F8, with durations, autoplay, and loop. Shared composition
+  renderer, preview, and runtime; legacy buttons migrate automatically.
+- Shared SelectionFrame handles/rotation and LayersList across pages and compositions;
+  inline text editing, font selection, child lock/hide, state copying.
+- Aspect-aware shape geometry fixes stretched rounded corners on non-square frames.
+- Left add panel grouped into Básicos, Medios, Interacción, Insertar, Datos.
+- Page inspector reduced to page controls; project palette, typography, site background,
+  and grids moved to Project menu; page actions collapsed.
+- Preview fits the whole page using site background and page background, with site
+  alignment and transitions.
+- Tutorial copy and screenshots rebuilt for current UI, including HTML and project settings.
+- Release version is 1.3.0.

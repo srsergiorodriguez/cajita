@@ -11,9 +11,9 @@ export function builtinFontFiles(project) {
   }
   for (const page of project.pages ?? []) {
     for (const element of page.elements ?? []) {
-      if (element.type !== 'button') continue;
-      for (const children of Object.values(element.button?.states ?? {})) {
-        for (const child of children ?? []) {
+      if (element.type !== 'composition') continue;
+      for (const frame of element.composition?.frames ?? []) {
+        for (const child of frame.children ?? []) {
           if (child.type === 'text' && child.font) used.add(child.font);
         }
       }

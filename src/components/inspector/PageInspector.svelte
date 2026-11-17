@@ -4,28 +4,20 @@
   import Section from '../ui/Section.svelte';
   import SegmentedControl from '../ui/SegmentedControl.svelte';
   import Select from '../ui/Select.svelte';
-  import FontsDialog from './FontsDialog.svelte';
   import LayersList from './LayersList.svelte';
   import PageTemplatesDialog from './PageTemplatesDialog.svelte';
-  import GridsDialog from '../canvas/GridsDialog.svelte';
-  import { plural, t } from '../../lib/i18n/index.svelte.js';
+  import { t } from '../../lib/i18n/index.svelte.js';
   import { isValidSlug } from '../../lib/domain/slugs.js';
-  import { formatBytes, projectStats } from '../../lib/domain/model.js';
   import { STAGE_MAX, STAGE_MIN } from '../../lib/domain/stage.js';
   import {
-    addPage,
     duplicatePage,
     makeStartPage,
     removePage,
     renamePageSlug,
     renamePageTitle,
     session,
-    resetPalette,
-    setGridSettings,
-    setSiteBackground,
     assignPageGrid,
     updatePage,
-    updatePalette,
     updateStageSize
   } from '../../lib/state/project.svelte.js';
   import { toast } from '../../lib/state/ui.svelte.js';
@@ -38,11 +30,8 @@
   let widthDraft = $state(0);
   let heightDraft = $state(0);
   let confirming = $state(false);
-  let fontsOpen = $state(false);
-  let gridsOpen = $state(false);
   let templatesOpen = $state(false);
 
-  const summary = $derived(session.project ? projectStats(session.project) : null);
   const stage = $derived(session.project?.stage);
   const isStart = $derived(page.id === session.project?.startPageId);
 
@@ -118,14 +107,6 @@
     apply(() => assignPageGrid(page.id, value));
   }
 
-  function setGridFlag(key, value) {
-    apply(() => setGridSettings({ [key]: value }));
-  }
-
-  function setSiteBackgroundColor(value) {
-    apply(() => setSiteBackground(value, { coalesceKey: 'site-bg' }));
-  }
-
   function duplicate() {
     apply(() => duplicatePage(page.id));
   }
@@ -156,7 +137,7 @@
     {#if slugError}<p class="error">{slugError}</p>{/if}
   </Section>
 
-  <Section label={t('page.size')}>
+  <Section label={t('page.canvas')} collapsible>
     <div class="field-grid">
       <Field
         label={t('page.width')}
@@ -209,16 +190,13 @@
       value={page.background?.color ?? '#fffdf7'}
       oninput={(event) => setBackground(event.currentTarget.value)}
     />
-    <Field
-      label={t('inspector.siteBackground')}
-      type="color"
-      value={session.project?.siteBackground ?? '#fffdf7'}
-      hint={t('inspector.siteBackgroundHint')}
-      oninput={(event) => setSiteBackgroundColor(event.currentTarget.value)}
-    />
   </Section>
 
-  <Section label={t('grid.section')}>
+  <Section label={t('layers.title')}>
+    <LayersList {page} />
+  </Section>
+
+  <Section label={t('grid.section')} collapsible>
     <Select
       label={t('grid.pageGrid')}
       value={page.gridId ?? ''}
@@ -229,43 +207,21 @@
           label: grid.name
         }))
       ]}
-      onchange={setGrid}
+      onchange={(value) => apply(() => assignPageGrid(page.id, value))}
     />
-    <div class="grid-flags">
-      <label class="check">
-        <input
-          type="checkbox"
-          checked={session.project?.gridSettings?.show !== false}
-          onchange={(event) => setGridFlag('show', event.currentTarget.checked)}
-        />
-        <span>{t('grid.show')}</span>
-      </label>
-      <label class="check">
-        <input
-          type="checkbox"
-          checked={session.project?.gridSettings?.snap !== false}
-          onchange={(event) => setGridFlag('snap', event.currentTarget.checked)}
-        />
-        <span>{t('grid.snap')}</span>
-      </label>
-    </div>
-    <div class="row">
-      <Button size="sm" variant="secondary" onclick={() => (gridsOpen = true)}>
-        {t('grid.manage')}
+    {#if page.gridId}
+      <Button
+        size="sm"
+        variant="ghost"
+        onclick={() => apply(() => assignPageGrid(page.id, ''))}
+      >
+        {t('grid.removeFromPage')}
       </Button>
-      {#if page.gridId}
-        <Button
-          size="sm"
-          variant="ghost"
-          onclick={() => apply(() => assignPageGrid(page.id, ''))}
-        >
-          {t('grid.removeFromPage')}
-        </Button>
-      {/if}
-    </div>
+    {/if}
+    <p class="hint">{t('grid.pageHint')}</p>
   </Section>
 
-  <Section label={t('templates.section')}>
+  <Section label={t('templates.section')} collapsible>
     <p class="hint">{t('templates.pageHint')}</p>
     <div class="row">
       <Button size="sm" variant="secondary" onclick={() => (templatesOpen = true)}>
@@ -274,19 +230,13 @@
     </div>
   </Section>
 
-  <Section label={t('page.actions')}>
+  <Section label={t('page.actions')} collapsible>
     <div class="row">
       <Button
         size="sm"
         variant="secondary"
-        onclick={() =>
-          apply(() =>
-            addPage(t('page.newTitle', { number: session.project.pages.length + 1 }))
-          )}
+        onclick={() => apply(() => duplicatePage(page.id))}
       >
-        {t('page.add')}
-      </Button>
-      <Button size="sm" variant="secondary" onclick={duplicate}>
         {t('page.duplicate')}
       </Button>
       {#if !isStart}
@@ -301,61 +251,6 @@
         <span class="stamp">{t('page.start')}</span>
       {/if}
     </div>
-  </Section>
-
-  <GridsDialog bind:open={gridsOpen} />
-  <PageTemplatesDialog bind:open={templatesOpen} {page} />
-
-  <Section label={t('palette.title')}>
-    <div class="palette-grid">
-      {#each session.project?.palette ?? [] as color, index}
-        <label class="palette-swatch">
-          <input
-            type="color"
-            value={color}
-            aria-label={t('palette.color', { number: index + 1 })}
-            oninput={(event) => apply(() => updatePalette(index, event.currentTarget.value))}
-          />
-          <span>{String(index + 1).padStart(2, '0')}</span>
-        </label>
-      {/each}
-    </div>
-    <p class="hint">{t('palette.hint')}</p>
-    <Button size="sm" variant="ghost" onclick={() => apply(resetPalette)}>
-      {t('palette.reset')}
-    </Button>
-  </Section>
-
-  <Section label={t('layers.title')}>
-    <LayersList {page} />
-  </Section>
-
-  <Section label={t('fonts.title')}>
-    <div class="font-summary">
-      <span>
-        {plural(
-          Object.keys(session.project.fonts ?? {}).length,
-          'units.fontOne',
-          'units.fontMany'
-        )}
-      </span>
-      <Button size="sm" variant="ghost" onclick={() => (fontsOpen = true)}>
-        {t('fonts.manage')}
-      </Button>
-    </div>
-  </Section>
-
-  {#if summary}
-    <Section label={t('projectMenu.title')}>
-      <p class="summary">
-        {plural(summary.pages, 'units.pageOne', 'units.pageMany')} ·
-        {plural(summary.media, 'units.assetOne', 'units.assetMany')} ·
-        {formatBytes(summary.bytes)}
-      </p>
-    </Section>
-  {/if}
-
-  <div class="danger-zone">
     {#if session.project.pages.length <= 1}
       <p class="hint">{t('page.onlyOne')}</p>
     {:else if confirming}
@@ -373,10 +268,9 @@
         {t('page.delete')}
       </Button>
     {/if}
-  </div>
+  </Section>
+  <PageTemplatesDialog bind:open={templatesOpen} {page} />
 </div>
-
-<FontsDialog bind:open={fontsOpen} />
 
 <style>
   .inspector-body {
@@ -403,20 +297,6 @@
     gap: var(--space-1);
   }
 
-  .font-summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
-    color: var(--muted);
-    font-size: var(--text-2xs);
-  }
-
-  .summary {
-    color: var(--ink-2);
-    font-size: var(--text-xs);
-  }
-
   .error {
     color: var(--danger);
     font-size: var(--text-2xs);
@@ -428,56 +308,10 @@
     line-height: 1.4;
   }
 
-  .danger-zone {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    padding: var(--space-3) var(--space-4);
-  }
-  .grid-flags {
-    display: flex;
-    gap: var(--space-3);
-    flex-wrap: wrap;
-    margin: var(--space-2) 0;
-  }
-  .check {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    color: var(--ink);
-    font-size: var(--text-xs);
-  }
-  .check input {
-    accent-color: var(--selection);
-  }
   .hint {
     margin: 0 0 var(--space-2);
     color: var(--muted);
     font-size: var(--text-2xs);
     line-height: 1.4;
-  }
-  .palette-grid {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: var(--space-2);
-  }
-  .palette-swatch {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    min-width: 0;
-  }
-  .palette-swatch input {
-    width: 100%;
-    height: 34px;
-    padding: 2px;
-    border: 1px solid var(--line);
-    background: var(--panel-2);
-    cursor: pointer;
-  }
-  .palette-swatch span {
-    color: var(--muted);
-    font-size: var(--text-3xs);
-    text-align: center;
   }
 </style>

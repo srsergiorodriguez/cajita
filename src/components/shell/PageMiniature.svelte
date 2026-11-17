@@ -1,7 +1,7 @@
 <script>
   import AssetThumb from './AssetThumb.svelte';
   import ShapeArt from '../canvas/ShapeArt.svelte';
-  import ButtonComposition from '../canvas/ButtonComposition.svelte';
+  import CompositionView from '../canvas/CompositionView.svelte';
   import Icon from '../ui/Icon.svelte';
   import { elementName, fontStack } from '../../lib/domain/elements.js';
 
@@ -71,7 +71,7 @@
             projectId={project.id}
             mask={element.type === 'image' || element.type === 'drawing' ? element.mask : []}
             maskCurve={element.maskCurve}
-            fit={element.fit ?? 'cover'}
+            fit={element.fit ?? 'contain'}
           />
         {:else if element.type === 'video'}
           <span class="mini-icon"><Icon name="video" size={12} /></span>
@@ -93,9 +93,10 @@
           stroke={element.stroke}
           strokeWidth={element.strokeWidth}
           radius={element.radius}
+          aspect={element.frame.w / element.frame.h}
         />
-      {:else if element.type === 'button'}
-        <ButtonComposition project={project} button={element.button} state="idle" />
+      {:else if element.type === 'composition'}
+        <CompositionView project={project} composition={element.composition} frameId={element.composition?.frames?.[0]?.id} aspect={element.frame.w / element.frame.h} />
       {:else if element.type === 'fichaCollection'}
         <span class="mini-collection">
           {#each Object.values(project?.fichas ?? {}).slice(0, 6) as record (record.id)}

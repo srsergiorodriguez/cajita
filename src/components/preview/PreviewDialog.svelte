@@ -21,6 +21,9 @@
   const currentPage = $derived(
     pages.find((page) => page.id === currentPageId) ?? pages[0] ?? null
   );
+  const siteBackground = $derived(
+    session.project?.siteBackground ?? session.project?.theme?.background ?? '#f7f1e5'
+  );
   const hasFicha = $derived(
     Boolean(
       session.project?.pages
@@ -133,11 +136,13 @@
       class="preview-frame"
       class:fade={previewAnimation === 'fade'}
       class:slide={previewAnimation === 'slide'}
+      style:background={siteBackground}
     >
       <iframe
         bind:this={iframeEl}
         src={previewSrc}
         title={t('preview.title')}
+        style:background={siteBackground}
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads"
         onload={() => {
           iframeReady = true;
@@ -173,7 +178,6 @@
     height: min(68vh, 720px);
     overflow: hidden;
     border: var(--border-control) solid var(--line);
-    background: var(--stage);
   }
 
   .preview-frame.fade {
@@ -208,6 +212,5 @@
     width: 100%;
     height: 100%;
     border: 0;
-    background: var(--stage);
   }
 </style>

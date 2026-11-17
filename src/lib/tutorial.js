@@ -5,8 +5,10 @@ export const TUTORIAL_STEPS = Object.freeze([
   { id: 'embeds', image: '03b-embeds.png', titleKey: 'tutorial.embeds.title', bodyKey: 'tutorial.embeds.body' },
   { id: 'pages', image: '04-map.png', titleKey: 'tutorial.pages.title', bodyKey: 'tutorial.pages.body' },
   { id: 'fichas', image: '05-fichas.png', titleKey: 'tutorial.fichas.title', bodyKey: 'tutorial.fichas.body' },
+  { id: 'compositions', image: '03c-compositions.png', titleKey: 'tutorial.compositions.title', bodyKey: 'tutorial.compositions.body' },
   { id: 'preview', image: '06-preview.png', titleKey: 'tutorial.preview.title', bodyKey: 'tutorial.preview.body' },
   { id: 'export', image: '07-export.png', titleKey: 'tutorial.export.title', bodyKey: 'tutorial.export.body' },
   { id: 'publish', image: '08-publish.png', titleKey: 'tutorial.publish.title', bodyKey: 'tutorial.publish.body' },
+  { id: 'projectSettings', image: '09b-project.png', titleKey: 'tutorial.projectSettings.title', bodyKey: 'tutorial.projectSettings.body' },
   { id: 'settings', image: '09-settings.png', titleKey: 'tutorial.settings.title', bodyKey: 'tutorial.settings.body' }
 ]);
