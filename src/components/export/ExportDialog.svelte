@@ -21,6 +21,7 @@
       (options.small.bytes.byteLength > smallLimit || options.hasVideoAudio || options.hasFichas)
   );
   const recommended = $derived(smallTooBig ? 'full' : 'small');
+  const hasOggAudio = $derived(Boolean(options?.hasOggAudio));
 
   $effect(() => {
     if (open && !wasOpen) load();
@@ -102,6 +103,7 @@
         </button>
       </div>
       <p class="summary">{t('export.summary', { pages: options.pageCount, assets: options.assetCount })}</p>
+      {#if hasOggAudio}<p class="warning">{t('export.oggWarning')}</p>{/if}
       <p class="note">{t('export.smallFixed')}<br />{t('export.publishFull')}</p>
       <div class="actions">
         <Button size="sm" variant="ghost" onclick={() => (open = false)}>{t('common.cancel')}</Button>

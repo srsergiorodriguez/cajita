@@ -92,6 +92,18 @@
     <path d="M8 12h8" />
   {:else if name === 'html'}
     <path d="M9 7 4 12l5 5M15 7l5 5-5 5M13 5l-2 14" />
+  {:else if name === 'line'}
+    <path d="M4 20 20 4" />
+  {:else if name === 'chalk'}
+    <path d="m5 19 5-5 3 2 6-7" />
+    <path d="M5 7h2M9 5h1M16 17h2M14 20h3" opacity=".6" />
+  {:else if name === 'spray'}
+    <circle cx="9" cy="9" r="1" />
+    <circle cx="14" cy="7" r="1" />
+    <circle cx="17" cy="12" r="1" />
+    <circle cx="10" cy="15" r="1" />
+    <circle cx="15" cy="17" r="1" />
+    <path d="m6 18 4-4" opacity=".45" />
   {:else if name === 'pencil'}
     <path d="M4 20c2.5-.5 4.2-1.5 5.4-3.3L19 7.2 16.8 5 7.3 14.6C5.5 15.8 4.5 17.5 4 20Z" />
   {:else if name === 'shape'}
@@ -135,6 +147,10 @@
     <path d="M3 12h18M12 3c3 3.5 3 14 0 18M12 3c-3 3.5-3 14 0 18" />
   {:else if name === 'code'}
     <path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14" />
+  {:else if name === 'onion'}
+    <circle cx="12" cy="12" r="8" />
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 4v16M4 12h16" opacity=".45" />
   {:else if name === 'eye-off'}
     <path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.1 4.2M6.2 6.2C3.7 8 2 12 2 12s3.5 7 10 7a10.7 10.7 0 0 0 4.1-.8" />
   {:else if name === 'lock'}

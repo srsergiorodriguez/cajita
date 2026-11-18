@@ -7,6 +7,7 @@
   import Select from '../ui/Select.svelte';
   import FichaCard from '../cards/FichaCard.svelte';
   import ImageMaskDialog from './ImageMaskDialog.svelte';
+  import ShapeFields from './ShapeFields.svelte';
   import { t } from '../../lib/i18n/index.svelte.js';
   import { BUILTIN_FONTS } from '../../lib/domain/elements.js';
   import { emptyMeta, hasMetaContent } from '../../lib/domain/links.js';
@@ -539,47 +540,12 @@
 
   {#if element.type === 'shape'}
     <Section label={t('shape.title')}>
-      <SegmentedControl
-        label={t('shape.kind')}
-        value={element.shape}
-        options={[
-          { value: 'circle', label: t('shape.circle') },
-          { value: 'square', label: t('shape.square') },
-          { value: 'triangle', label: t('shape.triangle') }
-        ]}
-        onchange={(value) => setField('shape', value)}
+      <ShapeFields
+        value={element}
+        onchange={(patch) => {
+          for (const [key, next] of Object.entries(patch)) setField(key, next);
+        }}
       />
-      <Field
-        label={t('shape.fill')}
-        type="color"
-        value={element.fill}
-        oninput={(event) => setField('fill', event.currentTarget.value)}
-      />
-      <Field
-        label={t('shape.stroke')}
-        type="color"
-        value={element.stroke}
-        oninput={(event) => setField('stroke', event.currentTarget.value)}
-      />
-      <Field
-        label={t('shape.strokeWidth')}
-        type="number"
-        value={element.strokeWidth}
-        min="0"
-        max="40"
-        oninput={(event) => setField('strokeWidth', Number(event.currentTarget.value))}
-      />
-      {#if element.shape !== 'circle'}
-        <Field
-          label={t('shape.radius')}
-          type="number"
-          value={element.radius ?? 0}
-          min="0"
-          max="50"
-          suffix="%"
-          oninput={(event) => setField('radius', Number(event.currentTarget.value))}
-        />
-      {/if}
     </Section>
   {/if}
 

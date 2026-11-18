@@ -168,6 +168,9 @@ export async function buildExportOptions(project) {
   const hasVideoAudio = site.assets.some(
     (asset) => asset.kind === 'video' || asset.kind === 'audio'
   );
+  const hasOggAudio = site.assets.some(
+    (asset) => asset.kind === 'audio' && asset.mime === 'audio/ogg'
+  );
   return {
     small: {
       bytes: smallBytes,
@@ -180,6 +183,7 @@ export async function buildExportOptions(project) {
       mime: 'application/zip'
     },
     hasVideoAudio,
+    hasOggAudio,
     hasFichas: project.pages.some((page) => page.elements?.some((element) => element.type === 'ficha')),
     pageCount: project.pages.length,
     assetCount: site.assets.length

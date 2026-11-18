@@ -25,10 +25,33 @@ export const AUDIO_PLAYER_SCRIPT = `(function(){
         if(button)button.setAttribute('aria-label',audio.paused?'reproducir audio':'pausar audio');
         if(icon)icon.textContent=audio.paused?'▶':'❚❚';
       }
+      function play(){
+        try{
+          var result=audio.play();
+          if(result&&typeof result.catch==='function')result.catch(function(){});
+        }catch(error){}
+      }
       function toggle(event){
         event.preventDefault();
-        if(audio.paused)audio.play().catch(function(){});
+        if(audio.paused)play();
         else audio.pause();
+      }
+      // Safari is stricter with media loaded from data: URLs. The portable
+      // export inlines audio; convert it to a Blob URL before playback while
+      // keeping the normal relative-file export untouched.
+      function useBlobSource(){
+        var source=audio.getAttribute('src')||'';
+        if(source.indexOf('data:')!==0)return;
+        try{
+          var comma=source.indexOf(',');
+          if(comma<0)return;
+          var header=source.slice(5,comma).split(';')[0]||'audio/mpeg';
+          var binary=atob(source.slice(comma+1));
+          var bytes=new Uint8Array(binary.length);
+          for(var i=0;i<binary.length;i+=1)bytes[i]=binary.charCodeAt(i);
+          audio.src=URL.createObjectURL(new Blob([bytes],{type:header}));
+          audio.load();
+        }catch(error){}
       }
       if(button)button.addEventListener('click',toggle);
       audio.addEventListener('play',draw);
@@ -36,6 +59,7 @@ export const AUDIO_PLAYER_SCRIPT = `(function(){
       audio.addEventListener('timeupdate',draw);
       audio.addEventListener('loadedmetadata',draw);
       audio.addEventListener('ended',draw);
+      useBlobSource();
       if(bar)bar.addEventListener('click',function(event){
         if(!audio.duration)return;
         var rect=bar.getBoundingClientRect();

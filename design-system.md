@@ -721,6 +721,51 @@ and text alignment.
 Collapsible with a chevron; state persisted in UI preferences. No nested cards
 inside cards.
 
+### Studio editors
+
+Drawing Studio and Composition Studio share one chrome and control grammar:
+
+```text
+StudioShell
+  StudioToolbar        mode/actions
+  ZoomableViewport     canvas + zoom
+  FrameTimeline        below the canvas
+  properties           Section stack
+  footer               cancel + primary save
+```
+
+Shared pieces:
+
+- `StudioShell` — dialog, columns, sticky footer.
+- `StudioToolbar` — lead / timeline / action groups; do not recreate ad hoc rows.
+- `ZoomableViewport` — fit page, fit width, scrolling, fixed viewport.
+- `FrameTimeline` — frame/state strip, duration labels, drag reorder.
+- `OnionSkin` — editor-only frame ghosts.
+- `TextEditor`, `SelectionFrame`, `ShapeFields`, `LayersList`.
+
+Rules:
+
+- Mode is a `SegmentedControl` (`estático | animación`).
+- Secondary actions are `IconButton`s with tooltips; text buttons are for footer
+  commitments and named choices, not for plus/duplicate/trash.
+- Frame actions live next to the timeline; settings live in `Section`s.
+- Zoom lives once, inside the viewport.
+- Timeline sits below the canvas, never duplicated in the toolbar.
+- No text arrows; use chevron icons.
+
+Drawing model:
+
+- `DrawingDoc` owns `width`, `height`, `transparent`, `animated`, and optional
+  authored `animation.frames`.
+- Each authored frame owns `strokes` and `duration`.
+- Drawing playback, GIF export, and editor auto-wiggle use the shared timing
+  constants: `DRAWING_DEFAULT_FRAME_MS`, `DRAWING_DEFAULT_POSE_MS`,
+  `DRAWING_FRAMES`.
+- Drawing animation is capped at `DRAWING_MAX_FRAMES` (8).
+- Canvas dimensions are arbitrary within `DRAWING_MIN_SIZE..DRAWING_MAX_SIZE`.
+- Composition onion is separate: it ghosts adjacent composition frames, with an
+  optional drawings-only scope.
+
 ### Tabs
 
 Underline 2 px `--accent` for active, 12 px mono lowercase, 32 px height.

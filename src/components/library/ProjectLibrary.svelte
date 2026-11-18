@@ -190,11 +190,7 @@
         {#each library.items as item (item.id)}
           <article class="project-card">
             <button class="card-main" type="button" onclick={() => open(item)}>
-              <span
-                class="cover"
-                style={`--cover-ratio:${item.stageWidth ?? 1200}/${item.stageHeight ?? 800}`}
-                aria-hidden="true"
-              >
+              <span class="cover" aria-hidden="true">
                 <ProjectThumb {item} />
               </span>
               <span class="card-copy">
@@ -408,8 +404,7 @@
     --cover-accent: var(--site-papel-accent);
     position: relative;
     display: block;
-    height: auto;
-    aspect-ratio: var(--cover-ratio, 3 / 2);
+    height: 168px;
     overflow: hidden;
     border-bottom: var(--border-control) solid var(--line);
     background:

@@ -60,6 +60,7 @@ example project.
 - [architecture.md](architecture.md) — boundaries, model, persistence, export.
 - [design-system.md](design-system.md) — tokens, Ficha light/dark, components.
 - [testing.md](testing.md) — what is tested, what is not, manual QA.
+- [print-zine.md](print-zine.md) — planned Paged.js zine export (experimental).
 - [plan.md](plan.md) — the active sprint only.
 - [diary.md](diary.md) — what changed and why.
 

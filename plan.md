@@ -254,8 +254,8 @@ stage into a smaller viewport; page resizing no longer moves elements.
 
 - `TutorialDialog` uses the shared `Dialog`, `TUTORIAL_STEPS`, and the current
   locale.
-- Ten steps: project, media, canvas, p5/Observable embeds, pages/map, fichas,
-  preview, export, publish, settings.
+- Twelve steps: project, media, canvas, p5/Observable/HTML embeds, pages/map,
+  fichas, compositions, preview, export, publish, project settings, settings.
 - Screenshots live in `public/tutorial/` and are checked by
   `tests/tutorial.test.js`.
 - The example project uses `forTutorial/` images, video, sound, the Observable
@@ -287,3 +287,19 @@ stage into a smaller viewport; page resizing no longer moves elements.
   through an interface; every UI string goes through `t()`.
 - `npm run verify` before “done”.
 - Do not silently diverge from `architecture.md`; amend and record it.
+
+
+## Planned — print zine export
+
+Status: **planned, experimental**. See `print-zine.md`.
+
+- One canvas page per printed page.
+- Canvas ratio derived from the printable content area (paper minus margins),
+  with mirrored inner/outer margins.
+- Paged.js print export with paper size, margins, folios, running heads, and
+  browser print / Save as PDF.
+- Print-safe profile for buttons, animations, fichas, collections, media, and
+  embeds.
+- Bleed/crop marks and booklet imposition are separate later phases.
+- Normal web export remains available for every project.
+

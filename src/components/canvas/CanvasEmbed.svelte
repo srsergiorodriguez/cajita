@@ -6,7 +6,12 @@
   const meta = $derived(embedProvider(provider));
   const icon = $derived(provider === 'observable' ? 'chart' : provider === 'p5' ? 'code' : 'play');
   const src = $derived(embedSrc({ provider, url }));
-  const live = $derived(Boolean(src && (provider === 'observable' || provider === 'p5')));
+  const live = $derived(
+    Boolean(src && ['youtube', 'observable', 'p5'].includes(provider))
+  );
+  const referrerPolicy = $derived(
+    provider === 'observable' ? 'no-referrer' : 'strict-origin-when-cross-origin'
+  );
 </script>
 
 <div class="embed-card" class:embed-card--live={live}>
@@ -16,7 +21,8 @@
       title={caption ? `${title || meta?.label}: ${caption}` : title || meta?.label}
       sandbox={meta?.sandbox ?? 'allow-scripts allow-same-origin'}
       allow={meta?.allow ?? ''}
-      referrerpolicy={provider === 'p5' ? 'strict-origin-when-cross-origin' : 'no-referrer'}
+      referrerpolicy={referrerPolicy}
+      allowfullscreen={provider === 'youtube'}
       loading="lazy"
     ></iframe>
     <span class="live-badge">{meta?.label ?? provider}</span>

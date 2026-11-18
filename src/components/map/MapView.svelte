@@ -64,6 +64,7 @@
           })
         };
       })
+      .sort((a, b) => Number(a.current) - Number(b.current))
   );
 
   function pageFor(pageId) {

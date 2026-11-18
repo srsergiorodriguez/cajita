@@ -200,7 +200,7 @@ export function cloneProject(project, { idFactory } = {}) {
   copy.createdAt = nowIso();
   copy.updatedAt = copy.createdAt;
   copy.title = project.title;
-  copy.slug = makeSlug(project.title, []);
+  copy.slug = project.slug;
   return copy;
 }
 

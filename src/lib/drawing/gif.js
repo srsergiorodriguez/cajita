@@ -24,6 +24,7 @@ class MiniGif {
     this.globalColorTable;
     this.framesPixels = [];
     this.framesImageData = [];
+    this.frameDelays = [];
     this.allPixels = []; // para poner todos los pixels de todas las imágenes y hacer la quantización
 
     this.distanceMemo = {};
@@ -40,7 +41,8 @@ class MiniGif {
    * Add an RGBA frame directly, without a canvas or DOM. This is the drawing
    * studio's path: frames are generated as pixel buffers and stay deterministic.
    */
-  addFramePixels(pixels, width, height) {
+  /** @param {Uint8ClampedArray|Uint8Array} pixels @param {number} width @param {number} height @param {number|null} [delay] */
+  addFramePixels(pixels, width, height, delay = null) {
     if (!(pixels instanceof Uint8ClampedArray) && !(pixels instanceof Uint8Array)) {
       throw new Error('MiniGif: addFramePixels expects RGBA pixel data');
     }
@@ -54,6 +56,7 @@ class MiniGif {
       throw new Error('MiniGif: all frames must have the same dimensions');
     }
     this.framesPixels.push(pixels);
+    this.frameDelays.push(Number.isFinite(delay) ? delay : null);
     return pixels;
   }
 
@@ -322,7 +325,10 @@ getCodeStream(indexStream) {
     // PARA CADA IMAGEN DE LA ANIMACIÓN HAY QUE HACER ESTAS TRES: graphicsColorExtension, imageDescriptor, imageData
     const transparentFlag = this.transparent === true ? 1 : 0;
     const disposal = 2; // forma en la que se dibujan las siguientes imágenes 1 es dibujar encima, 2 es borrar el canvas, 3 restore
-    const graphicsControlPackedField = parseInt(`00000${disposal}0${transparentFlag}`, 2);
+    const graphicsControlPackedField = parseInt(
+      `00000${this.toBin(disposal, 3)}0${transparentFlag}`,
+      2,
+    );
     const imageDescriptorPackedField = parseInt(`000000000`, 2);
 
     const globalImageData = [];
@@ -333,7 +339,7 @@ getCodeStream(indexStream) {
         U8(249), // Graphic Control label - always f9 hex
         U8(4), // Byte size
         U8(graphicsControlPackedField),
-        U16LE(this.delay), // Delay time
+        U16LE(this.frameDelays[i] ?? this.delay), // Delay time
         U8(this.transparentIndex), // Transparent color index
         U8(0) // Block terminator - always 0
       );

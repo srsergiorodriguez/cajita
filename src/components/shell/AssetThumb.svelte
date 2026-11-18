@@ -31,7 +31,13 @@
   });
 </script>
 
-<div class="asset-thumb" class:has-image={Boolean(url)} class:has-mask={Boolean(clip)} style:clip-path={clip || null}>
+<div
+  class="asset-thumb"
+  class:has-image={Boolean(url)}
+  class:has-mask={Boolean(clip)}
+  style:clip-path={clip || null}
+  style:--asset-fit={fit}
+>
   {#if url}
     <img src={url} alt={asset.name} loading="lazy" />
   {:else}

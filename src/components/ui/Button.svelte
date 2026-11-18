@@ -33,6 +33,7 @@
     line-height: 1;
     text-transform: lowercase;
     white-space: nowrap;
+    cursor: pointer;
     transition:
       transform var(--motion-fast) var(--ease-out),
       box-shadow var(--motion-fast) var(--ease-out),

@@ -881,7 +881,7 @@
     <div class="table-panel">
       <div class="schema-head">
         <p>{t('ficha.tableHint')}</p>
-        <Button size="sm" variant="ghost" onclick={startNew}>
+        <Button size="sm" variant="secondary" onclick={startNew}>
           <Icon name="plus" size={12} />{t('ficha.new')}
         </Button>
       </div>
@@ -1159,31 +1159,35 @@
     <div class="ficha-workspace">
       <aside class="record-list">
         <div class="record-actions">
+          <div class="record-heading">
+            <span class="mono-label">{t('ficha.records')}</span>
+            <span>{filteredRecords.length}</span>
+          </div>
           <input
             class="search"
             type="search"
             placeholder={t('ficha.search')}
             bind:value={search}
           />
-          <Button size="sm" variant="ghost" onclick={startNew}>
+          <Button size="sm" variant="secondary" onclick={startNew}>
             <Icon name="plus" size={12} />{t('ficha.new')}
           </Button>
           <Button size="sm" variant="secondary" onclick={insertCollection}>
             {t('ficha.collectionInsert')}
           </Button>
           <div class="csv-actions">
-            <button type="button" onclick={chooseCsv} disabled={csvBusy}>
+            <Button size="sm" variant="ghost" onclick={chooseCsv} disabled={csvBusy}>
               {t('ficha.importCsv')}
-            </button>
-            <button type="button" onclick={chooseZip} disabled={csvBusy}>
+            </Button>
+            <Button size="sm" variant="ghost" onclick={chooseZip} disabled={csvBusy}>
               {t('ficha.importZip')}
-            </button>
-            <button type="button" onclick={downloadTemplate}>
+            </Button>
+            <Button size="sm" variant="ghost" onclick={downloadTemplate}>
               {t('ficha.templateCsv')}
-            </button>
-            <button type="button" onclick={downloadCsv}>
+            </Button>
+            <Button size="sm" variant="ghost" onclick={downloadCsv}>
               {t('ficha.exportCsv')}
-            </button>
+            </Button>
           </div>
         </div>
         <div class="record-scroll">
@@ -1328,7 +1332,7 @@
   .ficha-tabs button {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-1);
+    gap: var(--space-2);
     padding: var(--space-2) var(--space-3);
     border: 0;
     border-bottom: 2px solid transparent;
@@ -1344,9 +1348,17 @@
     color: var(--ink);
   }
   .ficha-tabs button span {
+    display: inline-grid;
+    min-width: 17px;
+    height: 16px;
+    place-items: center;
+    padding: 0 3px;
+    border: 1px solid var(--line-soft);
+    background: var(--panel-3);
     color: var(--muted);
     font-family: var(--font-mono);
-    font-size: var(--text-3xs);
+    font-size: 9px;
+    line-height: 1;
   }
   .message {
     margin: 0;
@@ -1506,28 +1518,25 @@
     align-items: stretch;
     flex-direction: column;
   }
+  .record-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding-bottom: var(--space-1);
+  }
+  .record-heading span:last-child {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-3xs);
+  }
 
   .csv-actions {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 3px;
   }
 
-  .csv-actions button {
-    padding: 2px 4px;
-    border: 1px solid var(--line-soft);
-    background: transparent;
-    color: var(--muted);
-    font-family: var(--font-ui);
-    font-size: var(--text-2xs);
-    text-transform: lowercase;
-    cursor: pointer;
-  }
-
-  .csv-actions button:hover {
-    border-color: var(--line);
-    color: var(--ink);
-  }
 
   .table-panel {
     display: flex;

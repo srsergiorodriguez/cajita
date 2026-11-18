@@ -3,7 +3,7 @@
   import { assetUrl } from '../../lib/state/asset-urls.svelte.js';
   import { t } from '../../lib/i18n/index.svelte.js';
 
-  let { projectId, assetId, label = '', loop = false } = $props();
+  let { projectId, assetId, label = '', loop = false, controls = true } = $props();
   let audio = $state(null);
   let url = $state(null);
   let failed = $state(false);
@@ -66,7 +66,7 @@
   }
 </script>
 
-<div class="audio">
+<div class="audio" class:audio--label={!controls}>
   <audio
     bind:this={audio}
     src={url}
@@ -77,7 +77,9 @@
     ontimeupdate={(event) => (currentTime = event.currentTarget.currentTime)}
     onloadedmetadata={(event) => (duration = event.currentTarget.duration)}
   ></audio>
-  {#if url}
+  {#if url && !controls}
+    <span class="audio-label">{label}</span>
+  {:else if url}
     <button
       type="button"
       class="audio-play"
@@ -124,7 +126,16 @@
   }
 
   audio {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .audio--label {
+    padding: 1.4cqw;
   }
 
   .audio-play {

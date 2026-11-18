@@ -16,6 +16,7 @@ import {
   normaliseZ
 } from '../domain/pages.js';
 import { createElement, duplicateElement, mediaFrame } from '../domain/elements.js';
+import { assetUsage, assetUseCount } from '../domain/media-usage.js';
 import { resizeStage } from '../domain/stage.js';
 import { normaliseGrid, reflowGrid, mergeGridCells, unmergeGridCells } from '../domain/grid.js';
 import { DEFAULT_PALETTE } from '../domain/model.js';
@@ -335,6 +336,9 @@ export function addElement(type, options = {}) {
       title: options.title ?? '',
       caption: options.caption ?? '',
       fichaId: options.fichaId ?? '',
+      drawingId: options.drawingId ?? '',
+      alt: options.alt ?? '',
+      animated: options.animated ?? true,
       composition: options.composition,
       compositionPreset: options.compositionPreset ?? 'blank',
       compositionLabel: options.compositionLabel ?? '',
@@ -861,7 +865,10 @@ export async function saveDrawingInProject({
   thumb = null,
   mime = 'image/gif',
   name = 'dibujo.gif',
-  alt = ''
+  alt = '',
+  width = 1024,
+  height = 1024,
+  placeOnPage = true
 } = {}) {
   if (!session.project) throw new Error('No hay un proyecto abierto.');
   const bytes = new Uint8Array(await blob.arrayBuffer());
@@ -876,14 +883,15 @@ export async function saveDrawingInProject({
       name,
       mime,
       bytes: bytes.byteLength,
-      width: 1024,
-      height: 1024,
+      width,
+      height,
       source: 'drawing',
       createdAt: new Date().toISOString()
     };
     await platform.assets.put(session.project.id, asset, blob, thumb, thumbHash);
   }
   let elementResult = null;
+  let drawingResult = null;
   runCommand('guardar dibujo', (draft) => {
     const id = drawingId ?? createId('drw');
     draft.drawings = draft.drawings ?? {};
@@ -894,6 +902,7 @@ export async function saveDrawingInProject({
       updatedAt: new Date().toISOString()
     };
     draft.assets[asset.id] = asset;
+    drawingResult = { drawingId: id, assetId: asset.id, asset };
     if (elementId) {
       const page = draft.pages.find((item) =>
         item.elements.some((child) => child.id === elementId)
@@ -905,7 +914,7 @@ export async function saveDrawingInProject({
       element.alt = alt || element.alt || 'Dibujo';
       element.animated = drawing.animated !== false;
       elementResult = element;
-    } else {
+    } else if (placeOnPage) {
       const page = pageById(draft, session.activePageId) ?? draft.pages[0];
       elementResult = createElement('drawing', {
         project: draft,
@@ -920,7 +929,7 @@ export async function saveDrawingInProject({
       normaliseZ(page);
     }
   });
-  return elementResult;
+  return placeOnPage || elementId ? elementResult : drawingResult;
 }
 
 export function createGrid() {
@@ -1395,22 +1404,9 @@ export async function importMedia(files) {
 
 export async function deleteAsset(assetId) {
   if (!session.project) return;
-  for (const page of session.project.pages) {
-    for (const element of page.elements ?? []) {
-      if (element.assetId === assetId) {
-        throw new Error('El medio está en uso en una página.');
-      }
-    }
-  }
-  if (
-    Object.values(session.project.fichas ?? {}).some((ficha) => ficha.assetId === assetId)
-  ) {
-    throw new Error('El medio está en uso en una ficha.');
-  }
-  if (
-    Object.values(session.project.fonts ?? {}).some((font) => font.assetId === assetId)
-  ) {
-    throw new Error('La tipografía está en uso en una página.');
+  const usage = assetUsage(session.project, assetId);
+  if (assetUseCount(usage) > 0) {
+    throw new Error('El medio está en uso y no se puede eliminar.');
   }
   await platform.assets.remove(session.project.id, assetId);
   clearAssetUrl(session.project.id, assetId);

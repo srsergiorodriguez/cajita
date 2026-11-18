@@ -5,7 +5,7 @@
   import CanvasEmbed from './CanvasEmbed.svelte';
   import CanvasHtml from './CanvasHtml.svelte';
   import CanvasFichaCollection from './CanvasFichaCollection.svelte';
-  import CompositionView from './CompositionView.svelte';
+  import CompositionPreview from './CompositionPreview.svelte';
   import ShapeArt from './ShapeArt.svelte';
   import CanvasFicha from './CanvasFicha.svelte';
   import Icon from '../ui/Icon.svelte';
@@ -41,6 +41,9 @@
   import { snapFrameMove, snapFrameResize } from '../../lib/domain/grid.js';
   import GridOverlay from './GridOverlay.svelte';
   import SelectionFrame from './SelectionFrame.svelte';
+  import TextEditor from './TextEditor.svelte';
+  import { textEditorBackground } from '../../lib/domain/text-editor.js';
+  import ZoomControls from './ZoomControls.svelte';
   import { toast } from '../../lib/state/ui.svelte.js';
 
   let stageEl = $state(null);
@@ -48,6 +51,7 @@
   let wrapW = $state(0);
   let wrapH = $state(0);
   let zoom = $state(1);
+  let fitMode = $state('width');
   let textarea = $state(null);
   let pointerState = null;
 
@@ -129,10 +133,20 @@
 
   function setZoom(next) {
     zoom = Math.min(4, Math.max(0.25, Math.round(next * 100) / 100));
+    fitMode = 'manual';
   }
 
   function fitWidth() {
     zoom = 1;
+    fitMode = 'width';
+  }
+
+  function fitPage() {
+    const baseWidth = Math.max(120, Math.max(0, wrapW - 48));
+    const baseHeight = baseWidth / aspect;
+    const availableHeight = Math.max(120, Math.max(0, wrapH - 48));
+    setZoom(Math.min(1, availableHeight / baseHeight));
+    fitMode = 'page';
   }
 
   $effect(() => {
@@ -164,22 +178,6 @@
     ].join(';');
   }
 
-  function textEditorBackground(color) {
-    const raw = String(color ?? '').replace('#', '');
-    const hex =
-      raw.length === 3
-        ? raw
-            .split('')
-            .map((part) => part + part)
-            .join('')
-        : raw;
-    if (!/^[0-9a-f]{6}$/i.test(hex)) return 'var(--stage)';
-    const r = parseInt(hex.slice(0, 2), 16);
-    const g = parseInt(hex.slice(2, 4), 16);
-    const b = parseInt(hex.slice(4, 6), 16);
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    return luminance > 0.55 ? '#171b21' : '#fffdf7';
-  }
 
   function stagePoint(event) {
     if (!stageEl) return { x: 0, y: 0 };
@@ -415,6 +413,7 @@
               class:selected={session.selectedElementIds.includes(element.id)}
               class:has-link={Boolean(element.link && element.link.kind !== 'none')}
               class:locked={element.locked}
+              class:element--composition-button={element.type === 'composition' && element.composition?.preset === 'button'}
               style={element.type === 'text' ? textStyle(element) : cssVars(element)}
               data-element-id={element.id}
               role="button"
@@ -454,8 +453,9 @@
                 <CanvasAudio
                   projectId={session.project.id}
                   assetId={element.assetId}
-                  label={element.label}
+                  label={element.label || session.project.assets?.[element.assetId]?.name || ''}
                   loop={element.loop}
+                  controls={element.controls !== false}
                 />
               {:else if element.type === 'html'}
                 <CanvasHtml
@@ -480,10 +480,9 @@
                   aspect={element.frame.w / element.frame.h}
                 />
               {:else if element.type === 'composition'}
-                <CompositionView
+                <CompositionPreview
                   project={session.project}
                   composition={element.composition}
-                  frameId={element.composition?.frames?.[0]?.id}
                   aspect={element.frame.w / element.frame.h}
                 />
               {:else if element.type === 'fichaCollection'}
@@ -526,15 +525,15 @@
         {/if}
 
         {#if editing}
-          <textarea
-            class="text-edit"
-            bind:this={textarea}
+          <TextEditor
             bind:value={editor.textDraft}
-            style={`${textStyle(editing)};background:${textEditorBackground(editing.color)};caret-color:${editing.color}`}
-            onpointerdown={(event) => event.stopPropagation()}
+            bind:textarea
+            style={textStyle(editing)}
+            background={textEditorBackground(editing.color)}
+            caretColor={editing.color}
+            oncommit={commitText}
             onkeydown={handleTextKeydown}
-            onblur={commitText}
-            aria-label={t('canvas.editText')}></textarea>
+          />
         {/if}
       </div>
     </div>
@@ -543,35 +542,15 @@
   <div class="stage-foot">
     <span>{Math.round(stage.width)} × {Math.round(stage.height)}</span>
     <span>{plural(elements.length, 'units.elementOne', 'units.elementMany')}</span>
-    <div class="zoom-controls">
-      <IconButton
-        label={t('canvas.zoomOut')}
-        icon="minus"
-        size={24}
-        iconSize={12}
-        variant="ghost"
-        onclick={() => setZoom(zoom - 0.1)}
-      />
-      <span class="zoom-value" aria-live="polite">{Math.round(zoom * 100)}%</span>
-      <IconButton
-        label={t('canvas.zoomIn')}
-        icon="plus"
-        size={24}
-        iconSize={12}
-        variant="ghost"
-        onclick={() => setZoom(zoom + 0.1)}
-      />
-      <button
-        type="button"
-        class="fit-button"
-        class:active={zoom === 1}
-        aria-label={t('canvas.fitWidth')}
-        title={t('canvas.fitWidth')}
-        onclick={fitWidth}
-      >
-        {t('canvas.fitWidth')}
-      </button>
-    </div>
+    <ZoomControls
+      {zoom}
+      onZoomOut={() => setZoom(zoom - 0.1)}
+      onZoomIn={() => setZoom(zoom + 0.1)}
+      onFitWidth={fitWidth}
+      onFitPage={fitPage}
+      fitWidthActive={fitMode === 'width'}
+      fitPageActive={fitMode === 'page'}
+    />
     <span class="page-index">
       {String(
         Math.max(
@@ -640,6 +619,10 @@
   .element:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
+  }
+
+  .element--composition-button {
+    cursor: pointer;
   }
 
   .element.selected {
@@ -725,24 +708,6 @@
     height: 1px;
   }
 
-  .text-edit {
-    position: absolute;
-    left: var(--x);
-    top: var(--y);
-    z-index: 200;
-    width: var(--w);
-    height: var(--h);
-    transform: rotate(var(--rot));
-    margin: 0;
-    border: 2px solid var(--selection);
-    outline: none;
-    resize: none;
-    overflow: auto;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    font-family: inherit;
-    background-color: var(--panel);
-  }
 
   .empty-stage {
     position: absolute;
@@ -777,39 +742,6 @@
     padding: 0 var(--space-4) var(--space-3);
     color: var(--muted);
     font-size: var(--text-2xs);
-  }
-
-  .zoom-controls {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    margin-left: auto;
-  }
-
-  .zoom-value {
-    min-width: 42px;
-    color: var(--ink-2);
-    font-size: var(--text-2xs);
-    text-align: center;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .fit-button {
-    height: 24px;
-    padding: 0 6px;
-    border: 1px solid transparent;
-    background: transparent;
-    color: var(--muted);
-    font-family: var(--font-ui);
-    font-size: var(--text-3xs);
-    text-transform: lowercase;
-    white-space: nowrap;
-  }
-
-  .fit-button:hover,
-  .fit-button.active {
-    border-color: var(--line);
-    color: var(--ink);
   }
 
   .page-index {

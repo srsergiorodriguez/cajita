@@ -158,7 +158,8 @@ describe('site export', () => {
     audio.label = 'Voz de la casa';
     audio.loop = true;
     start.elements.push(video, audio);
-    const html = buildSite(project).pages[0].html;
+    const site = buildSite(project);
+    const html = site.pages[0].html;
     expect(html).toContain('<video');
     expect(html).toContain('controls');
     expect(html).toContain('autoplay');
@@ -170,6 +171,14 @@ describe('site export', () => {
     expect(html).toContain('audio-inner');
     expect(html).toContain('data-audio-toggle');
     expect(html).toContain('data-audio-bar');
+    expect(site.files.find((file) => file.path === 'cajita.js').content).toContain(
+      'createObjectURL'
+    );
+
+    audio.controls = false;
+    const labelOnly = buildSite(project).pages[0].html;
+    expect(labelOnly).toContain('audio-inner--label');
+    expect(labelOnly).not.toContain('data-audio-toggle');
   });
 
   it('opens URL links in the selected window', () => {

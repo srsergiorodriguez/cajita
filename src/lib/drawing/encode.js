@@ -2,10 +2,15 @@
 
 import { MiniGif } from './gif.js';
 import {
+  DRAWING_DEFAULT_FRAME_MS,
+  DRAWING_FRAMES,
+  DRAWING_HEIGHT,
   DRAWING_OUTPUT_SIZE,
+  DRAWING_WIDTH,
   frameToRgba,
   paletteRgb,
   renderDrawingFrames,
+  renderFrameIndices,
 } from './model.js';
 
 /** @typedef {import('./model.js').DrawingDoc} DrawingDoc */
@@ -35,21 +40,63 @@ export function bytesToBase64(bytes) {
 export function encodeDrawingGif(drawing, options = {}) {
   const outputSize = options.outputSize || DRAWING_OUTPUT_SIZE;
   const projectColors = options.projectColors || [];
-  const frames = renderDrawingFrames(drawing);
+  const sourceWidth = drawing.width || DRAWING_WIDTH;
+  const sourceHeight = drawing.height || DRAWING_HEIGHT;
+  const outputWidth = Math.max(
+    1,
+    Math.round((outputSize * sourceWidth) / Math.max(sourceWidth, sourceHeight)),
+  );
+  const outputHeight = Math.max(
+    1,
+    Math.round((outputSize * sourceHeight) / Math.max(sourceWidth, sourceHeight)),
+  );
+  const authored = drawing.animation?.frames ?? [];
+  const wiggleCount = drawing.animated !== false ? DRAWING_FRAMES : 1;
+  const frames = authored.length ? [] : renderDrawingFrames(drawing);
   const gif = new MiniGif({
     customPalette: paletteRgb(projectColors),
     delay: drawing.delay,
     dither: false,
-    transparent: false,
+    transparent: drawing.transparent === true,
+    transparentIndex: 0,
   });
 
-  for (const frame of frames) {
-    const rgba = frameToRgba(
-      frame,
-      projectColors,
-      outputSize,
-    );
-    gif.addFramePixels(rgba, outputSize, outputSize);
+  if (authored.length) {
+    for (let frameIndex = 0; frameIndex < authored.length; frameIndex += 1) {
+      const frame = authored[frameIndex];
+      const delay = Math.max(
+        2,
+        Math.round((Number(frame.duration) || DRAWING_DEFAULT_FRAME_MS) / 10 / wiggleCount),
+      );
+      for (let variant = 0; variant < wiggleCount; variant += 1) {
+        const indices = renderFrameIndices(drawing, frameIndex * wiggleCount + variant);
+        const rgba = frameToRgba(
+          indices,
+          projectColors,
+          outputWidth,
+          outputHeight,
+          sourceWidth,
+          sourceHeight,
+          null,
+          drawing.transparent === true,
+        );
+        gif.addFramePixels(rgba, outputWidth, outputHeight, delay);
+      }
+    }
+  } else {
+    for (const frame of frames) {
+      const rgba = frameToRgba(
+        frame,
+        projectColors,
+        outputWidth,
+        outputHeight,
+        sourceWidth,
+        sourceHeight,
+        null,
+        drawing.transparent === true,
+      );
+      gif.addFramePixels(rgba, outputWidth, outputHeight);
+    }
   }
 
   const buffer = gif.makeGif();

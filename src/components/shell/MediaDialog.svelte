@@ -3,8 +3,10 @@
   import Button from '../ui/Button.svelte';
   import Icon from '../ui/Icon.svelte';
   import AssetThumb from './AssetThumb.svelte';
-  import { deleteAsset, session } from '../../lib/state/project.svelte.js';
+  import { addElement, deleteAsset, session } from '../../lib/state/project.svelte.js';
   import { formatBytes } from '../../lib/domain/model.js';
+  import { assetUsageMap } from '../../lib/domain/media-usage.js';
+  import { mediaAssets } from '../../lib/domain/media-assets.js';
   import { t } from '../../lib/i18n/index.svelte.js';
   import { toast } from '../../lib/state/ui.svelte.js';
 
@@ -13,18 +15,11 @@
   let search = $state('');
   let selectedId = $state(null);
   let confirmDelete = $state(false);
+  let checkedIds = $state([]);
 
-  const allAssets = $derived.by(() => {
-    const seen = new Set();
-    return Object.values(session.project?.assets ?? {}).filter((asset) => {
-      if (asset.kind === 'font') return false;
-      const key = asset.hash || asset.id;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  });
+  const allAssets = $derived(mediaAssets(session.project));
 
+  const drawings = $derived(Object.values(session.project?.drawings ?? {}));
   const fichaAssets = $derived(
     new Set(
       Object.values(session.project?.fichas ?? {})
@@ -33,25 +28,7 @@
     )
   );
 
-  const elementUsage = $derived.by(() => {
-    const usage = new Map();
-    for (const page of session.project?.pages ?? []) {
-      for (const element of page.elements ?? []) {
-        if (!element.assetId) continue;
-        usage.set(element.assetId, (usage.get(element.assetId) ?? 0) + 1);
-      }
-    }
-    return usage;
-  });
-
-  const fichaUsage = $derived.by(() => {
-    const usage = new Map();
-    for (const ficha of Object.values(session.project?.fichas ?? {})) {
-      if (!ficha.assetId) continue;
-      usage.set(ficha.assetId, (usage.get(ficha.assetId) ?? 0) + 1);
-    }
-    return usage;
-  });
+  const usageByAsset = $derived(assetUsageMap(session.project));
 
   const filtered = $derived(
     allAssets.filter((asset) => {
@@ -60,7 +37,7 @@
       if (filter === 'audio' && asset.kind !== 'audio') return false;
       if (filter === 'fichas' && !fichaAssets.has(asset.id)) return false;
       if (filter === 'unused') {
-        const used = (elementUsage.get(asset.id) ?? 0) + (fichaUsage.get(asset.id) ?? 0);
+        const used = usageFor(asset.id);
         if (used) return false;
       }
       const q = search.trim().toLowerCase();
@@ -77,11 +54,73 @@
   const selectedUsage = $derived(
     selected
       ? {
-          elements: elementUsage.get(selected.id) ?? 0,
-          fichas: fichaUsage.get(selected.id) ?? 0
+          elements: usageByAsset.get(selected.id)?.elements ?? 0,
+          fichas: usageByAsset.get(selected.id)?.fichas ?? 0,
+          total: usageFor(selected.id),
+          references: usageByAsset.get(selected.id)?.references ?? []
         }
       : { elements: 0, fichas: 0 }
   );
+
+  const selectedDrawing = $derived(
+    drawings.find((drawing) => drawing.assetId === selected?.id) ?? null
+  );
+
+  function usageFor(assetId) {
+    const usage = usageByAsset.get(assetId);
+    return usage
+      ? usage.elements + usage.compositions + usage.fichas + usage.drawings + usage.fonts
+      : 0;
+  }
+
+  const selectedHasUsage = $derived(checkedIds.some((id) => usageFor(id) > 0));
+
+  function toggleChecked(assetId) {
+    checkedIds = checkedIds.includes(assetId)
+      ? checkedIds.filter((id) => id !== assetId)
+      : [...checkedIds, assetId];
+  }
+
+  function selectUnused() {
+    checkedIds = filtered.filter((asset) => usageFor(asset.id) === 0).map((asset) => asset.id);
+  }
+
+  async function removeChecked() {
+    if (!checkedIds.length || selectedHasUsage) return;
+    const removed = [];
+    for (const id of checkedIds) {
+      const asset = allAssets.find((item) => item.id === id);
+      try {
+        await deleteAsset(id);
+        removed.push(id);
+        if (selectedId === id) selectedId = null;
+      } catch (error) {
+        toast(error instanceof Error ? error.message : String(error), 'error');
+      }
+    }
+    checkedIds = [];
+    if (removed.length) toast(t('media.batchDeleted', { count: removed.length }), 'success');
+  }
+
+  function addSelectedToPage() {
+    if (!selected) return;
+    try {
+      if (selectedDrawing) {
+        addElement('drawing', {
+          assetId: selected.id,
+          drawingId: selectedDrawing.id,
+          alt: selected.name,
+          animated: true
+        });
+      } else {
+        addElement(selected.kind, { assetId: selected.id });
+      }
+      toast(t('media.addedToPage', { name: selected.name }), 'success');
+      open = false;
+    } catch (error) {
+      toast(error instanceof Error ? error.message : String(error), 'error');
+    }
+  }
 
   const filters = $derived([
     { value: 'all', label: t('media.filterAll') },
@@ -99,7 +138,7 @@
   });
 
   async function remove() {
-    if (!selected || selectedUsage.elements || selectedUsage.fichas) return;
+    if (!selected || selectedUsage.total > 0) return;
     if (!window.confirm(t('media.deleteConfirm', { name: selected.name }))) return;
     try {
       await deleteAsset(selected.id);
@@ -127,24 +166,44 @@
           </button>
         {/each}
       </div>
+      <button type="button" class="batch-select" onclick={selectUnused}>{t('media.selectUnused')}</button>
     </div>
+
+    {#if checkedIds.length}
+      <div class="batch-bar">
+        <span>{t('media.selectedCount', { count: checkedIds.length })}</span>
+        {#if selectedHasUsage}<span class="hint">{t('media.batchInUse')}</span>{/if}
+        <Button size="sm" variant="ghost" onclick={() => (checkedIds = [])}>{t('common.cancel')}</Button>
+        <Button size="sm" variant="accent" disabled={selectedHasUsage} onclick={removeChecked}><Icon name="trash" size={12} />{t('media.delete')}</Button>
+      </div>
+    {/if}
 
     <div class="media-body">
       <div class="media-grid">
         {#each filtered as asset (asset.id)}
-          <button
-            type="button"
-            class="media-card"
-            class:active={asset.id === selectedId}
-            onclick={() => {
-              selectedId = asset.id;
-              confirmDelete = false;
-            }}
-          >
-            <AssetThumb {asset} projectId={session.project.id} />
-            <span>{asset.name}</span>
-            {#if fichaAssets.has(asset.id)}<small>{t('media.usedByFichas')}</small>{/if}
-          </button>
+          <div class="media-card-wrap">
+            <button
+              type="button"
+              class="media-card"
+              class:active={asset.id === selectedId}
+              onclick={() => {
+                selectedId = asset.id;
+                confirmDelete = false;
+              }}
+            >
+              <AssetThumb {asset} projectId={session.project.id} />
+              <span>{asset.name}</span>
+              {#if fichaAssets.has(asset.id)}<small>{t('media.usedByFichas')}</small>{/if}
+            </button>
+            <label class="batch-check">
+              <input
+                type="checkbox"
+                checked={checkedIds.includes(asset.id)}
+                aria-label={t('media.select')}
+                onchange={() => toggleChecked(asset.id)}
+              />
+            </label>
+          </div>
         {/each}
       </div>
 
@@ -159,12 +218,17 @@
               <span>{selected.width} × {selected.height}</span>
             {/if}
             <span class="usage">
-              {t('media.usageElements', { count: selectedUsage.elements })} ·
-              {t('media.usageFichas', { count: selectedUsage.fichas })}
+              {t('media.usageTotal', { count: selectedUsage.total })}
             </span>
           </div>
-          {#if selectedUsage.elements || selectedUsage.fichas}
+          <Button size="sm" variant="secondary" onclick={addSelectedToPage}><Icon name="plus" size={12} />{t('media.addToPage')}</Button>
+          {#if selectedUsage.total > 0}
             <p class="hint">{t('media.inUse')}</p>
+            <ul class="usage-list">
+              {#each selectedUsage.references as reference (reference.kind + reference.label)}
+                <li><span>{reference.label}</span><small>{t(`media.usageKind.${reference.kind}`)}</small></li>
+              {/each}
+            </ul>
           {:else if confirmDelete}
             <div class="confirm-actions">
               <Button size="sm" variant="ghost" onclick={() => (confirmDelete = false)}>
@@ -246,8 +310,10 @@
     max-height: 540px;
     overflow: auto;
   }
+  .media-card-wrap { position: relative; display: flex; min-width: 0; }
   .media-card {
     display: flex;
+    width: 100%;
     flex-direction: column;
     gap: 3px;
     padding: 4px;
@@ -263,9 +329,20 @@
     border-color: var(--selection);
     outline: 1px solid var(--selection);
   }
+  .batch-check { position: absolute; top: 5px; left: 5px; display: grid; place-items: center; width: 20px; height: 20px; border: 1px solid var(--line); background: var(--panel-2); }
+  .batch-check input { width: 13px; height: 13px; margin: 0; accent-color: var(--selection); }
+  .batch-select { padding: 5px 7px; border: 1px solid var(--line-soft); background: transparent; color: var(--muted); font-family: var(--font-ui); font-size: var(--text-2xs); }
+  .batch-bar { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; padding: var(--space-2); border: 1px solid var(--line); background: var(--active-wash); }
+  .batch-bar .hint { flex: 1 0 100%; }
   .media-card :global(.asset-thumb) {
     width: 100%;
     aspect-ratio: 1;
+  }
+  .media-card span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .media-card small {
     color: var(--muted);
@@ -297,6 +374,34 @@
   }
   .usage {
     color: var(--muted);
+  }
+  .usage-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-2xs);
+  }
+  .usage-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-width: 0;
+    padding: 2px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .usage-list span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .usage-list small {
+    flex: 0 0 auto;
+    color: var(--muted);
+    font-size: var(--text-3xs);
   }
   .hint {
     color: var(--muted);

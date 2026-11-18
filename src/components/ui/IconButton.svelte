@@ -40,6 +40,7 @@
     border-radius: 0;
     background: var(--panel-2);
     color: var(--ink);
+    cursor: pointer;
     box-shadow: var(--shadow-btn);
     transition:
       transform var(--motion-fast) var(--ease-out),

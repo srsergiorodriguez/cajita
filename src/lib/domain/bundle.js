@@ -111,6 +111,7 @@ export function validateBundleManifest(manifest) {
       push('thumbs', 'must be an array');
     } else {
       const thumbPaths = new Set();
+      const thumbIds = new Set();
       manifest.thumbs.forEach((thumb, index) => {
         const path = `thumbs[${index}]`;
         if (!thumb || !isSafeBundlePath(thumb.path)) {
@@ -119,8 +120,15 @@ export function validateBundleManifest(manifest) {
         }
         if (!thumb.path.startsWith('thumbs/'))
           push(`${path}.path`, 'must be under thumbs/');
+        if (typeof thumb.assetId !== 'string' || !thumb.assetId) {
+          push(`${path}.assetId`, 'required');
+        } else if (!ids.has(thumb.assetId)) {
+          push(`${path}.assetId`, 'must reference an asset');
+        }
         if (thumbPaths.has(thumb.path)) push(`${path}.path`, 'duplicate path');
+        if (thumbIds.has(thumb.assetId)) push(`${path}.assetId`, 'duplicate asset');
         thumbPaths.add(thumb.path);
+        thumbIds.add(thumb.assetId);
       });
     }
   }

@@ -11,12 +11,17 @@
     selectedId = null,
     editable = false,
     aspect = 1,
+    types = null,
     onselect = null,
     onedit = null
   } = $props();
 
   const frame = $derived(frameById(composition, frameId));
-  const children = $derived((frame?.children ?? []).filter((child) => !child.hidden));
+  const children = $derived(
+    (frame?.children ?? []).filter(
+      (child) => !child.hidden && (!types || types.includes(child.type))
+    )
+  );
 
   function textStyle(child) {
     return [
@@ -93,6 +98,12 @@
   .composition-child {
     position: absolute;
     overflow: hidden;
+  }
+  .composition-view.editable .composition-child {
+    cursor: grab;
+  }
+  .composition-view.editable .composition-child:active {
+    cursor: grabbing;
   }
   .composition-child.selected {
     outline: 2px solid var(--selection);

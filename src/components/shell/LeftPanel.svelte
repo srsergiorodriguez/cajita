@@ -183,27 +183,27 @@
               <Icon name={tool.icon} size={14} />
               <span>{t(tool.label)}</span>
             </button>
+            {#if tool.shape && shapeOpen}
+              <div class="shape-picker" role="menu" aria-label={t('shape.tool')}>
+                {#each [['circle', 'shape.circle'], ['square', 'shape.square'], ['triangle', 'shape.triangle']] as [kind, label] (kind)}
+                  <button
+                    type="button"
+                    class="shape-choice"
+                    role="menuitem"
+                    onclick={() => addShape(kind)}
+                  >
+                    <span
+                      class="shape-glyph"
+                      class:shape-glyph--circle={kind === 'circle'}
+                      class:shape-glyph--triangle={kind === 'triangle'}
+                    ></span>
+                    <span>{t(label)}</span>
+                  </button>
+                {/each}
+              </div>
+            {/if}
           {/each}
         </div>
-        {#if group.id === 'basics' && shapeOpen}
-          <div class="shape-picker" role="menu" aria-label={t('shape.tool')}>
-            {#each [['circle', 'shape.circle'], ['square', 'shape.square'], ['triangle', 'shape.triangle']] as [kind, label] (kind)}
-              <button
-                type="button"
-                class="shape-choice"
-                role="menuitem"
-                onclick={() => addShape(kind)}
-              >
-                <span
-                  class="shape-glyph"
-                  class:shape-glyph--circle={kind === 'circle'}
-                  class:shape-glyph--triangle={kind === 'triangle'}
-                ></span>
-                <span>{t(label)}</span>
-              </button>
-            {/each}
-          </div>
-        {/if}
       </div>
     {/each}
   </section>
@@ -301,25 +301,27 @@
   }
 
   .shape-picker {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-1);
-    padding: var(--space-2);
-    border: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-1);
+    border: 1px solid var(--line-soft);
     background: var(--panel-2);
   }
 
   .shape-choice {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 5px;
-    padding: var(--space-2) 2px;
+    gap: var(--space-2);
+    min-height: 30px;
+    padding: 0 var(--space-2);
     border: 1px solid transparent;
     background: transparent;
     color: var(--ink);
     font-family: var(--font-ui);
-    font-size: var(--text-3xs);
+    font-size: var(--text-2xs);
+    text-align: left;
     cursor: pointer;
   }
 
@@ -330,8 +332,9 @@
 
   .shape-glyph {
     display: block;
-    width: 22px;
-    height: 22px;
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
     background: var(--ink);
   }
 

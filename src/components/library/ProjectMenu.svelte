@@ -93,7 +93,7 @@
             'units.fontMany'
           )}
         </span>
-        <Button size="sm" variant="ghost" onclick={() => (fontsOpen = true)}>
+        <Button size="sm" variant="ghost" onclick={() => { fontsOpen = true; open = false; }}>
           {t('fonts.manage')}
         </Button>
       </div>
@@ -119,7 +119,7 @@
           <span>{t('grid.snap')}</span>
         </label>
       </div>
-      <Button size="sm" variant="secondary" onclick={() => (gridsOpen = true)}>
+      <Button size="sm" variant="secondary" onclick={() => { gridsOpen = true; open = false; }}>
         {t('grid.manage')}
       </Button>
     </Section>

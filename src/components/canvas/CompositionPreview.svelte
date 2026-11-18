@@ -6,7 +6,7 @@
     normaliseComposition
   } from '../../lib/domain/composition.js';
 
-  let { project, composition, aspect = 1 } = $props();
+  let { project, composition, aspect = 1, play = false } = $props();
   const data = $derived(normaliseComposition(composition));
   const isButton = $derived(data.preset === 'button');
   let activeFrameId = $state('');
@@ -16,7 +16,7 @@
     activeFrameId = data.frames[0].id;
     clearTimeout(timer);
     timer = null;
-    if (data.preset !== 'animation' || !data.timeline.autoplay) return;
+    if (data.preset !== 'animation' || (!play && !data.timeline.autoplay)) return;
     if (data.frames.length < 2) return;
     let index = 0;
     const tick = () => {
@@ -59,7 +59,7 @@
     width: 100%;
     height: 100%;
     outline: none;
-    cursor: pointer;
+    cursor: inherit;
     container-type: size;
   }
   .preview-frame {

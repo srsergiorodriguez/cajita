@@ -8,19 +8,11 @@
   import { platform } from '../../lib/platform/index.js';
   import { importMedia, selectAsset, session } from '../../lib/state/project.svelte.js';
   import { formatBytes } from '../../lib/domain/model.js';
+  import { mediaAssets } from '../../lib/domain/media-assets.js';
   import { toast } from '../../lib/state/ui.svelte.js';
   import { plural, t } from '../../lib/i18n/index.svelte.js';
 
-  const assets = $derived.by(() => {
-    const seen = new Set();
-    return Object.values(session.project?.assets ?? {}).filter((asset) => {
-      if (asset.kind === 'font') return false;
-      const key = asset.hash || asset.id;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  });
+  const assets = $derived(mediaAssets(session.project));
   const usage = $derived({
     bytes: assets.reduce((sum, asset) => sum + (Number(asset.bytes) || 0), 0),
     video: assets.filter((asset) => asset.kind === 'video').length
@@ -78,12 +70,7 @@
       disabled={importing || session.lockConflict}
     />
   </div>
-  {#if assets.length === 0}
-    <div class="media-empty">
-      <strong>{t('left.mediaEmpty')}</strong>
-      <span>{t('media.emptyHint')}</span>
-    </div>
-  {:else}
+  {#if assets.length}
     <div class="media-usage">
       <span
         >{plural(assets.length, 'units.assetOne', 'units.assetMany')} ·
@@ -203,24 +190,4 @@
     white-space: nowrap;
   }
 
-  .media-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-1);
-    padding: var(--space-3);
-    border: 1px dashed var(--line-soft);
-    color: var(--muted);
-  }
-
-  .media-empty strong {
-    color: var(--ink);
-    font-size: var(--text-2xs);
-    font-weight: 400;
-  }
-
-  .media-empty span {
-    font-size: var(--text-2xs);
-    line-height: 1.4;
-  }
 </style>

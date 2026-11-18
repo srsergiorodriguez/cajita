@@ -11,7 +11,6 @@
   } from '../../lib/state/preferences.svelte.js';
   import { toast } from '../../lib/state/ui.svelte.js';
   import {
-    activePage,
     canRedo,
     canUndo,
     session
@@ -31,11 +30,7 @@
     onhome
   } = $props();
 
-  const page = $derived(activePage());
   const projectTitle = $derived(session.project?.title ?? t('app.project'));
-  const pageLabel = $derived(
-    page ? `${projectTitle} / ${page.title}` : t('stage.kicker')
-  );
   const saveLabel = $derived(
     session.status === 'saving'
       ? t('top.saving')
@@ -101,8 +96,6 @@
       {t('top.viewMap')}
     </button>
   </nav>
-
-  <span class="page-title">{pageLabel}</span>
 
   <div class="actions">
     <span class="panel-toggle inspector-toggle">
@@ -187,7 +180,8 @@
     display: flex;
     align-items: baseline;
     gap: var(--space-2);
-    min-width: 202px;
+    flex: 1 1 0;
+    min-width: 0;
   }
 
   .brand-home {
@@ -214,6 +208,8 @@
   }
 
   .project {
+    flex: 1 1 auto;
+    max-width: none;
     overflow: hidden;
     color: var(--muted);
     font-size: var(--text-2xs);
@@ -233,6 +229,7 @@
   .viewtabs {
     display: flex;
     align-items: center;
+    flex: 0 0 auto;
     gap: 2px;
   }
 
@@ -261,23 +258,11 @@
     opacity: 0.45;
   }
 
-  .page-title {
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    color: var(--muted);
-    font-size: var(--text-2xs);
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
   .actions {
     display: flex;
     align-items: center;
+    flex: 0 0 auto;
     gap: var(--space-2);
-    margin-left: auto;
     min-width: 0;
   }
 
@@ -308,12 +293,6 @@
 
   .btn-label {
     display: inline;
-  }
-
-  @media (max-width: 1240px) {
-    .page-title {
-      display: none;
-    }
   }
 
   @media (max-width: 1080px) {

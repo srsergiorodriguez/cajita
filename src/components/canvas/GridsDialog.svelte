@@ -21,6 +21,7 @@
   let selectedId = $state('');
   let cellStart = $state(null);
   let cellEnd = $state(null);
+  let dragging = $state(false);
 
   const grids = $derived(Object.values(session.project?.grids ?? {}));
   const grid = $derived(grids.find((item) => item.id === selectedId) ?? grids[0] ?? null);
@@ -72,21 +73,47 @@
     }
   }
 
-  function chooseCell(event) {
-    if (!layout) return;
-    const svg = event.currentTarget.querySelector('svg');
-    if (!svg) return;
+  function cellAt(event) {
+    if (!layout) return null;
+    const button = event.currentTarget;
+    const svg = button.querySelector('svg');
+    if (!svg) return null;
     const rect = svg.getBoundingClientRect();
     const x = ((event.clientX - rect.left) / rect.width) * session.project.stage.width;
     const y = ((event.clientY - rect.top) / rect.height) * session.project.stage.height;
-    const cell = layout.cells.find(
-      (item) => x >= item.px && x <= item.px + item.pw && y >= item.py && y <= item.py + item.ph
+    return (
+      layout.cells.find(
+        (item) =>
+          x >= item.px &&
+          x <= item.px + item.pw &&
+          y >= item.py &&
+          y <= item.py + item.ph
+      ) ?? null
     );
+  }
+
+  function startSelection(event) {
+    if (event.button !== 0) return;
+    const cell = cellAt(event);
     if (!cell) return;
-    if (event.shiftKey && cellStart) cellEnd = { x: cell.x, y: cell.y };
-    else {
-      cellStart = { x: cell.x, y: cell.y, w: cell.w, h: cell.h };
-      cellEnd = { x: cell.x, y: cell.y };
+    event.preventDefault();
+    cellStart = { x: cell.x, y: cell.y, w: cell.w, h: cell.h };
+    cellEnd = { x: cell.x, y: cell.y };
+    dragging = true;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  }
+
+  function moveSelection(event) {
+    if (!dragging) return;
+    const cell = cellAt(event);
+    if (cell) cellEnd = { x: cell.x, y: cell.y };
+  }
+
+  function endSelection(event) {
+    if (!dragging) return;
+    dragging = false;
+    if (event?.currentTarget?.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
     }
   }
 
@@ -185,9 +212,12 @@
         <button
           type="button"
           class="grid-preview"
-          onclick={chooseCell}
+          onpointerdown={startSelection}
+          onpointermove={moveSelection}
+          onpointerup={endSelection}
+          onpointercancel={endSelection}
           aria-label={t('grid.selectCells')}
-          style={`aspect-ratio:${session.project.stage.width}/${session.project.stage.height}`}
+          style={`--grid-ratio:${session.project.stage.width / session.project.stage.height};aspect-ratio:${session.project.stage.width}/${session.project.stage.height}`}
         >
           <svg
             viewBox={`0 0 ${session.project.stage.width} ${session.project.stage.height}`}
@@ -221,11 +251,11 @@
           </svg>
         </button>
         <div class="grid-actions">
-          <Button size="sm" variant="ghost" onclick={unmerge} disabled={!selection}>
-            {t('grid.unmerge')}
-          </Button>
           <Button size="sm" variant="secondary" onclick={merge} disabled={!selection}>
             {t('grid.merge')}
+          </Button>
+          <Button size="sm" variant="secondary" onclick={unmerge} disabled={!selection}>
+            {t('grid.unmerge')}
           </Button>
           <Button size="sm" variant="accent" onclick={useOnPage} disabled={!page}>
             {t('grid.useOnPage')}
@@ -299,9 +329,12 @@
   }
   .grid-preview {
     display: block;
-    width: 100%;
+    width: min(100%, calc(48vh * var(--grid-ratio)));
+    margin: 0 auto;
+    height: auto;
     max-height: 48vh;
     padding: 0;
+    touch-action: none;
     overflow: hidden;
     border: 1px solid var(--line);
     background: var(--panel-2);
@@ -310,7 +343,7 @@
   .grid-preview svg {
     display: block;
     width: 100%;
-    max-height: 48vh;
+    height: 100%;
     cursor: crosshair;
   }
   .margin {

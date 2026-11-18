@@ -73,16 +73,15 @@
             maskCurve={element.maskCurve}
             fit={element.fit ?? 'contain'}
           />
-        {:else if element.type === 'video'}
-          <span class="mini-icon"><Icon name="video" size={12} /></span>
         {:else}
           <span class="mini-empty"></span>
         {/if}
+        {#if element.type === 'video'}
+          <span class="mini-play"><Icon name="play" size={9} /></span>
+        {/if}
       {:else if element.type === 'audio'}
-        <span class="mini-audio">
-          <b>▶</b>
-          <span>{element.label || imageAsset(element)?.name || 'audio'}</span>
-          <i></i>
+        <span class="mini-badge mini-badge--audio" title={element.label || imageAsset(element)?.name || 'audio'}>
+          <Icon name="sound" size={10} />
         </span>
       {:else if element.type === 'text'}
         <span class="mini-text" style={textStyle(element)}>{element.text}</span>
@@ -100,13 +99,17 @@
       {:else if element.type === 'fichaCollection'}
         <span class="mini-collection">
           {#each Object.values(project?.fichas ?? {}).slice(0, 6) as record (record.id)}
-            <i></i>
+            {#if project?.assets?.[record.assetId]}
+              <AssetThumb asset={project.assets[record.assetId]} projectId={project.id} />
+            {:else}
+              <i></i>
+            {/if}
           {/each}
         </span>
       {:else if element.type === 'html'}
-        <span class="mini-icon mini-embed"><Icon name="html" size={11} /><b>HTML</b></span>
+        <span class="mini-badge mini-badge--insert"><Icon name="html" size={11} /></span>
       {:else if element.type === 'embed'}
-        <span class="mini-icon mini-embed">
+        <span class="mini-badge mini-badge--insert">
           <Icon name={element.provider === 'observable' ? 'chart' : element.provider === 'p5' ? 'code' : 'play'} size={11} />
         </span>
       {/if}
@@ -141,7 +144,6 @@
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover;
   }
   .mini-el :global(svg) {
     display: block;
@@ -157,22 +159,39 @@
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
-  .mini-icon {
+  .mini-badge {
+    position: relative;
     display: grid;
     place-items: center;
     width: 100%;
     height: 100%;
+    overflow: hidden;
+    container-type: size;
     color: var(--ink);
     background: var(--panel-2);
   }
-  .mini-embed {
+  .mini-badge :global(svg) {
+    width: min(58cqw, 58cqh);
+    height: min(58cqw, 58cqh);
+  }
+  .mini-badge--insert {
     background: var(--panel);
     border: 1px solid var(--line-soft);
   }
-  .mini-embed b {
-    font-size: 0.6em;
-    font-weight: 400;
-    letter-spacing: 0.08em;
+  .mini-badge--audio {
+    background: var(--panel-2);
+  }
+  .mini-play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    display: grid;
+    place-items: center;
+    width: 14px;
+    height: 14px;
+    background: color-mix(in srgb, var(--ink) 78%, transparent);
+    color: var(--panel);
+    transform: translate(-50%, -50%);
   }
   .mini-collection {
     display: grid;
@@ -180,8 +199,14 @@
     gap: 2px;
     width: 100%;
     height: 100%;
-    padding: 4px;
+    padding: 3px;
     background: var(--ficha-bg, #fffdf7);
+  }
+  .mini-collection :global(.asset-thumb) {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border: 0;
   }
   .mini-collection i {
     display: block;
@@ -194,39 +219,5 @@
     width: 100%;
     height: 100%;
     background: var(--panel-3);
-  }
-  .mini-audio {
-    display: flex;
-    align-items: center;
-    gap: 4cqw;
-    width: 100%;
-    height: 100%;
-    padding: 3cqw;
-    overflow: hidden;
-    border: 1px solid currentColor;
-    background: #fffdf7;
-    color: #24303f;
-    font-size: 4cqw;
-  }
-  .mini-audio b {
-    display: grid;
-    flex: 0 0 auto;
-    place-items: center;
-    width: 8cqw;
-    height: 8cqw;
-    background: currentColor;
-    color: #fffdf7;
-    font-size: 3cqw;
-  }
-  .mini-audio span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .mini-audio i {
-    flex: 1;
-    height: 1px;
-    background: currentColor;
-    opacity: 0.35;
   }
 </style>

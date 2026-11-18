@@ -11,10 +11,9 @@ export const ui = $state({
  */
 export function toast(message, type = 'info', duration = 4000) {
   const id = nextId++;
-  ui.toasts = [...ui.toasts, { id, message, type }];
-  if (type !== 'error') {
-    window.setTimeout(() => dismissToast(id), duration);
-  }
+  const ttl = type === 'error' ? Math.max(duration, 10000) : duration;
+  ui.toasts = [...ui.toasts, { id, message, type }].slice(-5);
+  window.setTimeout(() => dismissToast(id), ttl);
   return id;
 }
 

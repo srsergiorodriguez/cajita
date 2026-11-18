@@ -1364,6 +1364,9 @@ true`, or a visually hidden `<h1>` with the page title when there is none. The
   and backdrop behaviour.
 - Audio uses a styled button plus `<audio>`; a `<noscript>` fallback shows native
   controls. Video uses native `<video controls playsinline>`.
+- The editor uses drag-safe custom media controls instead of native browser chrome.
+  Published video keeps native controls; published audio keeps the styled player.
+  `controls: false` renders a label-only audio row in both editor and export.
 - Autoplay is muted-only and gracefully degrades; browsers may block it.
 
 ### CSS strategy

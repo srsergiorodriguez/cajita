@@ -2,6 +2,7 @@
   import Dialog from '../ui/Dialog.svelte';
   import Button from '../ui/Button.svelte';
   import Select from '../ui/Select.svelte';
+  import ZoomControls from '../canvas/ZoomControls.svelte';
   import { t } from '../../lib/i18n/index.svelte.js';
   import { session } from '../../lib/state/project.svelte.js';
   import { buildPreview } from '../../lib/export/preview.js';
@@ -14,7 +15,14 @@
   let error = $state('');
   let iframeReady = $state(false);
   let iframeEl = $state(null);
+  let previewFrameEl = $state(null);
+  let previewZoom = $state(1);
+  let previewFitZoom = $state(1);
+  let previewFitMode = $state('width');
   const previewSrc = new URL('preview.html', window.location.href).href;
+  const stageRatio = $derived(
+    (session.project?.stage?.width ?? 1200) / (session.project?.stage?.height ?? 800)
+  );
   let previewAnimation = $state('');
   let animationTimer = null;
 
@@ -32,6 +40,26 @@
     )
   );
 
+  function setPreviewZoom(next) {
+    previewZoom = Math.min(4, Math.max(0.25, Math.round(next * 100) / 100));
+    previewFitMode = 'manual';
+  }
+
+  function fitWidth() {
+    previewZoom = 1;
+    previewFitMode = 'width';
+  }
+
+  function fitPreview() {
+    if (!previewFrameEl) return;
+    const rect = previewFrameEl.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const fit = Math.min(1, (rect.height * stageRatio) / rect.width);
+    previewFitZoom = Math.max(0.25, Math.min(1, Math.round(fit * 100) / 100));
+    previewZoom = previewFitZoom;
+    previewFitMode = 'page';
+  }
+
   function animateOutgoing() {
     const transition = currentPage?.transition;
     if (transition !== 'fade' && transition !== 'slide') return;
@@ -48,6 +76,9 @@
     if (open) {
       currentPageId = session.activePageId;
       previewAnimation = '';
+      previewZoom = 1;
+      previewFitZoom = 1;
+      previewFitMode = 'width';
     } else {
       currentPageId = null;
       previewAnimation = '';
@@ -79,6 +110,14 @@
     return () => {
       cancelled = true;
     };
+  });
+
+  $effect(() => {
+    if (!iframeReady || !iframeEl) return;
+    iframeEl.contentDocument?.documentElement.style.setProperty(
+      '--preview-zoom',
+      String(previewZoom)
+    );
   });
 
   $effect(() => {
@@ -128,12 +167,22 @@
         {t('preview.resetFichas')}
       </Button>
     {/if}
+    <ZoomControls
+      zoom={previewZoom}
+      onZoomOut={() => setPreviewZoom(previewZoom - 0.1)}
+      onZoomIn={() => setPreviewZoom(previewZoom + 0.1)}
+      onFitWidth={fitWidth}
+      onFitPage={fitPreview}
+      fitWidthActive={previewFitMode === 'width'}
+      fitPageActive={previewFitMode === 'page'}
+    />
   </div>
   {#if error}
     <p class="error">{error}</p>
   {:else}
     <div
       class="preview-frame"
+      bind:this={previewFrameEl}
       class:fade={previewAnimation === 'fade'}
       class:slide={previewAnimation === 'slide'}
       style:background={siteBackground}
@@ -156,6 +205,7 @@
   .preview-bar {
     display: flex;
     align-items: flex-end;
+    flex-wrap: wrap;
     gap: var(--space-3);
   }
 
