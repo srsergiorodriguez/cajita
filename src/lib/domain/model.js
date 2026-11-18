@@ -1,4 +1,5 @@
 import { makeSlug } from './slugs.js';
+import { ensureDesign } from './design.js';
 import { DEFAULT_FICHA_STYLE } from './ficha-style.js';
 
 export const PROJECT_FORMAT = 'cajita';
@@ -156,7 +157,7 @@ export function createProject({
     idFactory
   });
 
-  return {
+  const project = {
     format: PROJECT_FORMAT,
     version: PROJECT_VERSION,
     id: id ?? createId('p', idFactory),
@@ -173,7 +174,11 @@ export function createProject({
         : undefined
     ),
     siteBackground: '#fffdf7',
+    siteBackgroundToken: 'background',
     palette: [...DEFAULT_PALETTE],
+    colorTokens: undefined,
+    radiusTokens: undefined,
+    textStyles: undefined,
     grids: {},
     gridSettings: { show: true, snap: true },
     pageTemplates: {},
@@ -192,6 +197,7 @@ export function createProject({
       description: ''
     }
   };
+  return ensureDesign(project);
 }
 
 export function cloneProject(project, { idFactory } = {}) {
@@ -201,7 +207,7 @@ export function cloneProject(project, { idFactory } = {}) {
   copy.updatedAt = copy.createdAt;
   copy.title = project.title;
   copy.slug = project.slug;
-  return copy;
+  return ensureDesign(copy);
 }
 
 export function projectStats(project) {

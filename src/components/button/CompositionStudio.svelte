@@ -27,6 +27,7 @@
   import { BUILTIN_FONTS, fontStack, defaultFrame } from '../../lib/domain/elements.js';
   import { rotateFrame } from '../../lib/domain/geometry.js';
   import { shapeLabel } from '../../lib/domain/shapes.js';
+  import { textStyleValues } from '../../lib/domain/design.js';
 
   let { open = $bindable(false), element = null, preset = 'button' } = $props();
   let composition = $state(createComposition('blank'));
@@ -107,6 +108,10 @@
   );
   const aspect = $derived(width > 0 && height > 0 ? width / height : newFrame.w / newFrame.h);
   const fontOptions = $derived(BUILTIN_FONTS.map((font) => ({ value: font.id, label: font.label })));
+  const textStyleOptions = $derived([
+    { value: '', label: t('text.styleCustom') },
+    ...Object.values(project?.textStyles ?? {}).map((style) => ({ value: style.id, label: style.name }))
+  ]);
   const mediaOptions = $derived([
     { value: '', label: t('button.chooseMedia') },
     ...imageAssets.map((asset) => {
@@ -205,6 +210,20 @@
 
   function updateSelected(patch) {
     if (selected) updateChild(selected.id, patch);
+  }
+
+  function applySelectedTextStyle(styleId) {
+    if (!selected) return;
+    if (!styleId) {
+      updateSelected({ textStyleId: null });
+      return;
+    }
+    const values = textStyleValues(project, styleId);
+    if (values) updateSelected({ ...values, textStyleId: styleId });
+  }
+
+  function updateSelectedText(patch) {
+    updateSelected({ ...patch, textStyleId: null });
   }
 
   function updateSelectedFrame(key, value) {
@@ -653,6 +672,7 @@
       {children}
       {selected}
       {fontOptions}
+      {textStyleOptions}
       {mediaOptions}
       bind:chosenMedia
       {orderedChildren}
@@ -664,6 +684,8 @@
       oncopy={copyStateTo}
       onselect={(id) => (selectedId = id)}
       onupdate={updateSelected}
+      ontextchange={updateSelectedText}
+      onstyle={applySelectedTextStyle}
       onframeupdate={updateSelectedFrame}
       onremove={removeSelected}
       onaddbasic={addBasicChild}

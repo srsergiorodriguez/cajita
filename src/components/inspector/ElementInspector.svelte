@@ -20,7 +20,8 @@
     duplicateElementById,
     moveLayer,
     session,
-    updateElement
+    updateElement,
+    applyTextStyleToElement
   } from '../../lib/state/project.svelte.js';
   import { toast } from '../../lib/state/ui.svelte.js';
 
@@ -36,6 +37,13 @@
   let drawingOpen = $state(false);
   let buttonOpen = $state(false);
   const collection = $derived(element.collection ?? {});
+  const textStyleOptions = $derived([
+    { value: '', label: t('text.styleCustom') },
+    ...Object.values(session.project?.textStyles ?? {}).map((style) => ({
+      value: style.id,
+      label: style.name
+    }))
+  ]);
 
   $effect(() => {
     if (element) {
@@ -263,11 +271,15 @@
         {fontOptions}
         showAlign
         showHeading
+        styleOptions={textStyleOptions}
+        textStyleId={element.textStyleId ?? ''}
+        onstyle={(styleId) => (styleId ? applyTextStyleToElement(element.id, styleId) : setField('textStyleId', null))}
         onchange={(patch) => {
           for (const [key, next] of Object.entries(patch)) {
             if (key === 'fontSize') setNumberField(key, next);
             else setField(key, next);
           }
+          if (element.textStyleId) setField('textStyleId', null);
         }}
       />
     </Section>

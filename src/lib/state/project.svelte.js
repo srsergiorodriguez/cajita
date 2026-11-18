@@ -16,6 +16,7 @@ import {
   normaliseZ
 } from '../domain/pages.js';
 import { createElement, duplicateElement, mediaFrame } from '../domain/elements.js';
+import { ensureDesign, textStyleValues, colorForToken } from '../domain/design.js';
 import { assetUsage, assetUseCount } from '../domain/media-usage.js';
 import { resizeStage } from '../domain/stage.js';
 import { normaliseGrid, reflowGrid, mergeGridCells, unmergeGridCells } from '../domain/grid.js';
@@ -760,19 +761,92 @@ export function recordPublish(entry) {
   });
 }
 
+function updatePaletteReferences(draft, index, color) {
+  const sync = (item, key, valueKey, tokenKey) => {
+    if (item?.[key] === index) {
+      item[valueKey] = color;
+      if (tokenKey) item[tokenKey] = draft.colorTokens?.[index]?.id ?? item[tokenKey];
+    }
+  };
+  const tokenId = draft.colorTokens?.[index]?.id;
+  const syncElement = (element) => {
+    sync(element, 'colorIndex', 'color', 'colorToken');
+    sync(element, 'fillIndex', 'fill', 'fillToken');
+    sync(element, 'strokeIndex', 'stroke', 'strokeToken');
+    sync(element, 'backgroundIndex', 'background', 'backgroundToken');
+    if (element.textStyleId && draft.textStyles?.[element.textStyleId]?.colorToken === tokenId) {
+      element.color = color;
+    }
+    for (const frame of element.composition?.frames ?? []) {
+      for (const child of frame.children ?? []) syncElement(child);
+    }
+  };
+  if (draft.siteBackgroundToken === tokenId) draft.siteBackground = color;
+  for (const page of draft.pages ?? []) {
+    if (page.background?.index === index) page.background.color = color;
+    for (const element of page.elements ?? []) syncElement(element);
+  }
+}
+
 export function updatePalette(index, color, { coalesceKey = null } = {}) {
   return runCommand(
     'editar paleta',
     (draft) => {
       draft.palette = [...(draft.palette ?? DEFAULT_PALETTE)];
       draft.palette[index] = color;
+      updatePaletteReferences(draft, index, color);
     },
     { coalesceKey: coalesceKey ?? `palette:${index}` }
   );
 }
 
+export function updateTextStyle(styleId, patch = {}) {
+  return runCommand('editar estilo de texto', (draft) => {
+    draft.textStyles = draft.textStyles ?? {};
+    draft.textStyles[styleId] = { ...draft.textStyles[styleId], ...patch };
+    const values = textStyleValues(draft, styleId);
+    if (!values) return;
+    const apply = (element) => {
+      if (element.textStyleId === styleId) Object.assign(element, values);
+      for (const frame of element.composition?.frames ?? []) {
+        for (const child of frame.children ?? []) apply(child);
+      }
+    };
+    for (const page of draft.pages ?? []) for (const element of page.elements ?? []) apply(element);
+  });
+}
+
+export function updateRadiusToken(tokenId, value) {
+  return runCommand('editar radio', (draft) => {
+    const token = draft.radiusTokens?.find((item) => item.id === tokenId);
+    if (!token) return;
+    token.value = value;
+    const apply = (element) => {
+      if (element.radiusToken === tokenId) element.radius = value;
+      for (const frame of element.composition?.frames ?? []) {
+        for (const child of frame.children ?? []) apply(child);
+      }
+    };
+    for (const page of draft.pages ?? []) for (const element of page.elements ?? []) apply(element);
+  });
+}
+
+export function applyTextStyleToElement(elementId, styleId) {
+  return runCommand('aplicar estilo de texto', (draft) => {
+    const page = (draft.pages ?? []).find((item) => item.elements?.some((child) => child.id === elementId));
+    const element = page?.elements?.find((child) => child.id === elementId);
+    const values = textStyleValues(draft, styleId);
+    if (!element || !values) return;
+    Object.assign(element, values, { textStyleId: styleId });
+  });
+}
+
+
 export function resetPalette() {
   return runCommand('restaurar paleta', (draft) => {
+    (draft.palette ?? []).forEach((_, index) => {
+      updatePaletteReferences(draft, index, DEFAULT_PALETTE[index]);
+    });
     draft.palette = [...DEFAULT_PALETTE];
   });
 }
@@ -1075,11 +1149,12 @@ export function deletePageTemplate(templateId) {
   });
 }
 
-export function setSiteBackground(color, { coalesceKey = null } = {}) {
+export function setSiteBackground(color, { coalesceKey = null, token = null } = {}) {
   return runCommand(
     'cambiar fondo del sitio',
     (draft) => {
       draft.siteBackground = color;
+      draft.siteBackgroundToken = token;
     },
     { coalesceKey }
   );
@@ -1205,7 +1280,7 @@ export async function openProject(id) {
 
   const loaded = await loadValidProject(id);
   if (!loaded) throw new Error('El proyecto no existe.');
-  session.project = loaded.project;
+  session.project = ensureDesign(loaded.project);
   session.activePageId = loaded.project.startPageId;
   session.selectedAssetId = null;
   session.selectedElementIds = [];

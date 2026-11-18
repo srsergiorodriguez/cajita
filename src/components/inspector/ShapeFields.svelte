@@ -1,6 +1,10 @@
 <script>
   import Field from '../ui/Field.svelte';
   import SegmentedControl from '../ui/SegmentedControl.svelte';
+  import Select from '../ui/Select.svelte';
+  import ColorField from './ColorField.svelte';
+  import { session } from '../../lib/state/project.svelte.js';
+  import { radiusTokenValue } from '../../lib/domain/design.js';
   import { t } from '../../lib/i18n/index.svelte.js';
 
   let { value = {}, onchange = null } = $props();
@@ -18,17 +22,19 @@
   ]}
   onchange={(shape) => patch({ shape })}
 />
-<Field
+<ColorField
   label={t('shape.fill')}
-  type="color"
   value={value.fill}
-  oninput={(event) => patch({ fill: event.currentTarget.value })}
+  token={value.fillToken}
+  project={session.project}
+  onchange={({ value: color, token, index }) => patch({ fill: color, fillToken: token, fillIndex: index })}
 />
-<Field
+<ColorField
   label={t('shape.stroke')}
-  type="color"
   value={value.stroke}
-  oninput={(event) => patch({ stroke: event.currentTarget.value })}
+  token={value.strokeToken}
+  project={session.project}
+  onchange={({ value: color, token, index }) => patch({ stroke: color, strokeToken: token, strokeIndex: index })}
 />
 <Field
   label={t('shape.strokeWidth')}
@@ -39,6 +45,18 @@
   oninput={(event) => patch({ strokeWidth: Number(event.currentTarget.value) })}
 />
 {#if value.shape !== 'circle'}
+  <Select
+    label={t('shape.radiusToken')}
+    value={value.radiusToken ?? ''}
+    options={[
+      { value: '', label: t('design.colorCustom') },
+      ...(session.project?.radiusTokens ?? []).map((item) => ({ value: item.id, label: item.name }))
+    ]}
+    onchange={(token) => {
+      if (!token) patch({ radiusToken: null });
+      else patch({ radiusToken: token, radius: radiusTokenValue(session.project, token, value.radius ?? 0) });
+    }}
+  />
   <Field
     label={t('shape.radius')}
     type="number"
@@ -46,6 +64,6 @@
     min="0"
     max="50"
     suffix="%"
-    oninput={(event) => patch({ radius: Number(event.currentTarget.value) })}
+    oninput={(event) => patch({ radius: Number(event.currentTarget.value), radiusToken: null })}
   />
 {/if}

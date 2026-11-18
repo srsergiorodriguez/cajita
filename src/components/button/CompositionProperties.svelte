@@ -22,6 +22,7 @@
     children,
     selected,
     fontOptions,
+    textStyleOptions,
     mediaOptions,
     chosenMedia = $bindable(''),
     orderedChildren,
@@ -33,6 +34,8 @@
     oncopy,
     onselect,
     onupdate,
+    ontextchange,
+    onstyle,
     onframeupdate,
     onremove,
     onaddbasic,
@@ -97,10 +100,13 @@
       <TextStyleFields
         value={selected}
         {fontOptions}
+        {textStyleOptions}
+        textStyleId={selected.textStyleId ?? ''}
         sizeSuffix=""
         showAlign
         showHeading
-        onchange={(patch) => onupdate(patch)}
+        onstyle={onstyle}
+        onchange={ontextchange}
       />
     {:else if selected.type === 'shape'}
       <ShapeFields value={selected} onchange={(patch) => onupdate(patch)} />

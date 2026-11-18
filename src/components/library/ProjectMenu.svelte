@@ -1,18 +1,16 @@
 <script>
   import Button from '../ui/Button.svelte';
   import Dialog from '../ui/Dialog.svelte';
-  import Field from '../ui/Field.svelte';
   import Section from '../ui/Section.svelte';
   import FontsDialog from '../inspector/FontsDialog.svelte';
   import GridsDialog from '../canvas/GridsDialog.svelte';
+  import DesignSystemDialog from '../inspector/DesignSystemDialog.svelte';
   import { plural, t } from '../../lib/i18n/index.svelte.js';
   import { formatBytes, projectStats } from '../../lib/domain/model.js';
   import {
-    resetPalette,
     session,
     setGridSettings,
-    setSiteBackground,
-    updatePalette
+    setSiteBackground
   } from '../../lib/state/project.svelte.js';
   import { toast } from '../../lib/state/ui.svelte.js';
 
@@ -22,6 +20,7 @@
   let busy = $state(false);
   let fontsOpen = $state(false);
   let gridsOpen = $state(false);
+  let designOpen = $state(false);
   const summary = $derived(session.project ? projectStats(session.project) : null);
 
   function apply(action) {
@@ -58,29 +57,9 @@
     </div>
 
     <Section label={t('projectMenu.appearance')}>
-      <Field
-        label={t('inspector.siteBackground')}
-        type="color"
-        value={session.project?.siteBackground ?? '#fffdf7'}
-        hint={t('inspector.siteBackgroundHint')}
-        oninput={(event) => apply(() => setSiteBackground(event.currentTarget.value))}
-      />
-      <div class="palette-grid">
-        {#each session.project?.palette ?? [] as color, index}
-          <label class="palette-swatch">
-            <input
-              type="color"
-              value={color}
-              aria-label={t('palette.color', { number: index + 1 })}
-              oninput={(event) => apply(() => updatePalette(index, event.currentTarget.value))}
-            />
-            <span>{String(index + 1).padStart(2, '0')}</span>
-          </label>
-        {/each}
-      </div>
       <p class="hint">{t('palette.hint')}</p>
-      <Button size="sm" variant="ghost" onclick={() => apply(resetPalette)}>
-        {t('palette.reset')}
+      <Button size="sm" variant="secondary" onclick={() => { designOpen = true; open = false; }}>
+        {t('design.open')}
       </Button>
     </Section>
 
@@ -169,6 +148,7 @@
 </Dialog>
 <FontsDialog bind:open={fontsOpen} />
 <GridsDialog bind:open={gridsOpen} />
+<DesignSystemDialog bind:open={designOpen} />
 
 <style>
   .project-summary h2 {
@@ -214,30 +194,6 @@
   .danger-actions {
     display: flex;
     gap: var(--space-2);
-  }
-  .palette-grid {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: var(--space-2);
-  }
-  .palette-swatch {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    min-width: 0;
-  }
-  .palette-swatch input {
-    width: 100%;
-    height: 34px;
-    padding: 2px;
-    border: 1px solid var(--line);
-    background: var(--panel-2);
-    cursor: pointer;
-  }
-  .palette-swatch span {
-    color: var(--muted);
-    font-size: var(--text-3xs);
-    text-align: center;
   }
   .grid-flags {
     display: flex;

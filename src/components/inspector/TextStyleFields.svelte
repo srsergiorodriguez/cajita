@@ -2,6 +2,8 @@
   import Field from '../ui/Field.svelte';
   import Select from '../ui/Select.svelte';
   import SegmentedControl from '../ui/SegmentedControl.svelte';
+  import ColorField from './ColorField.svelte';
+  import { session } from '../../lib/state/project.svelte.js';
   import { t } from '../../lib/i18n/index.svelte.js';
 
   let {
@@ -10,6 +12,9 @@
     sizeSuffix = 'px',
     showAlign = false,
     showHeading = false,
+    styleOptions = null,
+    textStyleId = '',
+    onstyle = null,
     onchange = null
   } = $props();
 
@@ -17,6 +22,9 @@
 </script>
 
 <div class="text-fields">
+  {#if styleOptions}
+    <Select label={t('text.style')} value={textStyleId} options={styleOptions} onchange={(value) => onstyle?.(value)} />
+  {/if}
   <Select
     label={t('text.font')}
     value={value.font}
@@ -32,11 +40,12 @@
       suffix={sizeSuffix}
       oninput={(event) => patch({ fontSize: Number(event.currentTarget.value) })}
     />
-    <Field
+    <ColorField
       label={t('text.color')}
-      type="color"
       value={value.color}
-      oninput={(event) => patch({ color: event.currentTarget.value })}
+      token={value.colorToken}
+      project={session.project}
+      onchange={({ value: color, token, index }) => patch({ color, colorToken: token, colorIndex: index })}
     />
     {#if showAlign}
       <div class="align-control">
