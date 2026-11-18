@@ -1,17 +1,12 @@
 <script>
   import Button from '../ui/Button.svelte';
-  import Field from '../ui/Field.svelte';
-  import Select from '../ui/Select.svelte';
-  import Icon from '../ui/Icon.svelte';
   import { tick } from 'svelte';
-  import LayersList from '../inspector/LayersList.svelte';
-  import ShapeFields from '../inspector/ShapeFields.svelte';
   import DrawingDialog from '../drawing/DrawingDialog.svelte';
   import StudioShell from '../studio/StudioShell.svelte';
   import StudioToolbar from '../studio/StudioToolbar.svelte';
   import IconButton from '../ui/IconButton.svelte';
   import SegmentedControl from '../ui/SegmentedControl.svelte';
-  import Section from '../ui/Section.svelte';
+  import CompositionProperties from './CompositionProperties.svelte';
   import ConfirmDialog from '../ui/ConfirmDialog.svelte';
   import ZoomableViewport from '../studio/ZoomableViewport.svelte';
   import OnionSkin from '../studio/OnionSkin.svelte';
@@ -685,98 +680,39 @@
   {/snippet}
 
   {#snippet properties()}
-    <Section label={sizeLabel}>
-      <div class="grid-2">
-        <Field label={t('button.width')} type="number" min="20" value={Math.round(width)} oninput={(event) => (width = Number(event.currentTarget.value))} />
-        <Field label={t('button.height')} type="number" min="20" value={Math.round(height)} oninput={(event) => (height = Number(event.currentTarget.value))} />
-      </div>
-    </Section>
-
-    <Section label={t('composition.currentFrame')}>
-      {#if isButton}
-        <p class="current-state">{frameLabel(activeFrame)}</p>
-      {:else}
-        <Field label={t('composition.frameName')} value={activeFrame.name} oninput={(event) => updateFrame(activeFrame.id, { name: event.currentTarget.value })} />
-      {/if}
-    </Section>
-
-    {#if composition.preset === 'button'}
-      <Section label={t('composition.copyState')}>
-        <p class="hint">{t('composition.buttonRolesHint')}</p>
-        <div class="state-copy">
-          {#each composition.frames as target, index (target.id)}
-            {#if index !== activeFrameIndex}
-              <Button
-                size="sm"
-                variant="secondary"
-                disabled={!children.length}
-                onclick={() => copyStateTo(index)}
-              >
-                <Icon name="chevron-right" size={12} />{roleLabels[index]}
-              </Button>
-            {/if}
-          {/each}
-        </div>
-      </Section>
-    {/if}
-
-    {#if composition.preset === 'animation'}
-      <Section label={t('composition.timeline')}>
-        <label class="check"><input type="checkbox" checked={composition.timeline.autoplay} onchange={(event) => updateComposition({ timeline: { ...composition.timeline, autoplay: event.currentTarget.checked } })} /><span>{t('composition.autoplay')}</span></label>
-        <label class="check"><input type="checkbox" checked={composition.timeline.loop} onchange={(event) => updateComposition({ timeline: { ...composition.timeline, loop: event.currentTarget.checked } })} /><span>{t('composition.loop')}</span></label>
-      </Section>
-    {/if}
-
-    {#if selected}
-      <Section label={t('button.selected')}>
-        {#snippet actions()}
-          <Button size="sm" variant="ghost" onclick={removeSelected}><Icon name="trash" size={12} />{t('button.remove')}</Button>
-        {/snippet}
-        <div class="grid-2">
-          {#each [['x', 'button.x'], ['y', 'button.y'], ['w', 'button.w'], ['h', 'button.h']] as [key, label] (key)}
-            <Field label={t(label)} type="number" value={selected.frame[key]} oninput={(event) => updateSelectedFrame(key, event.currentTarget.value)} />
-          {/each}
-        </div>
-        {#if selected.type === 'text'}
-          <Field label={t('button.text')} value={selected.text} oninput={(event) => updateSelected({ text: event.currentTarget.value })} />
-          <Select label={t('button.font')} value={selected.font} options={fontOptions} onchange={(value) => updateSelected({ font: value })} />
-          <div class="grid-2">
-            <Field label={t('button.fontSize')} type="number" value={selected.fontSize} min="2" max="30" oninput={(event) => updateSelected({ fontSize: Number(event.currentTarget.value) })} />
-            <Field label={t('button.color')} type="color" value={selected.color} oninput={(event) => updateSelected({ color: event.currentTarget.value })} />
-          </div>
-        {:else if selected.type === 'shape'}
-          <ShapeFields value={selected} onchange={(patch) => updateSelected(patch)} />
-        {:else if selected.type === 'image' || selected.type === 'drawing'}
-          <div class="grid-2">
-            <Button size="sm" variant={selected.fit === 'cover' ? 'accent' : 'secondary'} onclick={() => updateSelected({ fit: 'cover' })}>{t('button.cover')}</Button>
-            <Button size="sm" variant={selected.fit === 'contain' ? 'accent' : 'secondary'} onclick={() => updateSelected({ fit: 'contain' })}>{t('button.contain')}</Button>
-          </div>
-          {#if selected.type === 'drawing' && selected.drawingId}
-            <Button size="sm" variant="secondary" onclick={() => openDrawingEditor(selected)}>
-              <Icon name="pencil" size={12} />{t('button.editDrawing')}
-            </Button>
-          {/if}
-        {/if}
-      </Section>
-    {/if}
-
-    <Section label={t('composition.layers')}>
-      <LayersList elements={orderedChildren.map((item) => item.child)} presorted selectedIds={selectedId ? [selectedId] : []} onselect={(id) => (selectedId = id)} onreorder={reorderChildren} onupdate={updateChild} labelFor={childLabel} canRename={false} emptyText={t('composition.noLayers')} />
-    </Section>
-
-    <Section label={t('button.add')}>
-      <div class="grid-2">
-        <Button size="sm" variant="secondary" onclick={() => addBasicChild('text')}><Icon name="text" size={12} />{t('button.text')}</Button>
-        <Button size="sm" variant="secondary" onclick={() => addBasicChild('shape')}><Icon name="shape" size={12} />{t('button.shape')}</Button>
-      </div>
-      <div class="asset-add">
-        <Select label={t('button.media')} value={chosenMedia} options={mediaOptions} onchange={(value) => (chosenMedia = value)} />
-        <Button size="sm" variant="ghost" onclick={addMedia}><Icon name="image" size={12} />{t('button.addMedia')}</Button>
-      </div>
-      <Button size="sm" variant="secondary" onclick={openNewDrawing}>
-        <Icon name="pencil" size={12} />{t('button.drawNew')}
-      </Button>
-    </Section>
+    <CompositionProperties
+      {composition}
+      {activeFrame}
+      {activeFrameIndex}
+      {width}
+      {height}
+      {sizeLabel}
+      {isButton}
+      {roleLabels}
+      {children}
+      {selected}
+      {fontOptions}
+      {mediaOptions}
+      bind:chosenMedia
+      {orderedChildren}
+      {selectedId}
+      onwidth={(value) => (width = value)}
+      onheight={(value) => (height = value)}
+      onframe={(patch) => updateFrame(activeFrame.id, patch)}
+      oncomposition={(timeline) => updateComposition({ timeline })}
+      oncopy={copyStateTo}
+      onselect={(id) => (selectedId = id)}
+      onupdate={updateSelected}
+      onframeupdate={updateSelectedFrame}
+      onremove={removeSelected}
+      onaddbasic={addBasicChild}
+      onaddmedia={addMedia}
+      onnewdrawing={openNewDrawing}
+      oneditdrawing={() => selected && openDrawingEditor(selected)}
+      onreorder={reorderChildren}
+      onupdatechild={updateChild}
+      labelFor={childLabel}
+    />
   {/snippet}
 
   {#snippet footer()}
@@ -805,12 +741,7 @@
 <style>
   .duration-field { display: inline-flex; align-items: center; gap: 3px; color: var(--muted); font-family: var(--font-ui); font-size: var(--text-2xs); }
   .duration-field input { width: 66px; height: 24px; padding: 0 4px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); font: inherit; text-align: right; }
-  .current-state { font-family: var(--font-ui); font-size: var(--text-sm); }
   .frame-count { color: var(--muted); font-family: var(--font-ui); font-size: var(--text-2xs); font-variant-numeric: tabular-nums; }
   .composition-stage { position: relative; display: block; width: 100%; height: 100%; overflow: visible; border: 1px solid var(--line); background: var(--stage); container-type: size; }
-  .state-copy { display: flex; flex-wrap: wrap; gap: var(--space-1); }
-  .state-copy :global(.btn) { flex: 1 1 100px; }
-  .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-1); }
-  .asset-add { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: var(--space-1); }
   .hint { margin: var(--space-2) 0 0; max-width: 520px; color: var(--muted); font-size: var(--text-2xs); line-height: 1.4; }
 </style>
