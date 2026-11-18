@@ -1,7 +1,6 @@
 <script>
   import IconButton from '../ui/IconButton.svelte';
   import SegmentedControl from '../ui/SegmentedControl.svelte';
-  import FrameTimeline from '../studio/FrameTimeline.svelte';
   import StudioToolbar from '../studio/StudioToolbar.svelte';
   import { t } from '../../lib/i18n/index.svelte.js';
 
@@ -14,9 +13,6 @@
     previewing,
     onion,
     onionScope,
-    labelFor,
-    onselect,
-    onreorder,
     onadd,
     onduplicate,
     onmove,
@@ -29,17 +25,6 @@
 </script>
 
 <StudioToolbar>
-  {#snippet timeline()}
-    <FrameTimeline
-      frames={composition.frames}
-      {activeFrameId}
-      {isButton}
-      {labelFor}
-      durationLabel={(frame) => `${frame.duration}ms`}
-      {onselect}
-      {onreorder}
-    />
-  {/snippet}
   {#snippet actions()}
     {#if !isButton}
       <span class="frame-count">{composition.frames.length}/{frameLimit}</span>

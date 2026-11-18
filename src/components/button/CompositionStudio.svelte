@@ -5,6 +5,7 @@
   import StudioShell from '../studio/StudioShell.svelte';
   import CompositionProperties from './CompositionProperties.svelte';
   import CompositionToolbar from './CompositionToolbar.svelte';
+  import FrameTimeline from '../studio/FrameTimeline.svelte';
   import ConfirmDialog from '../ui/ConfirmDialog.svelte';
   import ZoomableViewport from '../studio/ZoomableViewport.svelte';
   import OnionSkin from '../studio/OnionSkin.svelte';
@@ -562,9 +563,6 @@
       {previewing}
       {onion}
       {onionScope}
-      labelFor={frameLabel}
-      onselect={chooseFrame}
-      onreorder={reorderFrames}
       onadd={addFrame}
       onduplicate={duplicateFrame}
       onmove={moveFrame}
