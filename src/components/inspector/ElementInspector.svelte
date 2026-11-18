@@ -8,6 +8,8 @@
   import FichaCard from '../cards/FichaCard.svelte';
   import ImageMaskDialog from './ImageMaskDialog.svelte';
   import ShapeFields from './ShapeFields.svelte';
+  import MediaFitFields from './MediaFitFields.svelte';
+  import TextStyleFields from './TextStyleFields.svelte';
   import { t } from '../../lib/i18n/index.svelte.js';
   import { BUILTIN_FONTS } from '../../lib/domain/elements.js';
   import { emptyMeta, hasMetaContent } from '../../lib/domain/links.js';
@@ -256,48 +258,18 @@
           rows="4"
           oninput={(event) => setText(event.currentTarget.value)}></textarea>
       </label>
-      <Select
-        label={t('text.font')}
-        value={element.font}
-        options={fontOptions}
-        onchange={(value) => setField('font', value)}
+      <TextStyleFields
+        value={element}
+        {fontOptions}
+        showAlign
+        showHeading
+        onchange={(patch) => {
+          for (const [key, next] of Object.entries(patch)) {
+            if (key === 'fontSize') setNumberField(key, next);
+            else setField(key, next);
+          }
+        }}
       />
-      <div class="text-row">
-        <Field
-          label={t('text.size')}
-          type="number"
-          value={element.fontSize}
-          suffix="px"
-          oninput={(event) => setNumberField('fontSize', event.currentTarget.value)}
-        />
-        <Field
-          label={t('text.color')}
-          type="color"
-          value={element.color}
-          oninput={(event) => setField('color', event.currentTarget.value)}
-        />
-        <div class="align-control">
-          <span class="param-label">{t('text.align')}</span>
-          <SegmentedControl
-            label={t('text.align')}
-            value={element.align}
-            options={[
-              { value: 'left', label: t('text.left'), icon: 'align-left' },
-              { value: 'center', label: t('text.center'), icon: 'align-center' },
-              { value: 'right', label: t('text.right'), icon: 'align-right' }
-            ]}
-            onchange={(value) => setField('align', value)}
-          />
-        </div>
-      </div>
-      <label class="check">
-        <input
-          type="checkbox"
-          checked={Boolean(element.heading)}
-          onchange={(event) => setField('heading', event.currentTarget.checked)}
-        />
-        <span>{t('text.heading')}</span>
-      </label>
     </Section>
 
     <Section label={t('text.precise')} collapsible summary={typographySummary}>
@@ -321,28 +293,17 @@
 
   {#if element.type === 'image' || element.type === 'drawing'}
     <Section label={element.type === 'drawing' ? t('drawing.title') : t('image.title')}>
-      {#if element.type === 'drawing'}
-        <Button size="sm" variant="secondary" onclick={() => (drawingOpen = true)}>
-          {t('drawing.edit')}
-        </Button>
-      {/if}
       <Field
         label={t('image.alt')}
         value={element.alt}
         oninput={(event) => setField('alt', event.currentTarget.value)}
       />
-      <div class="segmented-row">
-        <span class="param-label">{t('image.fit')}</span>
-        <SegmentedControl
-          label={t('image.fit')}
-          value={element.fit}
-          options={[
-            { value: 'cover', label: t('image.cover') },
-            { value: 'contain', label: t('image.contain') }
-          ]}
-          onchange={(value) => setField('fit', value)}
-        />
-      </div>
+      <MediaFitFields
+        value={element.fit}
+        onchange={(value) => setField('fit', value)}
+        drawing={element.type === 'drawing'}
+        onedit={() => (drawingOpen = true)}
+      />
       <label class="check">
         <input
           type="checkbox"
@@ -543,7 +504,10 @@
       <ShapeFields
         value={element}
         onchange={(patch) => {
-          for (const [key, next] of Object.entries(patch)) setField(key, next);
+          for (const [key, next] of Object.entries(patch)) {
+            if (key === 'fontSize') setNumberField(key, next);
+            else setField(key, next);
+          }
         }}
       />
     </Section>
@@ -753,19 +717,6 @@
   }
 
   .segmented-row {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-  }
-
-  .text-row {
-    display: grid;
-    grid-template-columns: minmax(0, 0.8fr) minmax(0, 0.8fr) auto;
-    align-items: end;
-    gap: var(--space-2);
-  }
-
-  .align-control {
     display: flex;
     flex-direction: column;
     gap: var(--space-1);

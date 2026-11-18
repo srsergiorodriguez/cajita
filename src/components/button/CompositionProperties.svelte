@@ -5,6 +5,8 @@
   import Icon from '../ui/Icon.svelte';
   import Section from '../ui/Section.svelte';
   import ShapeFields from '../inspector/ShapeFields.svelte';
+  import MediaFitFields from '../inspector/MediaFitFields.svelte';
+  import TextStyleFields from '../inspector/TextStyleFields.svelte';
   import LayersList from '../inspector/LayersList.svelte';
   import { t } from '../../lib/i18n/index.svelte.js';
 
@@ -92,23 +94,23 @@
     </div>
     {#if selected.type === 'text'}
       <Field label={t('button.text')} value={selected.text} oninput={(event) => onupdate({ text: event.currentTarget.value })} />
-      <Select label={t('button.font')} value={selected.font} options={fontOptions} onchange={(value) => onupdate({ font: value })} />
-      <div class="grid-2">
-        <Field label={t('button.fontSize')} type="number" value={selected.fontSize} min="2" max="30" oninput={(event) => onupdate({ fontSize: Number(event.currentTarget.value) })} />
-        <Field label={t('button.color')} type="color" value={selected.color} oninput={(event) => onupdate({ color: event.currentTarget.value })} />
-      </div>
+      <TextStyleFields
+        value={selected}
+        {fontOptions}
+        sizeSuffix=""
+        showAlign
+        showHeading
+        onchange={(patch) => onupdate(patch)}
+      />
     {:else if selected.type === 'shape'}
       <ShapeFields value={selected} onchange={(patch) => onupdate(patch)} />
     {:else if selected.type === 'image' || selected.type === 'drawing'}
-      <div class="grid-2">
-        <Button size="sm" variant={selected.fit === 'cover' ? 'accent' : 'secondary'} onclick={() => onupdate({ fit: 'cover' })}>{t('button.cover')}</Button>
-        <Button size="sm" variant={selected.fit === 'contain' ? 'accent' : 'secondary'} onclick={() => onupdate({ fit: 'contain' })}>{t('button.contain')}</Button>
-      </div>
-      {#if selected.type === 'drawing' && selected.drawingId}
-        <Button size="sm" variant="secondary" onclick={oneditdrawing}>
-          <Icon name="pencil" size={12} />{t('button.editDrawing')}
-        </Button>
-      {/if}
+      <MediaFitFields
+        value={selected.fit}
+        onchange={(value) => onupdate({ fit: value })}
+        drawing={selected.type === 'drawing' && Boolean(selected.drawingId)}
+        onedit={oneditdrawing}
+      />
     {/if}
   </Section>
 {/if}

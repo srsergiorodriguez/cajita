@@ -741,7 +741,7 @@ Shared pieces:
 - `ZoomableViewport` — fit page, fit width, scrolling, fixed viewport.
 - `FrameTimeline` — frame/state strip, duration labels, drag reorder.
 - `OnionSkin` — editor-only frame ghosts.
-- `TextEditor`, `SelectionFrame`, `ShapeFields`, `LayersList`.
+- `TextEditor`, `SelectionFrame`, `ShapeFields`, `MediaFitFields`, `TextStyleFields`, `LayersList`.
 
 Rules:
 
