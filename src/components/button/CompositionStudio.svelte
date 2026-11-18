@@ -3,14 +3,11 @@
   import { tick } from 'svelte';
   import DrawingDialog from '../drawing/DrawingDialog.svelte';
   import StudioShell from '../studio/StudioShell.svelte';
-  import StudioToolbar from '../studio/StudioToolbar.svelte';
-  import IconButton from '../ui/IconButton.svelte';
-  import SegmentedControl from '../ui/SegmentedControl.svelte';
   import CompositionProperties from './CompositionProperties.svelte';
+  import CompositionToolbar from './CompositionToolbar.svelte';
   import ConfirmDialog from '../ui/ConfirmDialog.svelte';
   import ZoomableViewport from '../studio/ZoomableViewport.svelte';
   import OnionSkin from '../studio/OnionSkin.svelte';
-  import FrameTimeline from '../studio/FrameTimeline.svelte';
   import SelectionFrame from '../canvas/SelectionFrame.svelte';
   import TextEditor from '../canvas/TextEditor.svelte';
   import { textEditorBackground } from '../../lib/domain/text-editor.js';
@@ -556,61 +553,27 @@
   title={element ? t('composition.edit') : t(`composition.${composition.preset}`)}
 >
   {#snippet toolbar()}
-    <StudioToolbar>
-      {#snippet actions()}
-        {#if !isButton}
-          <span class="frame-count">{composition.frames.length}/{frameLimit}</span>
-          <IconButton label={t('composition.addFrame')} icon="plus" size={24} iconSize={12} variant="ghost" disabled={composition.frames.length >= frameLimit} onclick={addFrame} />
-          <IconButton label={t('composition.duplicateFrame')} icon="duplicate" size={24} iconSize={12} variant="ghost" disabled={composition.frames.length >= frameLimit} onclick={duplicateFrame} />
-          <IconButton label={t('composition.moveFrameLeft')} icon="chevron-left" size={24} iconSize={12} variant="ghost" disabled={composition.frames.findIndex((frame) => frame.id === activeFrameId) <= 0} onclick={() => moveFrame(-1)} />
-          <IconButton label={t('composition.moveFrameRight')} icon="chevron-right" size={24} iconSize={12} variant="ghost" disabled={composition.frames.findIndex((frame) => frame.id === activeFrameId) >= composition.frames.length - 1} onclick={() => moveFrame(1)} />
-          <IconButton label={t('common.delete')} icon="trash" size={24} iconSize={12} variant="ghost" disabled={composition.frames.length < 2} onclick={removeFrame} />
-        {/if}
-        {#if composition.preset === 'animation'}
-          <label class="duration-field">
-            <span>{t('composition.duration')}</span>
-            <input
-              type="number"
-              min="50"
-              max="10000"
-              step="10"
-              value={frameDuration}
-              onchange={(event) => updateAllFrameDurations(event.currentTarget.value)}
-            />
-            <span>ms</span>
-          </label>
-        {/if}
-        <IconButton
-          label={previewing ? t('composition.backToEdit') : t('composition.preview')}
-          icon={previewing ? 'pause' : 'play'}
-          size={24}
-          iconSize={12}
-          variant={previewing ? 'default' : 'ghost'}
-          onclick={() => (previewing = !previewing)}
-        />
-        {#if composition.frames.length > 1}
-          <IconButton
-            label={t('composition.onion')}
-            icon="onion"
-            size={24}
-            iconSize={12}
-            variant={onion ? 'default' : 'ghost'}
-            onclick={() => (onion = !onion)}
-          />
-          {#if onion}
-            <SegmentedControl
-              label={t('composition.onionScope')}
-              value={onionScope}
-              options={[
-                { value: 'all', label: t('composition.onionAll') },
-                { value: 'drawings', label: t('composition.onionDrawings') }
-              ]}
-              onchange={(value) => (onionScope = value)}
-            />
-          {/if}
-        {/if}
-      {/snippet}
-    </StudioToolbar>
+    <CompositionToolbar
+      {composition}
+      {activeFrameId}
+      {isButton}
+      {frameLimit}
+      {frameDuration}
+      {previewing}
+      {onion}
+      {onionScope}
+      labelFor={frameLabel}
+      onselect={chooseFrame}
+      onreorder={reorderFrames}
+      onadd={addFrame}
+      onduplicate={duplicateFrame}
+      onmove={moveFrame}
+      onremove={removeFrame}
+      ontogglepreview={() => (previewing = !previewing)}
+      ontoggleonion={() => (onion = !onion)}
+      onscope={(value) => (onionScope = value)}
+      onduration={updateAllFrameDurations}
+    />
   {/snippet}
 
   {#snippet canvas()}
@@ -739,9 +702,6 @@
 />
 
 <style>
-  .duration-field { display: inline-flex; align-items: center; gap: 3px; color: var(--muted); font-family: var(--font-ui); font-size: var(--text-2xs); }
-  .duration-field input { width: 66px; height: 24px; padding: 0 4px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); font: inherit; text-align: right; }
-  .frame-count { color: var(--muted); font-family: var(--font-ui); font-size: var(--text-2xs); font-variant-numeric: tabular-nums; }
   .composition-stage { position: relative; display: block; width: 100%; height: 100%; overflow: visible; border: 1px solid var(--line); background: var(--stage); container-type: size; }
   .hint { margin: var(--space-2) 0 0; max-width: 520px; color: var(--muted); font-size: var(--text-2xs); line-height: 1.4; }
 </style>

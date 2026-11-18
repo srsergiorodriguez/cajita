@@ -157,7 +157,7 @@
     <div class="media-toolbar">
       <input bind:value={search} type="search" placeholder={t('media.search')} />
       <FilterTabs options={filters} value={filter} onchange={(value) => (filter = value)} />
-      <button type="button" class="batch-select" onclick={selectUnused}>{t('media.selectUnused')}</button>
+      <Button size="sm" variant="ghost" onclick={selectUnused}>{t('media.selectUnused')}</Button>
     </div>
 
     {#if checkedIds.length}
@@ -304,7 +304,6 @@
   }
   .batch-check { position: absolute; top: 5px; left: 5px; display: grid; place-items: center; width: 20px; height: 20px; border: 1px solid var(--line); background: var(--panel-2); }
   .batch-check input { width: 13px; height: 13px; margin: 0; accent-color: var(--selection); }
-  .batch-select { padding: 5px 7px; border: 1px solid var(--line-soft); background: transparent; color: var(--muted); font-family: var(--font-ui); font-size: var(--text-2xs); }
   .batch-bar { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; padding: var(--space-2); border: 1px solid var(--line); background: var(--active-wash); }
   .batch-bar .hint { flex: 1 0 100%; }
   .media-card :global(.asset-thumb) {
