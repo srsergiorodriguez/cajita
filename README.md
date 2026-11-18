@@ -3,18 +3,17 @@
 An editor for small hypermedia sites: pages made of images, text, video, and
 sound; links between them; a static folder at the end.
 
-Status: **S28 — content-space masks and copy cleanup (complete)**. The project library,
-IndexedDB persistence, `.cajita` bundles, media pipeline, autosave, free canvas,
-page CRUD, page size, typography, custom fonts, links, map, fichas, video/sound,
-YouTube/Observable embeds, circle/square/triangle shapes, schema-driven ficha
-records with fixed cards, schema-first CSV import with create/update modes and optional grid placement, an
-inline-editable ficha table with per-cell validation, visitor-movable fichas
-with local position persistence and reset, schema ordering, inline table image
-editing, one-step collection ZIP import, small/full export options with a portable
-single-file HTML and worker-compressed ZIP, a media manager, schema visibility, element/media clipboard, p5 sketches, polygon image masks, a styled audio
-player, real page thumbnails, a one-column add palette with a split pages/media bottom
-bar, and a live-verified GitHub Pages publish flow are in place. Videos are capped at 20 MB, and Medios scrolls
-horizontally.
+Status: **1.4.0 — studio editor and media workflow pass (complete)**.
+
+The project library, IndexedDB persistence, `.cajita` bundles, media pipeline,
+autosave, free canvas, page CRUD, page sizing, typography, custom fonts, links,
+map, fichas, video/sound, embeds, shapes, compositions, drawings, preview,
+single-file and full-site export, and GitHub Pages publishing are in place.
+This release consolidates the editors around a shared studio shell and design
+system: shared zoom viewport, timeline, selection and text editors, shape and
+media fields, global animation timing, onion skinning, arbitrary-size drawings,
+transparent drawing backgrounds, and a unified media manager with batch
+deletion, usage locations, and add-to-page.
 
 Canonical URL: <https://srsergiorodriguez.github.io/cajita/>
 

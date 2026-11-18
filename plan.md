@@ -1,6 +1,6 @@
 # cajita — active sprint
 
-Status: **S39 complete — generalized compositions, preview fidelity, and project settings** · 2026-11-17.
+Status: **1.4.0 complete — studio editor and media workflow pass** · 2026-11-18.
 S0 shell. S1 projects. S2 canvas. S3 links/map/fichas. S4 export/preview.
 S5 GitHub Pages. S6 page size. S7 metadata/SEO. S8 video/sound. S9 transitions.
 S10 media/embeds. S11 shapes. S12 fichas. S13 CSV. S14 movable. S15 table/card.
