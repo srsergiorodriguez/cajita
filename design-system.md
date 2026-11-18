@@ -771,6 +771,9 @@ Drawing model:
 Underline 2 px `--accent` for active, 12 px mono lowercase, 32 px height.
 Used only in dialogs (export/publish), not in the main shell.
 
+`FilterTabs` is the shared dialog tab bar for Fichas and Media, including optional
+count badges and horizontal overflow.
+
 ### Dialog
 
 - Native `<dialog>`, width 480 (confirm) / 640 (export/publish) / 800 (settings).

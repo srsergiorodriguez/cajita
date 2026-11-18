@@ -2,6 +2,7 @@
   import Dialog from '../ui/Dialog.svelte';
   import Button from '../ui/Button.svelte';
   import Icon from '../ui/Icon.svelte';
+  import FilterTabs from '../ui/FilterTabs.svelte';
   import AssetThumb from './AssetThumb.svelte';
   import { addElement, deleteAsset, session } from '../../lib/state/project.svelte.js';
   import { formatBytes } from '../../lib/domain/model.js';
@@ -155,17 +156,7 @@
   <div class="media-manager">
     <div class="media-toolbar">
       <input bind:value={search} type="search" placeholder={t('media.search')} />
-      <div class="filters">
-        {#each filters as item (item.value)}
-          <button
-            type="button"
-            class:active={filter === item.value}
-            onclick={() => (filter = item.value)}
-          >
-            {item.label}
-          </button>
-        {/each}
-      </div>
+      <FilterTabs options={filters} value={filter} onchange={(value) => (filter = value)} />
       <button type="button" class="batch-select" onclick={selectUnused}>{t('media.selectUnused')}</button>
     </div>
 
@@ -277,24 +268,6 @@
     background: var(--panel-2);
     color: var(--ink);
     font: inherit;
-  }
-  .filters {
-    display: flex;
-    gap: 2px;
-  }
-  .filters button {
-    padding: 5px 7px;
-    border: 1px solid var(--line-soft);
-    background: transparent;
-    color: var(--muted);
-    font-family: var(--font-ui);
-    font-size: var(--text-2xs);
-    text-transform: lowercase;
-    cursor: pointer;
-  }
-  .filters button.active {
-    border-color: var(--accent);
-    color: var(--ink);
   }
   .media-body {
     display: grid;

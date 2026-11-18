@@ -1,6 +1,7 @@
 <script>
   import { tick } from 'svelte';
   import Dialog from '../ui/Dialog.svelte';
+  import FilterTabs from '../ui/FilterTabs.svelte';
   import Button from '../ui/Button.svelte';
   import Field from '../ui/Field.svelte';
   import Select from '../ui/Select.svelte';
@@ -651,36 +652,16 @@
 </script>
 
 <Dialog bind:open title={t('ficha.manager')} wide>
-  <div class="ficha-tabs">
-    <button
-      type="button"
-      class:active={tab === 'fichas'}
-      onclick={() => switchTab('fichas')}
-    >
-      {t('ficha.data')}<span>{records.length}</span>
-    </button>
-    <button
-      type="button"
-      class:active={tab === 'table'}
-      onclick={() => switchTab('table')}
-    >
-      {t('ficha.table')}<span>{records.length}</span>
-    </button>
-    <button
-      type="button"
-      class:active={tab === 'schema'}
-      onclick={() => switchTab('schema')}
-    >
-      {t('ficha.schema')}<span>{fields.length}</span>
-    </button>
-    <button
-      type="button"
-      class:active={tab === 'style'}
-      onclick={() => switchTab('style')}
-    >
-      {t('ficha.style')}
-    </button>
-  </div>
+  <FilterTabs
+    value={tab}
+    options={[
+      { value: 'fichas', label: t('ficha.data'), count: records.length },
+      { value: 'table', label: t('ficha.table'), count: records.length },
+      { value: 'schema', label: t('ficha.schema'), count: fields.length },
+      { value: 'style', label: t('ficha.style') }
+    ]}
+    onchange={switchTab}
+  />
 
   {#if error}<p class="message error" role="alert">{error}</p>{/if}
   {#if notice}<p class="message notice" role="status">{notice}</p>{/if}
@@ -1324,42 +1305,6 @@
 </Dialog>
 
 <style>
-  .ficha-tabs {
-    display: flex;
-    gap: 2px;
-    border-bottom: 1px solid var(--line);
-  }
-  .ficha-tabs button {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-3);
-    border: 0;
-    border-bottom: 2px solid transparent;
-    background: transparent;
-    color: var(--muted);
-    font-family: var(--font-ui);
-    font-size: var(--text-xs);
-    text-transform: lowercase;
-    cursor: pointer;
-  }
-  .ficha-tabs button.active {
-    border-bottom-color: var(--accent);
-    color: var(--ink);
-  }
-  .ficha-tabs button span {
-    display: inline-grid;
-    min-width: 17px;
-    height: 16px;
-    place-items: center;
-    padding: 0 3px;
-    border: 1px solid var(--line-soft);
-    background: var(--panel-3);
-    color: var(--muted);
-    font-family: var(--font-mono);
-    font-size: 9px;
-    line-height: 1;
-  }
   .message {
     margin: 0;
     padding: var(--space-2) var(--space-3);
