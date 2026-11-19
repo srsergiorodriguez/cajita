@@ -50,3 +50,22 @@ describe('print geometry', () => {
     ).toThrow();
   });
 });
+
+describe('print page sequence', () => {
+  it('assigns printed page numbers from the numbering start', async () => {
+    const { buildPrintPages, formatPageNumber } = await import('../src/lib/domain/print.js');
+    const project = createProject({
+      title: 'Zine',
+      print: {
+        paper: { preset: 'a5' },
+        numbering: { start: 3, format: '01', hideOnFirst: true }
+      }
+    });
+    const pages = buildPrintPages(project);
+    expect(pages).toHaveLength(1);
+    expect(pages[0].number).toBe(3);
+    expect(pages[0].visibleNumber).toBe(false);
+    expect(formatPageNumber(3, 8, '01')).toBe('03');
+    expect(formatPageNumber(3, 8, '1 / N')).toBe('3 / 8');
+  });
+});

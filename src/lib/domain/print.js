@@ -33,6 +33,15 @@ export function normalisePrint(print = {}) {
       inner: Number(margins.inner) || 0,
       outer: Number(margins.outer) || 0,
       unit: 'mm'
+    },
+    numbering: {
+      enabled: print.numbering?.enabled !== false,
+      start: Math.max(1, Math.round(Number(print.numbering?.start) || 1)),
+      format: ['1', '01', '1 / N'].includes(print.numbering?.format)
+        ? print.numbering.format
+        : '1',
+      hideOnFirst: print.numbering?.hideOnFirst !== false,
+      position: print.numbering?.position ?? 'bottom-outer'
     }
   };
 }
@@ -62,4 +71,28 @@ export function createPrintStage(print, width = 1200) {
     maxWidth: stageWidth,
     background: { color: '#fffdf7' }
   };
+}
+
+
+export function formatPageNumber(number, total, format = '1') {
+  if (format === '01') return String(number).padStart(2, '0');
+  if (format === '1 / N') return `${number} / ${total}`;
+  return String(number);
+}
+
+export function buildPrintPages(project) {
+  const print = normalisePrint(project?.print ?? {});
+  const pages = project?.pages ?? [];
+  return pages.map((page, index) => {
+    const number = print.numbering.start + index;
+    return {
+      kind: 'page',
+      page,
+      index,
+      number,
+      visibleNumber:
+        print.numbering.enabled &&
+        !(print.numbering.hideOnFirst && index === 0)
+    };
+  });
 }

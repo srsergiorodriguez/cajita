@@ -1,4 +1,4 @@
-import { normalisePrint, printContentSize } from '../domain/print.js';
+import { buildPrintPages, formatPageNumber, normalisePrint, printContentSize } from '../domain/print.js';
 
 function extractStyle(html = '') {
   return html.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? '';
@@ -16,9 +16,29 @@ export function buildPrintDocument(project, pages = []) {
   const paperHeight = portrait ? print.paper.height : print.paper.width;
   const style = extractStyle(pages[0]?.html);
   const fragments = pages.map((page) => extractMain(page.html)).filter(Boolean);
+  const printPages = buildPrintPages(project);
+  const total = printPages.length;
+  const folioFor = (entry, index) => {
+    if (!entry?.visibleNumber) return '';
+    const value = formatPageNumber(entry.number, total, print.numbering.format);
+    const [vertical, horizontal] = print.numbering.position.split('-');
+    const side = index % 2 === 0 ? 'right' : 'left';
+    const horizontalSide =
+      horizontal === 'center' ? '' : horizontal === 'inner'
+        ? side === 'right' ? 'left' : 'right'
+        : horizontal === 'outer'
+          ? side
+          : horizontal;
+    const position =
+      horizontal === 'center'
+        ? `${vertical}:5mm;left:50%;transform:translateX(-50%)`
+        : `${vertical}:5mm;${horizontalSide}:${horizontal === 'center' ? 0 : 8}mm`;
+    return `<span class="print-folio" style="${position}">${value}</span>`;
+  };
   const pagesHtml = fragments
     .map((fragment, index) => {
-      const page = project.pages?.[index];
+      const entry = printPages[index];
+      const page = entry?.page;
       const background =
         page?.background?.color ??
         project.stage?.background?.color ??
@@ -27,7 +47,7 @@ export function buildPrintDocument(project, pages = []) {
       const innerLeft = index % 2 === 0;
       const left = innerLeft ? print.margins.inner : print.margins.outer;
       const right = innerLeft ? print.margins.outer : print.margins.inner;
-      return `<section class="print-sheet" data-page="${index + 1}" style="width:${paperWidth}mm;height:${paperHeight}mm;padding:${print.margins.top}mm ${right}mm ${print.margins.bottom}mm ${left}mm"><div class="print-page" style="background:${background}">${fragment}</div></section>`;
+      return `<section class="print-sheet" data-page="${index + 1}" data-number="${entry?.number ?? ''}" style="width:${paperWidth}mm;height:${paperHeight}mm;padding:${print.margins.top}mm ${right}mm ${print.margins.bottom}mm ${left}mm"><div class="print-page" style="background:${background}">${fragment}</div>${folioFor(entry, index)}</section>`;
     })
     .join('\n');
 
@@ -50,6 +70,7 @@ body { display: block; min-height: 0; }
   height: ${paperHeight}mm;
   margin: 0 auto;
   background: #fff;
+  position: relative;
   overflow: hidden;
   break-inside: avoid;
   break-after: page;
@@ -79,7 +100,23 @@ body { display: block; min-height: 0; }
   margin: 0 !important;
   box-shadow: none !important;
 }
+.print-folio {
+  position: absolute;
+  z-index: 2;
+  font-family: 'Space Mono', monospace;
+  font-size: 8pt;
+  line-height: 1;
+  color: #1c1917;
+}
 .print-page .composition-frame { display: none !important; }
+.print-folio {
+  position: absolute;
+  z-index: 2;
+  font-family: 'Space Mono', monospace;
+  font-size: 8pt;
+  line-height: 1;
+  color: #1c1917;
+}
 .print-page .composition-frame:first-child { display: block !important; }
 .print-page .print-placeholder {
   display: grid;
