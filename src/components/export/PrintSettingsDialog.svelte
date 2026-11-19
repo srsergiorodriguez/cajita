@@ -150,6 +150,15 @@
   <Section label={t('print.toc')}>
     <label class="check"><input type="checkbox" checked={draft.toc.enabled} onchange={(event) => setToc({ enabled: event.currentTarget.checked })} /><span>{t('print.tocEnabled')}</span></label>
     <Field label={t('print.tocTitle')} value={draft.toc.title} oninput={(event) => setToc({ title: event.currentTarget.value })} />
+    <Select
+      label={t('print.tocPosition')}
+      value={draft.toc.afterPageId}
+      options={[
+        { value: '', label: t('print.tocAtStart') },
+        ...(session.project?.pages ?? []).map((page) => ({ value: page.id, label: `${t('print.tocAfter')} ${page.title}` }))
+      ]}
+      onchange={(afterPageId) => setToc({ afterPageId })}
+    />
   </Section>
 
   <Section label={t('print.imposition')}>

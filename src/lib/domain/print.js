@@ -55,7 +55,9 @@ export function normalisePrint(print = {}) {
       enabled: print.toc?.enabled === true,
       title: typeof print.toc?.title === 'string' && print.toc.title.trim()
         ? print.toc.title.trim()
-        : 'Contenido'
+        : 'Contenido',
+      afterPageId:
+        typeof print.toc?.afterPageId === 'string' ? print.toc.afterPageId : ''
     },
     imposition: {
       mode: ['none', 'spread', 'booklet'].includes(print.imposition?.mode)
@@ -115,7 +117,11 @@ export function buildPrintPages(project) {
     };
   });
   if (print.toc.enabled) {
-    entries.unshift({
+    const afterIndex = print.toc.afterPageId
+      ? pages.findIndex((page) => page.id === print.toc.afterPageId)
+      : -1;
+    const insertAt = afterIndex >= 0 ? afterIndex + 1 : 0;
+    entries.splice(insertAt, 0, {
       kind: 'toc',
       page: null,
       index: null,

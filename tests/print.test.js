@@ -91,6 +91,7 @@ describe('print table of contents', () => {
         numbering: { start: 5, hideOnFirst: false }
       }
     });
+    project.pages[0].id = 'first';
     project.pages.push({ ...project.pages[0], id: 'p2', title: 'Segunda' });
     const pages = buildPrintPages(project);
     expect(pages[0].kind).toBe('toc');
@@ -117,5 +118,24 @@ describe('booklet imposition', () => {
     const sides = buildBookletSides([1, 2, 3]);
     expect(sides[0]).toEqual([null, 1]);
     expect(sides[1]).toEqual([2, 3]);
+  });
+});
+
+describe('TOC placement', () => {
+  it('inserts the generated TOC after a selected page', async () => {
+    const { buildPrintPages } = await import('../src/lib/domain/print.js');
+    const project = createProject({
+      title: 'Zine',
+      print: {
+        paper: { preset: 'a5' },
+        toc: { enabled: true, afterPageId: 'first' }
+      }
+    });
+    project.pages[0].id = 'first';
+    project.pages.push({ ...project.pages[0], id: 'p2', title: 'Segunda' });
+    const pages = buildPrintPages(project);
+    expect(pages.map((entry) => entry.kind)).toEqual(['page', 'toc', 'page']);
+    expect(pages[0].page.title).toBe('Inicio');
+    expect(pages[2].page.title).toBe('Segunda');
   });
 });
