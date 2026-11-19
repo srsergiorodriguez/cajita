@@ -456,6 +456,11 @@ export const es = {
 
   'common.close': 'cerrar',
   'common.delete': 'eliminar',
+  'paper.a5': 'A5',
+  'paper.a4': 'A4',
+  'paper.letter': 'Carta',
+  'paper.half-letter': 'Media carta',
+  'common.save': 'guardar',
   'common.cancel': 'cancelar',
   'common.soon': 'próximamente',
 

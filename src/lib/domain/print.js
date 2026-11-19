@@ -88,7 +88,7 @@ export function createPrintStage(print, width = 1200) {
     align: 'center',
     minWidth: 360,
     maxWidth: stageWidth,
-    background: { color: '#fffdf7' }
+    background: { color: '#ffffff' }
   };
 }
 

@@ -51,11 +51,11 @@
 <div
   class="miniature"
   aria-hidden="true"
-  style:background={page?.background?.color ?? stage.background?.color ?? '#fffdf7'}
+  style:background={page?.background?.color ?? stage.background?.color ?? '#ffffff'}
 >
   <div
     class="miniature-stage"
-    style={`width:min(100cqw, calc(100cqh * ${stage.width / stage.height}));aspect-ratio:${stage.width}/${stage.height};background:${page?.background?.color ?? stage.background?.color ?? '#fffdf7'}`}
+    style={`width:min(100cqw, calc(100cqh * ${stage.width / stage.height}));aspect-ratio:${stage.width}/${stage.height};background:${page?.background?.color ?? stage.background?.color ?? '#ffffff'}`}
   >
   {#each elements as element (element.id)}
     <div
@@ -200,7 +200,7 @@
     width: 100%;
     height: 100%;
     padding: 3px;
-    background: var(--ficha-bg, #fffdf7);
+    background: var(--ficha-bg, #ffffff);
   }
   .mini-collection :global(.asset-thumb) {
     width: 100%;

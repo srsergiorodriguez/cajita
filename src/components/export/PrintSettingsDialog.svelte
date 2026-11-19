@@ -26,9 +26,10 @@
 
   $effect(() => {
     if (!open || !session.project?.print) return;
-    draft = normalisePrint(structuredClone($state.snapshot(session.project.print)));
+    const next = normalisePrint(structuredClone($state.snapshot(session.project.print)));
+    draft = next;
     try {
-      originalRatio = printContentSize(draft).ratio;
+      originalRatio = printContentSize(next).ratio;
     } catch {
       originalRatio = 0;
     }
@@ -82,7 +83,7 @@
       <Select
         label={t('new.paper')}
         value={draft.paper.preset}
-        options={PAPER_PRESETS.map((paper) => ({ value: paper.id, label: `${paper.label} · ${paper.width} × ${paper.height} mm` }))}
+        options={PAPER_PRESETS.map((paper) => ({ value: paper.id, label: `${t(`paper.${paper.id}`)} · ${paper.width} × ${paper.height} mm` }))}
         onchange={setPaper}
       />
       <div class="cell">

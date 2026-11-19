@@ -1337,6 +1337,17 @@ export async function openProject(id) {
   const loaded = await loadValidProject(id);
   if (!loaded) throw new Error('El proyecto no existe.');
   session.project = ensureDesign(loaded.project);
+  const legacyDefault = ['#fffdf7', '#1c1917', '#a82a1e', '#d9a441', '#2e5a88'];
+  if (
+    legacyDefault.every(
+      (color, index) => String(session.project.palette?.[index] ?? '').toLowerCase() === color
+    )
+  ) {
+    session.project.palette[0] = '#ffffff';
+    if (session.project.siteBackgroundToken === 'background') {
+      session.project.siteBackground = '#ffffff';
+    }
+  }
   for (const page of session.project.pages ?? []) {
     if (!page.background?.color) page.background = { color: '#ffffff' };
   }

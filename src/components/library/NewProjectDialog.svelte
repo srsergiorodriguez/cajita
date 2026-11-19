@@ -129,7 +129,7 @@
     <Select
       label={t('new.paper')}
       bind:value={paperPreset}
-      options={PAPER_PRESETS.map((paper) => ({ value: paper.id, label: `${paper.label} · ${paper.width} × ${paper.height} mm` }))}
+      options={PAPER_PRESETS.map((paper) => ({ value: paper.id, label: `${t(`paper.${paper.id}`)} · ${paper.width} × ${paper.height} mm` }))}
     />
     <div class="cell">
       <span class="mono-label">{t('new.orientation')}</span>

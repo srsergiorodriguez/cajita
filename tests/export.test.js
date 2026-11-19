@@ -59,7 +59,7 @@ describe('site export', () => {
     expect(html).toContain('<h1>Una casa sin prisa</h1>');
     expect(html).toContain('src="assets/abcdef1234-retrato.png"');
     expect(html).toContain('<details');
-    expect(html).toContain('style="background:#fffdf7"');
+    expect(html).toContain('style="background:#ffffff"');
     expect(html).toContain('meta-card');
     expect(html).toContain('Retrato');
     expect(html).toContain('Sergio');

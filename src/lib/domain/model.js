@@ -62,7 +62,7 @@ export const DEFAULT_MEDIA = Object.freeze({
 
 
 export const DEFAULT_PALETTE = Object.freeze([
-  '#fffdf7',
+  '#ffffff',
   '#1c1917',
   '#a82a1e',
   '#d9a441',
@@ -180,7 +180,7 @@ export function createProject({
             ? { width: stageWidth, height: stageHeight }
             : undefined
         ),
-    siteBackground: '#fffdf7',
+    siteBackground: '#ffffff',
     siteBackgroundToken: 'background',
     ...(print ? { print: normalisePrint(print) } : {}),
     palette: [...DEFAULT_PALETTE],
