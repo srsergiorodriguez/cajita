@@ -3,17 +3,19 @@
 An editor for small hypermedia sites: pages made of images, text, video, and
 sound; links between them; a static folder at the end.
 
-Status: **1.4.0 — studio editor and media workflow pass (complete)**.
+Status: **1.5.0 — design system and palette tools (complete)**.
 
 The project library, IndexedDB persistence, `.cajita` bundles, media pipeline,
 autosave, free canvas, page CRUD, page sizing, typography, custom fonts, links,
 map, fichas, video/sound, embeds, shapes, compositions, drawings, preview,
 single-file and full-site export, and GitHub Pages publishing are in place.
-This release consolidates the editors around a shared studio shell and design
-system: shared zoom viewport, timeline, selection and text editors, shape and
-media fields, global animation timing, onion skinning, arbitrary-size drawings,
-transparent drawing backgrounds, and a unified media manager with batch
-deletion, usage locations, and add-to-page.
+This release adds a project design system: five named color tokens shared by
+drawings, shapes, text, and the site background; four editable text styles;
+radius presets; a contrast-safe palette generator with locked colors; and a
+live design-system preview. The studio editors use a shared shell, viewport,
+timeline, selection and text editors, media fields, global animation timing,
+onion skinning, and a unified media manager with batch deletion, usage
+locations, and add-to-page.
 
 Canonical URL: <https://srsergiorodriguez.github.io/cajita/>
 
