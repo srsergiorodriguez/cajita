@@ -65,14 +65,14 @@ export function pinchZoom(node, params = {}) {
   }
 
   function onWheel(event) {
-    if (!options.enabled || !(event.ctrlKey || event.metaKey)) return;
+    if (options.enabled === false || !(event.ctrlKey || event.metaKey)) return;
     event.preventDefault();
     const factor = Math.min(2, Math.max(0.5, Math.exp(-event.deltaY * 0.01)));
     if (Number.isFinite(factor) && factor !== 1) options.onzoom?.(factor);
   }
 
   function onPointerDown(event) {
-    if (!options.enabled || event.pointerType !== 'touch') return;
+    if (options.enabled === false || event.pointerType !== 'touch') return;
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     if (pointers.size === 2) {
       pinchDistance = distance();
@@ -81,7 +81,7 @@ export function pinchZoom(node, params = {}) {
   }
 
   function onPointerMove(event) {
-    if (!options.enabled || event.pointerType !== 'touch' || !pointers.has(event.pointerId)) return;
+    if (options.enabled === false || event.pointerType !== 'touch' || !pointers.has(event.pointerId)) return;
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     if (pointers.size !== 2) return;
     event.preventDefault();
