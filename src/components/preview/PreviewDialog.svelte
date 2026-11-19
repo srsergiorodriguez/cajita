@@ -7,6 +7,7 @@
   import { session } from '../../lib/state/project.svelte.js';
   import { editor, setViewportWidth } from '../../lib/state/editor.svelte.js';
   import { buildPreview } from '../../lib/export/preview.js';
+  import { pinchZoom } from '../../lib/actions/pinch-zoom.js';
 
   let { open = $bindable(false) } = $props();
 

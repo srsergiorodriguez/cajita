@@ -1,5 +1,6 @@
 <script>
   import ZoomControls from '../canvas/ZoomControls.svelte';
+  import { pinchZoom } from '../../lib/actions/pinch-zoom.js';
 
   let {
     aspect = 1,
@@ -71,7 +72,7 @@
   });
 </script>
 
-<div class="zoom-viewport" style:height>
+<div class="zoom-viewport" style:height use:pinchZoom={{ onzoom: (factor) => { zoom = clampZoom(zoom * factor); fitMode = 'manual'; } }}>
   <div class="zoom-scroll" bind:this={scrollEl}>
     <div
       class="zoom-pad"

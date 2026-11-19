@@ -48,6 +48,7 @@
   import { textEditorBackground } from '../../lib/domain/text-editor.js';
   import ZoomControls from './ZoomControls.svelte';
   import { toast } from '../../lib/state/ui.svelte.js';
+  import { pinchZoom } from '../../lib/actions/pinch-zoom.js';
 
   let stageEl = $state(null);
   let wrapEl = $state(null);
@@ -529,7 +530,7 @@
 </script>
 
 <section class="desk" aria-label={t('canvas.title')}>
-  <div class="stage-wrap" bind:this={wrapEl}>
+  <div class="stage-wrap" bind:this={wrapEl} use:pinchZoom={{ onzoom: (factor) => setZoom(zoom * factor) }}>
     <div class="stage-pad" style:width={`${padWidth}px`} style:height={`${padHeight}px`}>
       <div class="stage-scale" style:width={`${displayWidth}px`} style:height={`${displayHeight}px`}>
       <div
