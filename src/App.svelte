@@ -247,6 +247,7 @@
         onclick={() => toggleCollapsed('left')}
       >
         <Icon name="chevron-right" size={14} />
+        <span class="rail-label">{t('left.add')}</span>
       </button>
       {#if editor.view === 'map'}
         <MapView />
@@ -262,6 +263,7 @@
         onclick={() => toggleCollapsed('inspector')}
       >
         <Icon name="chevron-left" size={14} />
+        <span class="rail-label">{t('top.properties')}</span>
       </button>
     </main>
     <PageStrip />

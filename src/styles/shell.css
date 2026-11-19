@@ -57,11 +57,15 @@
 
 .panel-rail {
   display: none;
-  place-items: center;
+  position: relative;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-3);
   width: 28px;
   min-width: 28px;
   height: 100%;
-  padding: 0;
+  padding: var(--space-2) 0;
   border: 0;
   border-right: 1px solid var(--line-soft);
   background: var(--panel);
@@ -79,12 +83,27 @@
   background: var(--panel-2);
 }
 
+.rail-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  color: var(--muted);
+  font-family: var(--font-ui);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  writing-mode: vertical-rl;
+  transform: translate(-50%, -50%) rotate(180deg);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 .left-collapsed .left-panel {
   display: none;
 }
 
 .left-collapsed .panel-rail--left {
-  display: grid;
+  display: flex;
 }
 
 .inspector-collapsed .inspector {
@@ -92,7 +111,7 @@
 }
 
 .inspector-collapsed .panel-rail--right {
-  display: grid;
+  display: flex;
 }
 
 .strip-rail {
