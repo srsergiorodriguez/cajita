@@ -1,6 +1,6 @@
 # Print zine export — design notes
 
-Status: **in progress on `feature/print-publication`** (2026-11-19).
+Status: **implemented in 1.7.0** (2026-11-19).
 
 Implemented: optional `project.print`, real-unit paper/margin geometry, print-derived stage ratio, crossmedia project creation, and a browser print preview with one fixed page per cajita page. Margins stay in the print profile rather than the editor canvas. Media, audio, HTML, and embeds render as placeholders in print; compositions render their first frame. Paged.js, folios/running heads, and full ficha print profiles are not implemented yet.
 

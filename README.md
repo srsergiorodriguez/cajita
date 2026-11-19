@@ -3,21 +3,21 @@
 An editor for small hypermedia sites: pages made of images, text, video, and
 sound; links between them; a static folder at the end.
 
-Status: **1.6.1 — text zoom stability fix (complete)**.
-
-1.6.1 keeps text frame measurements independent of editor zoom, so text boxes no longer change height when zooming.
+Status: **1.7.0 — crossmedia print and editor polish (complete)**.
 
 The project library, IndexedDB persistence, `.cajita` bundles, media pipeline,
 autosave, free canvas, page CRUD, page sizing, typography, custom fonts, links,
 map, fichas, video/sound, embeds, shapes, compositions, drawings, preview,
 single-file and full-site export, and GitHub Pages publishing are in place.
-This release adds a project design system with shared color tokens, text styles,
-radius presets, a palette generator, and a live preview. Page editor and preview
-now share a viewport-width model: viewport changes simulate layout and iframe
-reflow, while zoom only magnifies the rendered page. `100%` is true CSS size;
-fit modes show their real percentage. Responsive minimum and maximum widths are
-editable, and new pages default their maximum to the design width. Exported
-pages remain fluid.
+
+This release adds a crossmedia print profile: paper, orientation, margins,
+print-derived page geometry, print-safe content, a browser print/PDF preview,
+page numbering, running heads, generated table of contents with configurable
+placement, spread and saddle-stitch booklet imposition, and optional editor
+margin guides. It also adds true-size viewport zoom, shared pinch zoom, justify
+alignment, fixed-screen-size selection handles, live palette drawings, and a
+project design system with color tokens, text styles, radius tokens, a palette
+generator, and a live preview.
 
 Canonical URL: <https://srsergiorodriguez.github.io/cajita/>
 

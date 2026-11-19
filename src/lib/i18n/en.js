@@ -1,7 +1,7 @@
 export const en = {
   'app.name': 'cajita',
   'app.project': 'Casa sin prisa',
-  'app.version': 'Version 1.6.1',
+  'app.version': 'Version 1.7.0',
 
   'top.views': 'views',
   'top.properties': 'properties',
