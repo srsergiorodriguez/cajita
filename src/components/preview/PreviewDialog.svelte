@@ -150,6 +150,19 @@
   });
 
   $effect(() => {
+    if (!iframeReady || !iframeEl?.contentWindow) return;
+    const win = iframeEl.contentWindow;
+    const onWheel = (event) => {
+      if (!(event.ctrlKey || event.metaKey)) return;
+      event.preventDefault();
+      const factor = Math.min(2, Math.max(0.5, Math.exp(-event.deltaY * 0.01)));
+      if (Number.isFinite(factor) && factor !== 1) setPreviewZoom(previewZoom * factor);
+    };
+    win.addEventListener('wheel', onWheel, { passive: false });
+    return () => win.removeEventListener('wheel', onWheel);
+  });
+
+  $effect(() => {
     if (!iframeReady || !currentPage) return;
     const html = currentPage.html;
     iframeEl?.contentWindow?.postMessage(
@@ -214,7 +227,7 @@
   {#if error}
     <p class="error">{error}</p>
   {:else}
-    <div class="preview-viewport" style:background={siteBackground}>
+    <div class="preview-viewport" style:background={siteBackground} use:pinchZoom={{ onzoom: (factor) => setPreviewZoom(previewZoom * factor) }}>
       <div
         class="preview-frame"
         bind:this={previewFrameEl}

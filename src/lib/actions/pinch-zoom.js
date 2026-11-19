@@ -6,6 +6,7 @@ export function pinchZoom(node, params = {}) {
   let options = params;
   const pointers = new Map();
   let pinchDistance = 0;
+  let gestureScale = 1;
 
   function apply(next) {
     options = { ...options, ...(next ?? {}) };
@@ -14,6 +15,28 @@ export function pinchZoom(node, params = {}) {
   function distance() {
     const [a, b] = [...pointers.values()];
     return Math.hypot(a.x - b.x, a.y - b.y);
+  }
+
+
+  function onGestureStart(event) {
+    if (!options.enabled) return;
+    event.preventDefault();
+    gestureScale = 1;
+  }
+
+  function onGestureChange(event) {
+    if (!options.enabled) return;
+    event.preventDefault();
+    const next = Number(event.scale) || 1;
+    const factor = next / (gestureScale || 1);
+    gestureScale = next;
+    if (Number.isFinite(factor) && factor !== 1) options.onzoom?.(factor);
+  }
+
+  function onGestureEnd(event) {
+    if (!options.enabled) return;
+    event.preventDefault();
+    gestureScale = 1;
   }
 
   function onWheel(event) {
@@ -53,7 +76,10 @@ export function pinchZoom(node, params = {}) {
     }
   }
 
-  node.addEventListener('wheel', onWheel, { passive: false });
+  node.addEventListener('wheel', onWheel, { passive: false, capture: true });
+  node.addEventListener('gesturestart', onGestureStart, { passive: false });
+  node.addEventListener('gesturechange', onGestureChange, { passive: false });
+  node.addEventListener('gestureend', onGestureEnd, { passive: false });
   node.addEventListener('pointerdown', onPointerDown);
   node.addEventListener('pointermove', onPointerMove);
   node.addEventListener('pointerup', onPointerEnd);
@@ -62,7 +88,10 @@ export function pinchZoom(node, params = {}) {
   return {
     update: apply,
     destroy() {
-      node.removeEventListener('wheel', onWheel);
+      node.removeEventListener('wheel', onWheel, { capture: true });
+      node.removeEventListener('gesturestart', onGestureStart);
+      node.removeEventListener('gesturechange', onGestureChange);
+      node.removeEventListener('gestureend', onGestureEnd);
       node.removeEventListener('pointerdown', onPointerDown);
       node.removeEventListener('pointermove', onPointerMove);
       node.removeEventListener('pointerup', onPointerEnd);
