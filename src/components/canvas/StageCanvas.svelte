@@ -666,6 +666,7 @@
           <SelectionFrame
             style={cssVars(primary)}
             locked={primary.locked}
+            handleScale={zoom}
             onresize={startResize}
             onrotate={startRotate}
           />
