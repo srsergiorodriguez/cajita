@@ -4,12 +4,16 @@ import { buildPrintDocument } from '../src/lib/export/print.js';
 const project = {
   title: 'Zine',
   locale: 'es',
-  pages: [{ id: 'p1', title: 'Inicio', background: { color: '#ffffff' } }],
+  pages: [
+    { id: 'p1', title: 'Inicio', background: { color: '#ffffff' } },
+    { id: 'p2', title: 'Segunda', background: { color: '#ffffff' } }
+  ],
   print: {
     paper: { preset: 'a5', width: 148, height: 210, unit: 'mm' },
     orientation: 'portrait',
     margins: { top: 12, bottom: 12, inner: 16, outer: 10, unit: 'mm' },
-    runningHead: { enabled: true, content: 'page-title', hideOnFirst: false }
+    runningHead: { enabled: true, content: 'page-title', hideOnFirst: false },
+    toc: { enabled: true, title: 'Contenido' }
   }
 };
 
@@ -31,6 +35,8 @@ describe('print export', () => {
     expect(html).toContain('Uno');
     expect(html).toContain('print-running-head');
     expect(html).toContain('Inicio');
+    expect(html).toContain('print-toc');
+    expect(html).toContain('Contenido');
     expect(html).toContain('Dos');
   });
 });

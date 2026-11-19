@@ -4,6 +4,14 @@ function extractStyle(html = '') {
   return html.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? '';
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
+}
+
 function extractMain(html = '') {
   return html.match(/<main class="stage"[\s\S]*?<\/main>/)?.[0] ?? '';
 }
@@ -17,7 +25,17 @@ export function buildPrintDocument(project, pages = []) {
   const style = extractStyle(pages[0]?.html);
   const fragments = pages.map((page) => extractMain(page.html)).filter(Boolean);
   const printPages = buildPrintPages(project);
-  const total = printPages.length;
+  const contentPages = printPages.filter((entry) => entry.kind === 'page');
+  const total = contentPages.length;
+  const toc = print.toc;
+  const tocFragment = toc.enabled
+    ? `<div class="print-toc"><h1>${escapeHtml(toc.title)}</h1><ol>${contentPages
+        .map(
+          (entry) =>
+            `<li><span>${escapeHtml(entry.page?.title ?? '')}</span><b>${formatPageNumber(entry.number, total, print.numbering.format)}</b></li>`
+        )
+        .join('')}</ol></div>`
+    : '';
   const marginPosition = (placement, index) => {
     const [vertical, horizontal] = placement.split('-');
     const side = index % 2 === 0 ? 'right' : 'left';
@@ -47,9 +65,11 @@ export function buildPrintDocument(project, pages = []) {
         : entry?.page?.title ?? project.title;
     return `<span class="print-running-head" style="${marginPosition(head.position, index)}">${value}</span>`;
   };
-  const pagesHtml = fragments
-    .map((fragment, index) => {
-      const entry = printPages[index];
+  let contentIndex = 0;
+  const pagesHtml = printPages
+    .map((entry, index) => {
+      const fragment = entry.kind === 'toc' ? tocFragment : fragments[contentIndex++];
+      if (!fragment) return '';
       const page = entry?.page;
       const background =
         page?.background?.color ??
@@ -59,8 +79,9 @@ export function buildPrintDocument(project, pages = []) {
       const innerLeft = index % 2 === 0;
       const left = innerLeft ? print.margins.inner : print.margins.outer;
       const right = innerLeft ? print.margins.outer : print.margins.inner;
-      return `<section class="print-sheet" data-page="${index + 1}" data-number="${entry?.number ?? ''}" style="width:${paperWidth}mm;height:${paperHeight}mm;padding:${print.margins.top}mm ${right}mm ${print.margins.bottom}mm ${left}mm"><div class="print-page" style="background:${background}">${fragment}</div>${runningHeadFor(entry, index)}${folioFor(entry, index)}</section>`;
+      return `<section class="print-sheet" data-page="${index + 1}" data-number="${entry?.number ?? ''}" style="width:${paperWidth}mm;height:${paperHeight}mm;padding:${print.margins.top}mm ${right}mm ${print.margins.bottom}mm ${left}mm"><div class="print-page" style="background:${background}">${fragment}</div>${entry.kind === 'page' ? runningHeadFor(entry, index) : ''}${folioFor(entry, index)}</section>`;
     })
+    .filter(Boolean)
     .join('\n');
 
   return `<!doctype html>
@@ -112,16 +133,6 @@ body { display: block; min-height: 0; }
   margin: 0 !important;
   box-shadow: none !important;
 }
-.print-folio,
-.print-running-head {
-  position: absolute;
-  z-index: 2;
-  font-family: 'Space Mono', monospace;
-  font-size: 8pt;
-  line-height: 1;
-  color: #1c1917;
-}
-.print-running-head { text-transform: uppercase; letter-spacing: .04em; }
 .print-page .composition-frame { display: none !important; }
 .print-folio,
 .print-running-head {
@@ -133,6 +144,11 @@ body { display: block; min-height: 0; }
   color: #1c1917;
 }
 .print-running-head { text-transform: uppercase; letter-spacing: .04em; }
+.print-toc { width: 100%; height: 100%; padding: 0; font-family: 'Space Mono', monospace; color: #1c1917; }
+.print-toc h1 { margin: 0 0 10mm; font-family: 'Fraunces', Georgia, serif; font-size: 28pt; font-weight: 400; }
+.print-toc ol { margin: 0; padding: 0; list-style: none; }
+.print-toc li { display: flex; justify-content: space-between; gap: 6mm; padding: 2.4mm 0; border-bottom: 1px solid currentColor; font-size: 10pt; }
+.print-toc li b { font-weight: 400; }
 .print-page .composition-frame:first-child { display: block !important; }
 .print-page .print-placeholder {
   display: grid;

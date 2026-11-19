@@ -50,6 +50,12 @@ export function normalisePrint(print = {}) {
         : 'page-title',
       position: print.runningHead?.position ?? 'top-outer',
       hideOnFirst: print.runningHead?.hideOnFirst !== false
+    },
+    toc: {
+      enabled: print.toc?.enabled === true,
+      title: typeof print.toc?.title === 'string' && print.toc.title.trim()
+        ? print.toc.title.trim()
+        : 'Contenido'
     }
   };
 }
@@ -91,7 +97,7 @@ export function formatPageNumber(number, total, format = '1') {
 export function buildPrintPages(project) {
   const print = normalisePrint(project?.print ?? {});
   const pages = project?.pages ?? [];
-  return pages.map((page, index) => {
+  const entries = pages.map((page, index) => {
     const number = print.numbering.start + index;
     return {
       kind: 'page',
@@ -103,4 +109,14 @@ export function buildPrintPages(project) {
         !(print.numbering.hideOnFirst && index === 0)
     };
   });
+  if (print.toc.enabled) {
+    entries.unshift({
+      kind: 'toc',
+      page: null,
+      index: null,
+      number: null,
+      visibleNumber: false
+    });
+  }
+  return entries;
 }

@@ -79,3 +79,22 @@ describe('print running heads', () => {
     expect(normalisePrint({}).runningHead.enabled).toBe(false);
   });
 });
+
+describe('print table of contents', () => {
+  it('inserts an unnumbered TOC before numbered content pages', async () => {
+    const { buildPrintPages } = await import('../src/lib/domain/print.js');
+    const project = createProject({
+      title: 'Zine',
+      print: {
+        paper: { preset: 'a5' },
+        toc: { enabled: true, title: 'Contenido' },
+        numbering: { start: 5, hideOnFirst: false }
+      }
+    });
+    project.pages.push({ ...project.pages[0], id: 'p2', title: 'Segunda' });
+    const pages = buildPrintPages(project);
+    expect(pages[0].kind).toBe('toc');
+    expect(pages[1].number).toBe(5);
+    expect(pages[2].number).toBe(6);
+  });
+});
