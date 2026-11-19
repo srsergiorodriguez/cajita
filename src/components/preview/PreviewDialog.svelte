@@ -213,13 +213,14 @@
   {#if error}
     <p class="error">{error}</p>
   {:else}
-    <div
-      class="preview-frame"
-      bind:this={previewFrameEl}
-      class:fade={previewAnimation === 'fade'}
-      class:slide={previewAnimation === 'slide'}
-      style:background={siteBackground}
-    >
+    <div class="preview-viewport" style:background={siteBackground}>
+      <div
+        class="preview-frame"
+        bind:this={previewFrameEl}
+        class:fade={previewAnimation === 'fade'}
+        class:slide={previewAnimation === 'slide'}
+        style:background={siteBackground}
+      >
       <div
         class="preview-surface"
         style:width={`${viewportWidth * previewZoom}px`}
@@ -238,6 +239,7 @@
             iframeReady = true;
           }}
         ></iframe>
+      </div>
       </div>
     </div>
   {/if}
@@ -266,10 +268,15 @@
     font-size: var(--text-xs);
   }
 
-  .preview-frame {
+  .preview-viewport {
     height: min(68vh, 720px);
-    overflow: auto;
+    overflow: hidden;
     border: var(--border-control) solid var(--line);
+  }
+
+  .preview-frame {
+    height: 100%;
+    overflow: auto;
   }
 
   .preview-surface {
