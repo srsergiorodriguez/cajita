@@ -41,7 +41,7 @@
   } from '../../lib/domain/geometry.js';
   import { elementName, fontStack, mediaFrame } from '../../lib/domain/elements.js';
   import { snapFrameMove, snapFrameResize } from '../../lib/domain/grid.js';
-  import { buildPrintPages, formatPageNumber, printContentSize } from '../../lib/domain/print.js';
+  import { buildPrintPages, formatPageNumber, printContentSize, PRINT_MARGIN_SIDE_INSET_MM, PRINT_MARGIN_VERTICAL_INSET_MM } from '../../lib/domain/print.js';
   import GridOverlay from './GridOverlay.svelte';
   import SelectionFrame from './SelectionFrame.svelte';
   import TextEditor from './TextEditor.svelte';
@@ -151,44 +151,53 @@
     if (!printGuide || !printEntry || !session.project?.print) return [];
     const print = session.project.print;
     const side = printEntryIndex % 2 === 0 ? 'right' : 'left';
+    const content = printContentSize(print);
+    const pxPerMm = displayWidth / content.width;
+    const insetX = PRINT_MARGIN_SIDE_INSET_MM * pxPerMm;
+    const insetY = PRINT_MARGIN_VERTICAL_INSET_MM * pxPerMm;
     const paperLeft = -printGuide.left;
     const paperRight = displayWidth + printGuide.right;
     const paperTop = -printGuide.top;
-    const paperBottom = displayHeight + printGuide.bottom;
-    const xFor = (horizontal) => {
-      if (horizontal === 'center') return (paperLeft + paperRight) / 2;
-      if (horizontal === 'outer') {
-        return side === 'right' ? displayWidth + printGuide.right / 2 : -printGuide.left / 2;
+    const positionStyle = (position) => {
+      const [vertical, horizontal] = position.split('-');
+      const styles = [];
+      if (horizontal === 'center') {
+        styles.push(`left:${(paperLeft + paperRight) / 2}px`, 'transform:translateX(-50%)');
+      } else {
+        const onLeft =
+          horizontal === 'inner'
+            ? side === 'right'
+            : horizontal === 'outer'
+              ? side === 'left'
+              : false;
+        if (onLeft) styles.push(`left:${paperLeft + insetX}px`);
+        else styles.push(`right:${-(printGuide.right - insetX)}px`);
       }
-      return side === 'right' ? -printGuide.left / 2 : displayWidth + printGuide.right / 2;
+      if (vertical === 'top') styles.push(`top:${paperTop + insetY}px`);
+      else styles.push(`bottom:${-(printGuide.bottom - insetY)}px`);
+      return styles.join(';');
     };
-    const yFor = (vertical) =>
-      vertical === 'top' ? paperTop + printGuide.top / 2 : paperBottom - printGuide.bottom / 2;
     const items = [];
     if (
       print.runningHead.enabled &&
       print.runningHead.content !== 'none' &&
       !(print.runningHead.hideOnFirst && printEntryIndex === 0)
     ) {
-      const [vertical, horizontal] = print.runningHead.position.split('-');
       items.push({
         kind: 'head',
         text:
           print.runningHead.content === 'project-title'
             ? session.project.title
             : printEntry.page?.title ?? session.project.title,
-        x: xFor(horizontal),
-        y: yFor(vertical)
+        style: positionStyle(print.runningHead.position)
       });
     }
     if (printEntry.visibleNumber) {
-      const [vertical, horizontal] = print.numbering.position.split('-');
       const total = printPages.filter((entry) => entry.kind === 'page').length;
       items.push({
         kind: 'folio',
         text: formatPageNumber(printEntry.number, total, print.numbering.format),
-        x: xFor(horizontal),
-        y: yFor(vertical)
+        style: positionStyle(print.numbering.position)
       });
     }
     return items;
@@ -700,8 +709,7 @@
           <span
             class="print-guide-paratext"
             class:head={item.kind === 'head'}
-            style:left={`${item.x}px`}
-            style:top={`${item.y}px`}
+            style={item.style}
           >{item.text}</span>
         {/each}
       {/if}
@@ -785,7 +793,6 @@
 
   .print-guide-paratext {
     position: absolute;
-    transform: translate(-50%, -50%);
     color: var(--muted);
     font-family: var(--font-mono);
     font-size: 9px;

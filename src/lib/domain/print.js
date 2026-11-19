@@ -5,6 +5,9 @@ export const PAPER_PRESETS = Object.freeze([
   { id: 'half-letter', label: 'Half Letter', width: 139.7, height: 215.9 }
 ]);
 
+export const PRINT_MARGIN_VERTICAL_INSET_MM = 5;
+export const PRINT_MARGIN_SIDE_INSET_MM = 8;
+
 export const DEFAULT_PRINT_MARGINS = Object.freeze({
   top: 12,
   bottom: 12,

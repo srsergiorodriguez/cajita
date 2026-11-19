@@ -1,4 +1,4 @@
-import { buildBookletSides, buildPrintPages, formatPageNumber, normalisePrint, printContentSize } from '../domain/print.js';
+import { buildBookletSides, buildPrintPages, formatPageNumber, normalisePrint, printContentSize, PRINT_MARGIN_SIDE_INSET_MM, PRINT_MARGIN_VERTICAL_INSET_MM } from '../domain/print.js';
 
 function extractStyle(html = '') {
   return html.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? '';
@@ -40,7 +40,7 @@ export function buildPrintDocument(project, pages = []) {
     const [vertical, horizontal] = placement.split('-');
     const side = index % 2 === 0 ? 'right' : 'left';
     if (horizontal === 'center') {
-      return `${vertical}:5mm;left:50%;transform:translateX(-50%)`;
+      return `${vertical}:${PRINT_MARGIN_VERTICAL_INSET_MM}mm;left:50%;transform:translateX(-50%)`;
     }
     const horizontalSide =
       horizontal === 'inner'
@@ -48,7 +48,7 @@ export function buildPrintDocument(project, pages = []) {
         : horizontal === 'outer'
           ? side
           : horizontal;
-    return `${vertical}:5mm;${horizontalSide}:8mm`;
+    return `${vertical}:${PRINT_MARGIN_VERTICAL_INSET_MM}mm;${horizontalSide}:${PRINT_MARGIN_SIDE_INSET_MM}mm`;
   };
   const folioFor = (entry, index) => {
     if (!entry?.visibleNumber) return '';
