@@ -17,10 +17,15 @@ export function buildPrintDocument(project, pages = []) {
   const style = extractStyle(pages[0]?.html);
   const fragments = pages.map((page) => extractMain(page.html)).filter(Boolean);
   const pagesHtml = fragments
-    .map(
-      (fragment, index) =>
-        `<section class="print-page" data-page="${index + 1}">${fragment}</section>`
-    )
+    .map((fragment, index) => {
+      const page = project.pages?.[index];
+      const background =
+        page?.background?.color ??
+        project.stage?.background?.color ??
+        project.siteBackground ??
+        '#fffdf7';
+      return `<section class="print-page" data-page="${index + 1}" style="background:${background}">${fragment}</section>`;
+    })
     .join('\n');
 
   return `<!doctype html>
@@ -42,7 +47,7 @@ export function buildPrintDocument(project, pages = []) {
   margin-left: ${print.margins.inner}mm;
   margin-right: ${print.margins.outer}mm;
 }
-html, body { margin: 0; padding: 0; background: #fff; }
+html, body { margin: 0; padding: 0; }
 body { display: block; min-height: 0; }
 .print-page {
   width: ${content.width}mm;
