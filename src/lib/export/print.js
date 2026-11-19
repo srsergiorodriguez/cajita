@@ -45,8 +45,9 @@ export function buildPrintDocument(project, pages = []) {
 html, body { margin: 0; padding: 0; background: #fff; }
 body { display: block; min-height: 0; }
 .print-page {
-  width: 100%;
-  height: calc(${content.height}mm * 1);
+  width: ${content.width}mm;
+  height: ${content.height}mm;
+  margin: 0 auto;
   overflow: hidden;
   break-inside: avoid;
   break-after: page;

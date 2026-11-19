@@ -19,6 +19,8 @@ describe('print export', () => {
     ]);
     expect(html).toContain('@page');
     expect(html).toContain('size: 148mm 210mm');
+    expect(html).toContain('width: 122mm');
+    expect(html).toContain('height: 186mm');
     expect(html).toContain('data-page="1"');
     expect(html).toContain('data-page="2"');
     expect(html).toContain('Uno');
