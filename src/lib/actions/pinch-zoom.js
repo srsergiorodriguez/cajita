@@ -2,6 +2,31 @@
  * Shared trackpad/touch pinch handling for editor viewports.
  * Calls onzoom with an incremental scale factor; the owning editor clamps it.
  */
+const activeNodes = new Set();
+let globalBound = false;
+
+function onGlobalWheel(event) {
+  if (!(event.ctrlKey || event.metaKey)) return;
+  for (const node of activeNodes) {
+    if (node.contains(event.target)) {
+      event.preventDefault();
+      return;
+    }
+  }
+}
+
+function bindGlobalWheel() {
+  if (globalBound || typeof window === 'undefined') return;
+  window.addEventListener('wheel', onGlobalWheel, { capture: true, passive: false });
+  globalBound = true;
+}
+
+function releaseGlobalWheel() {
+  if (!globalBound || activeNodes.size) return;
+  window.removeEventListener('wheel', onGlobalWheel, { capture: true });
+  globalBound = false;
+}
+
 export function pinchZoom(node, params = {}) {
   let options = params;
   const pointers = new Map();
@@ -76,6 +101,8 @@ export function pinchZoom(node, params = {}) {
     }
   }
 
+  activeNodes.add(node);
+  bindGlobalWheel();
   node.addEventListener('wheel', onWheel, { passive: false, capture: true });
   node.addEventListener('gesturestart', onGestureStart, { passive: false });
   node.addEventListener('gesturechange', onGestureChange, { passive: false });
@@ -88,6 +115,8 @@ export function pinchZoom(node, params = {}) {
   return {
     update: apply,
     destroy() {
+      activeNodes.delete(node);
+      releaseGlobalWheel();
       node.removeEventListener('wheel', onWheel, { capture: true });
       node.removeEventListener('gesturestart', onGestureStart);
       node.removeEventListener('gesturechange', onGestureChange);
