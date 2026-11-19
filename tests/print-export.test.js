@@ -40,3 +40,24 @@ describe('print export', () => {
     expect(html).toContain('Dos');
   });
 });
+
+describe('spread imposition', () => {
+  it('places pages on facing spread sheets', () => {
+    const spreadProject = {
+      ...project,
+      pages: [
+        ...project.pages,
+        { id: 'p3', title: 'Tercera', background: { color: '#ffffff' } }
+      ],
+      print: { ...project.print, imposition: { mode: 'spread' } }
+    };
+    const html = buildPrintDocument(spreadProject, [
+      { html: '<main class="stage">Uno</main>' },
+      { html: '<main class="stage">Dos</main>' },
+      { html: '<main class="stage">Tres</main>' }
+    ]);
+    expect(html).toContain('size: 296mm 210mm');
+    expect(html).toContain('print-spread');
+    expect(html).toContain('print-sheet--blank');
+  });
+});

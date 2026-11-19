@@ -640,6 +640,12 @@ export const en = {
 
   'grid.pageHint': 'To create or edit grids, open the project menu.',
   'grid.projectHint': 'Grids belong to the project and can be assigned to any page.',
+  'print.imposition': 'imposition',
+  'print.impositionMode': 'imposition mode',
+  'print.impositionNone': 'one page per sheet',
+  'print.impositionSpread': 'spread',
+  'print.impositionBooklet': 'booklet',
+  'print.impositionHint': 'Imposition changes sheet layout; reading order and page numbers stay the same.',
   'print.settings': 'Print settings',
   'print.settingsOpen': 'print settings',
   'print.numbering': 'numbering',

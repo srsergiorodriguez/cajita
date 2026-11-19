@@ -58,6 +58,10 @@
     draft = { ...draft, toc: { ...draft.toc, ...patch } };
   }
 
+  function setImposition(mode) {
+    draft = { ...draft, imposition: { ...draft.imposition, mode } };
+  }
+
   function save() {
     if (!content) {
       toast(t('print.invalidMargins'), 'error');
@@ -145,6 +149,19 @@
   <Section label={t('print.toc')}>
     <label class="check"><input type="checkbox" checked={draft.toc.enabled} onchange={(event) => setToc({ enabled: event.currentTarget.checked })} /><span>{t('print.tocEnabled')}</span></label>
     <Field label={t('print.tocTitle')} value={draft.toc.title} oninput={(event) => setToc({ title: event.currentTarget.value })} />
+  </Section>
+
+  <Section label={t('print.imposition')}>
+    <Select
+      label={t('print.impositionMode')}
+      value={draft.imposition.mode}
+      options={[
+        { value: 'none', label: t('print.impositionNone') },
+        { value: 'spread', label: t('print.impositionSpread') }
+      ]}
+      onchange={setImposition}
+    />
+    <p class="hint">{t('print.impositionHint')}</p>
   </Section>
 
   <div class="actions">

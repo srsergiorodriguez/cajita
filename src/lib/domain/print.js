@@ -56,6 +56,11 @@ export function normalisePrint(print = {}) {
       title: typeof print.toc?.title === 'string' && print.toc.title.trim()
         ? print.toc.title.trim()
         : 'Contenido'
+    },
+    imposition: {
+      mode: ['none', 'spread', 'booklet'].includes(print.imposition?.mode)
+        ? print.imposition.mode
+        : 'none'
     }
   };
 }

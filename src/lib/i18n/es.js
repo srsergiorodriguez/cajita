@@ -644,6 +644,12 @@ export const es = {
 
   'grid.pageHint': 'Para crear o editar cuadrículas, abre el menú del proyecto.',
   'grid.projectHint': 'Las cuadrículas pertenecen al proyecto y se pueden asignar a cualquier página.',
+  'print.imposition': 'imposición',
+  'print.impositionMode': 'modo de imposición',
+  'print.impositionNone': 'página por página',
+  'print.impositionSpread': 'doble página',
+  'print.impositionBooklet': 'cuadernillo',
+  'print.impositionHint': 'La imposición cambia la disposición de las hojas; no cambia el orden de lectura ni los números de página.',
   'print.settings': 'Ajustes de impresión',
   'print.settingsOpen': 'ajustes de impresión',
   'print.numbering': 'numeración',

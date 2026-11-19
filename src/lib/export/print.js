@@ -66,23 +66,43 @@ export function buildPrintDocument(project, pages = []) {
     return `<span class="print-running-head" style="${marginPosition(head.position, index)}">${value}</span>`;
   };
   let contentIndex = 0;
-  const pagesHtml = printPages
+  const sheets = printPages
     .map((entry, index) => {
       const fragment = entry.kind === 'toc' ? tocFragment : fragments[contentIndex++];
-      if (!fragment) return '';
-      const page = entry?.page;
-      const background =
-        page?.background?.color ??
-        project.stage?.background?.color ??
-        project.siteBackground ??
-        '#ffffff';
-      const innerLeft = index % 2 === 0;
-      const left = innerLeft ? print.margins.inner : print.margins.outer;
-      const right = innerLeft ? print.margins.outer : print.margins.inner;
-      return `<section class="print-sheet" data-page="${index + 1}" data-number="${entry?.number ?? ''}" style="width:${paperWidth}mm;height:${paperHeight}mm;padding:${print.margins.top}mm ${right}mm ${print.margins.bottom}mm ${left}mm"><div class="print-page" style="background:${background}">${fragment}</div>${entry.kind === 'page' ? runningHeadFor(entry, index) : ''}${folioFor(entry, index)}</section>`;
+      if (!fragment) return null;
+      return { entry, index, fragment };
     })
-    .filter(Boolean)
-    .join('\n');
+    .filter(Boolean);
+  const sheetHtml = (sheet, pageNumber) => {
+    const page = sheet.entry?.page;
+    const background =
+      page?.background?.color ??
+      project.stage?.background?.color ??
+      project.siteBackground ??
+      '#ffffff';
+    const innerLeft = sheet.index % 2 === 0;
+    const left = innerLeft ? print.margins.inner : print.margins.outer;
+    const right = innerLeft ? print.margins.outer : print.margins.inner;
+    return `<section class="print-sheet" data-page="${pageNumber}" data-number="${sheet.entry?.number ?? ''}" style="width:${paperWidth}mm;height:${paperHeight}mm;padding:${print.margins.top}mm ${right}mm ${print.margins.bottom}mm ${left}mm"><div class="print-page" style="background:${background}">${sheet.fragment}</div>${sheet.entry.kind === 'page' ? runningHeadFor(sheet.entry, sheet.index) : ''}${folioFor(sheet.entry, sheet.index)}</section>`;
+  };
+  const blankSheet = `<section class="print-sheet print-sheet--blank" aria-hidden="true" style="width:${paperWidth}mm;height:${paperHeight}mm"></section>`;
+  const spread = print.imposition.mode === 'spread';
+  let pagesHtml;
+  if (spread) {
+    const groups = [];
+    if (sheets.length) groups.push([sheets[0]]);
+    for (let index = 1; index < sheets.length; index += 2) {
+      groups.push([sheets[index], sheets[index + 1] ?? null]);
+    }
+    pagesHtml = groups
+      .map(
+        (group, index) =>
+          `<section class="print-spread" data-sheet="${index + 1}">${group.map((sheet) => (sheet ? sheetHtml(sheet, sheet.index + 1) : blankSheet)).join('')}</section>`
+      )
+      .join('\n');
+  } else {
+    pagesHtml = sheets.map((sheet) => sheetHtml(sheet, sheet.index + 1)).join('\n');
+  }
 
   return `<!doctype html>
 <html lang="${project.locale ?? 'es'}">
@@ -92,7 +112,7 @@ export function buildPrintDocument(project, pages = []) {
 <style>${style}</style>
 <style>
 @page {
-  size: ${paperWidth}mm ${paperHeight}mm;
+  size: ${spread ? paperWidth * 2 : paperWidth}mm ${paperHeight}mm;
   margin: 0;
 }
 html, body { margin: 0; padding: 0; }
@@ -101,15 +121,33 @@ body { display: block; min-height: 0; }
   box-sizing: border-box;
   width: ${paperWidth}mm;
   height: ${paperHeight}mm;
-  margin: 0 auto;
   background: #fff;
   position: relative;
+  overflow: hidden;
+  break-inside: avoid;
+}
+:not(.print-spread) > .print-sheet {
+  margin: 0 auto;
+  break-after: page;
+  page-break-after: always;
+}
+:not(.print-spread) > .print-sheet:last-child { break-after: auto; page-break-after: auto; }
+.print-spread {
+  box-sizing: border-box;
+  display: flex;
+  width: ${paperWidth * 2}mm;
+  height: ${paperHeight}mm;
+  margin: 0 auto;
+  background: #fff;
   overflow: hidden;
   break-inside: avoid;
   break-after: page;
   page-break-after: always;
 }
-.print-sheet:last-child { break-after: auto; page-break-after: auto; }
+.print-spread:last-child { break-after: auto; page-break-after: auto; }
+.print-spread .print-sheet { margin: 0; }
+.print-spread:first-child { justify-content: flex-end; }
+.print-sheet--blank { background: #fff; }
 .print-page {
   width: ${content.width}mm;
   height: ${content.height}mm;
@@ -117,13 +155,14 @@ body { display: block; min-height: 0; }
 }
 @media screen {
   body { background: #24282e; }
-  .print-sheet {
+  .print-sheet, .print-spread {
     margin: 24px auto;
     box-shadow: 0 0 0 1px #111, 0 18px 42px rgba(0, 0, 0, .35);
   }
+  .print-spread .print-sheet { box-shadow: none; }
 }
 @media print {
-  .print-sheet { margin: 0; box-shadow: none; }
+  .print-sheet, .print-spread { margin: 0; box-shadow: none; }
 }
 .print-page .stage {
   width: 100% !important;
