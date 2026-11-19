@@ -1316,6 +1316,9 @@ export async function openProject(id) {
   const loaded = await loadValidProject(id);
   if (!loaded) throw new Error('El proyecto no existe.');
   session.project = ensureDesign(loaded.project);
+  for (const page of session.project.pages ?? []) {
+    if (!page.background?.color) page.background = { color: '#ffffff' };
+  }
   session.activePageId = loaded.project.startPageId;
   session.selectedAssetId = null;
   session.selectedElementIds = [];

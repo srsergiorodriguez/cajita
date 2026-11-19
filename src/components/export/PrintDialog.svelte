@@ -5,6 +5,7 @@
   import { session } from '../../lib/state/project.svelte.js';
   import { buildPreview } from '../../lib/export/preview.js';
   import { buildPrintDocument } from '../../lib/export/print.js';
+  import { drawingFrameDataUrl } from '../../lib/drawing/preview.js';
 
   let { open = $bindable(false) } = $props();
   let iframe = $state(null);
@@ -18,7 +19,13 @@
     building = true;
     error = '';
     html = '';
-    buildPreview(session.project, { print: true })
+    const drawingImages = new Map();
+    for (const drawing of Object.values(session.project.drawings ?? {})) {
+      if (drawing.assetId) {
+        drawingImages.set(drawing.assetId, drawingFrameDataUrl(session.project, drawing));
+      }
+    }
+    buildPreview(session.project, { print: true, drawingImages })
       .then((preview) => {
         if (cancelled) return;
         html = buildPrintDocument(session.project, preview.pages);

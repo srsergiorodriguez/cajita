@@ -21,7 +21,7 @@ document.addEventListener('click', (event) => {
  * handled by PREVIEW_SCRIPT; the parent swaps the iframe document. Assets and
  * custom fonts use the same URL caches as the editor.
  */
-export async function buildPreview(project, { print = false } = {}) {
+export async function buildPreview(project, { print = false, drawingImages = null } = {}) {
   const usedAssets = new Map();
   const htmlContent = new Map();
   const allAssetIds = new Set();
@@ -68,7 +68,8 @@ export async function buildPreview(project, { print = false } = {}) {
   });
 
   const site = buildSite(project, {
-    assetHref: (_project, _page, asset) => usedAssets.get(asset.id) ?? '',
+    assetHref: (_project, _page, asset) =>
+      drawingImages?.get(asset.id) ?? usedAssets.get(asset.id) ?? '',
     htmlContent,
     preview: true,
     print,

@@ -429,7 +429,7 @@ export function buildPageHtml(project, page, options = {}) {
   const stage = project.stage;
   const base = canonicalBase(project);
   const canonical = canonicalPageUrl(base, page, project.startPageId);
-  const pageBackground = page.background?.color ?? stage.background?.color ?? '#fffdf7';
+  const pageBackground = page.background?.color ?? stage.background?.color ?? '#ffffff';
   const opts = {
     pageHref,
     assetHref,

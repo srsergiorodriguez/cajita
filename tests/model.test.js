@@ -7,6 +7,7 @@ describe('responsive stage limits', () => {
     const project = createProject({ idFactory: () => 'stage-test' });
     expect(project.stage.maxWidth).toBe(project.stage.width);
     expect(project.stage.minWidth).toBe(360);
+    expect(project.pages[0].background.color).toBe('#ffffff');
     expect(createStage('wide', { width: 800 }).maxWidth).toBe(800);
   });
 });

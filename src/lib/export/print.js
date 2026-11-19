@@ -23,8 +23,11 @@ export function buildPrintDocument(project, pages = []) {
         page?.background?.color ??
         project.stage?.background?.color ??
         project.siteBackground ??
-        '#fffdf7';
-      return `<section class="print-page" data-page="${index + 1}" style="background:${background}">${fragment}</section>`;
+        '#ffffff';
+      const innerLeft = index % 2 === 0;
+      const left = innerLeft ? print.margins.inner : print.margins.outer;
+      const right = innerLeft ? print.margins.outer : print.margins.inner;
+      return `<section class="print-sheet" data-page="${index + 1}" style="width:${paperWidth}mm;height:${paperHeight}mm;padding:${print.margins.top}mm ${right}mm ${print.margins.bottom}mm ${left}mm"><div class="print-page" style="background:${background}">${fragment}</div></section>`;
     })
     .join('\n');
 
@@ -49,6 +52,15 @@ export function buildPrintDocument(project, pages = []) {
 }
 html, body { margin: 0; padding: 0; }
 body { display: block; min-height: 0; }
+@media screen {
+  body { background: #24282e; }
+  .print-sheet {
+    box-sizing: border-box;
+    margin: 24px auto;
+    background: #fff;
+    box-shadow: 0 0 0 1px #111, 0 18px 42px rgba(0, 0, 0, .35);
+  }
+}
 .print-page {
   width: ${content.width}mm;
   height: ${content.height}mm;
@@ -59,6 +71,21 @@ body { display: block; min-height: 0; }
   page-break-after: always;
 }
 .print-page:last-child { break-after: auto; page-break-after: auto; }
+@media print {
+  .print-sheet {
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .print-page {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: ${content.width} / ${content.height};
+  }
+}
 .print-page .stage {
   width: 100% !important;
   max-width: none !important;

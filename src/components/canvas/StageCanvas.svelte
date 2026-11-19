@@ -60,7 +60,7 @@
   const page = $derived(activePage());
   const stage = $derived(session.project?.stage ?? { width: 1200, height: 800 });
   const pageBackground = $derived(
-    page?.background?.color ?? stage.background?.color ?? '#fffdf7'
+    page?.background?.color ?? stage.background?.color ?? '#ffffff'
   );
   const elements = $derived(
     [...(page?.elements ?? [])].sort((a, b) => (a.z ?? 0) - (b.z ?? 0))
