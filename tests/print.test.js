@@ -98,3 +98,24 @@ describe('print table of contents', () => {
     expect(pages[2].number).toBe(6);
   });
 });
+
+describe('booklet imposition', () => {
+  it('orders eight pages as saddle-stitch sides', async () => {
+    const { buildBookletSides } = await import('../src/lib/domain/print.js');
+    const entries = Array.from({ length: 8 }, (_, index) => index + 1);
+    const sides = buildBookletSides(entries);
+    expect(sides).toEqual([
+      [8, 1],
+      [2, 7],
+      [6, 3],
+      [4, 5]
+    ]);
+  });
+
+  it('pads incomplete signatures with blanks', async () => {
+    const { buildBookletSides } = await import('../src/lib/domain/print.js');
+    const sides = buildBookletSides([1, 2, 3]);
+    expect(sides[0]).toEqual([null, 1]);
+    expect(sides[1]).toEqual([2, 3]);
+  });
+});

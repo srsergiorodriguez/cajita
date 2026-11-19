@@ -125,3 +125,16 @@ export function buildPrintPages(project) {
   }
   return entries;
 }
+
+
+export function buildBookletSides(entries) {
+  const total = Math.ceil(entries.length / 4) * 4;
+  const padded = [...entries, ...Array(Math.max(0, total - entries.length)).fill(null)];
+  const sides = [];
+  for (let signature = 0; signature < total / 4; signature += 1) {
+    const front = [padded[total - 2 * signature - 1], padded[2 * signature]];
+    const back = [padded[2 * signature + 1], padded[total - 2 * signature - 2]];
+    sides.push(front, back);
+  }
+  return sides;
+}

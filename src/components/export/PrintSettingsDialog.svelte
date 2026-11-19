@@ -157,7 +157,8 @@
       value={draft.imposition.mode}
       options={[
         { value: 'none', label: t('print.impositionNone') },
-        { value: 'spread', label: t('print.impositionSpread') }
+        { value: 'spread', label: t('print.impositionSpread') },
+        { value: 'booklet', label: t('print.impositionBooklet') }
       ]}
       onchange={setImposition}
     />

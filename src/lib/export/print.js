@@ -1,4 +1,4 @@
-import { buildPrintPages, formatPageNumber, normalisePrint, printContentSize } from '../domain/print.js';
+import { buildBookletSides, buildPrintPages, formatPageNumber, normalisePrint, printContentSize } from '../domain/print.js';
 
 function extractStyle(html = '') {
   return html.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? '';
@@ -86,9 +86,18 @@ export function buildPrintDocument(project, pages = []) {
     return `<section class="print-sheet" data-page="${pageNumber}" data-number="${sheet.entry?.number ?? ''}" style="width:${paperWidth}mm;height:${paperHeight}mm;padding:${print.margins.top}mm ${right}mm ${print.margins.bottom}mm ${left}mm"><div class="print-page" style="background:${background}">${sheet.fragment}</div>${sheet.entry.kind === 'page' ? runningHeadFor(sheet.entry, sheet.index) : ''}${folioFor(sheet.entry, sheet.index)}</section>`;
   };
   const blankSheet = `<section class="print-sheet print-sheet--blank" aria-hidden="true" style="width:${paperWidth}mm;height:${paperHeight}mm"></section>`;
-  const spread = print.imposition.mode === 'spread';
+  const mode = print.imposition.mode;
+  const spread = mode === 'spread';
   let pagesHtml;
-  if (spread) {
+  if (mode === 'booklet') {
+    const sides = buildBookletSides(sheets);
+    pagesHtml = sides
+      .map(
+        (group, index) =>
+          `<section class="print-spread print-booklet-side" data-sheet="${Math.floor(index / 2) + 1}" data-side="${index % 2 === 0 ? 'front' : 'back'}">${group.map((sheet) => (sheet ? sheetHtml(sheet, sheet.index + 1) : blankSheet)).join('')}</section>`
+      )
+      .join('\n');
+  } else if (spread) {
     const groups = [];
     if (sheets.length) groups.push([sheets[0]]);
     for (let index = 1; index < sheets.length; index += 2) {
@@ -147,6 +156,7 @@ body { display: block; min-height: 0; }
 .print-spread:last-child { break-after: auto; page-break-after: auto; }
 .print-spread .print-sheet { margin: 0; }
 .print-spread:first-child { justify-content: flex-end; }
+.print-doc--booklet .print-spread:first-child { justify-content: flex-start; }
 .print-sheet--blank { background: #fff; }
 .print-page {
   width: ${content.width}mm;
@@ -201,7 +211,7 @@ body { display: block; min-height: 0; }
 }
 </style>
 </head>
-<body class="print-doc">
+<body class="print-doc print-doc--${mode}">
 ${pagesHtml}
 </body>
 </html>`;
