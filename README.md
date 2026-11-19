@@ -3,7 +3,9 @@
 An editor for small hypermedia sites: pages made of images, text, video, and
 sound; links between them; a static folder at the end.
 
-Status: **1.6.0 — shared viewport and responsive limits (complete)**.
+Status: **1.6.1 — text zoom stability fix (complete)**.
+
+1.6.1 keeps text frame measurements independent of editor zoom, so text boxes no longer change height when zooming.
 
 The project library, IndexedDB persistence, `.cajita` bundles, media pipeline,
 autosave, free canvas, page CRUD, page sizing, typography, custom fonts, links,
