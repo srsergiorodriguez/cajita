@@ -41,6 +41,7 @@
   } from '../../lib/domain/geometry.js';
   import { elementName, fontStack, mediaFrame } from '../../lib/domain/elements.js';
   import { snapFrameMove, snapFrameResize } from '../../lib/domain/grid.js';
+  import { printContentSize } from '../../lib/domain/print.js';
   import GridOverlay from './GridOverlay.svelte';
   import SelectionFrame from './SelectionFrame.svelte';
   import TextEditor from './TextEditor.svelte';
@@ -94,14 +95,48 @@
   const stageHeight = $derived(viewportWidth / aspect);
   const displayWidth = $derived(viewportWidth * zoom);
   const displayHeight = $derived(stageHeight * zoom);
-  const padWidth = $derived(Math.max(wrapW, displayWidth + 48));
-  const padHeight = $derived(Math.max(wrapH, displayHeight + 48));
+  const padWidth = $derived(Math.max(wrapW, (printGuide?.width ?? displayWidth) + 48));
+  const padHeight = $derived(Math.max(wrapH, (printGuide?.height ?? displayHeight) + 48));
   const viewportOptions = $derived(
     [...new Set([390, 768, 1024, stage.width, stage.maxWidth].filter((width) => Number.isFinite(width) && width > 0))]
       .sort((a, b) => a - b)
   );
   const pageIndex = $derived(
     Math.max(0, session.project?.pages.findIndex((item) => item.id === page?.id) ?? 0)
+  );
+  const printFrame = $derived.by(() => {
+    if (!editor.showPrintMargins || !session.project?.print) return null;
+    try {
+      const print = session.project.print;
+      const content = printContentSize(print);
+      const scale = viewportWidth / content.width;
+      const inner = print.margins.inner * scale;
+      const outer = print.margins.outer * scale;
+      const leftBase = pageIndex % 2 === 0 ? inner : outer;
+      const rightBase = pageIndex % 2 === 0 ? outer : inner;
+      return {
+        leftBase,
+        rightBase,
+        topBase: print.margins.top * scale,
+        bottomBase: print.margins.bottom * scale,
+        baseWidth: viewportWidth + leftBase + rightBase,
+        baseHeight: stageHeight + print.margins.top * scale + print.margins.bottom * scale
+      };
+    } catch {
+      return null;
+    }
+  });
+  const printGuide = $derived(
+    printFrame
+      ? {
+          left: printFrame.leftBase * zoom,
+          right: printFrame.rightBase * zoom,
+          top: printFrame.topBase * zoom,
+          bottom: printFrame.bottomBase * zoom,
+          width: displayWidth + (printFrame.leftBase + printFrame.rightBase) * zoom,
+          height: displayHeight + (printFrame.topBase + printFrame.bottomBase) * zoom
+        }
+      : null
   );
   let lastProjectId = '';
 
@@ -161,11 +196,11 @@
 
   function applyFit() {
     if (!wrapW || !wrapH || !viewportWidth) return;
-    if (fitMode === 'width') zoom = clampZoom((wrapW - 48) / viewportWidth);
+    const baseWidth = printFrame?.baseWidth ?? viewportWidth;
+    const baseHeight = printFrame?.baseHeight ?? stageHeight;
+    if (fitMode === 'width') zoom = clampZoom((wrapW - 48) / baseWidth);
     else if (fitMode === 'page') {
-      zoom = clampZoom(
-        Math.min((wrapW - 48) / viewportWidth, (wrapH - 48) / stageHeight)
-      );
+      zoom = clampZoom(Math.min((wrapW - 48) / baseWidth, (wrapH - 48) / baseHeight));
     }
   }
 
@@ -182,6 +217,7 @@
     wrapH;
     viewportWidth;
     stageHeight;
+    printFrame;
     fitMode;
     applyFit();
   });
@@ -595,6 +631,16 @@
           />
         {/if}
       </div>
+      {#if printGuide}
+        <div
+          class="print-guide-paper"
+          style:left={`${-printGuide.left}px`}
+          style:top={`${-printGuide.top}px`}
+          style:width={`${printGuide.width}px`}
+          style:height={`${printGuide.height}px`}
+        ></div>
+        <div class="print-guide-content"></div>
+      {/if}
       </div>
     </div>
   </div>
@@ -656,6 +702,21 @@
   .stage-scale {
     position: relative;
     flex: 0 0 auto;
+  }
+
+  .print-guide-paper,
+  .print-guide-content {
+    position: absolute;
+    pointer-events: none;
+  }
+
+  .print-guide-paper {
+    border: 1px dashed var(--muted);
+  }
+
+  .print-guide-content {
+    inset: 0;
+    border: 1px solid var(--accent);
   }
 
   .stage {

@@ -22,6 +22,7 @@
     updateStageLimits,
     updateStageSize
   } from '../../lib/state/project.svelte.js';
+  import { editor, togglePrintMargins } from '../../lib/state/editor.svelte.js';
   import { toast } from '../../lib/state/ui.svelte.js';
 
   let { page } = $props();
@@ -208,6 +209,12 @@
     </div>
     <p class="hint">{t('page.sizeHint')}</p>
     <p class="hint">{t('page.limitHint')}</p>
+    {#if session.project?.print}
+      <label class="check">
+        <input type="checkbox" checked={editor.showPrintMargins} onchange={togglePrintMargins} />
+        <span>{t('print.showMargins')}</span>
+      </label>
+    {/if}
   </Section>
 
   <Section label={t('page.appearance')}>

@@ -655,6 +655,7 @@ export const es = {
   'print.impositionSpread': 'doble página',
   'print.impositionBooklet': 'cuadernillo',
   'print.impositionHint': 'La imposición cambia la disposición de las hojas; no cambia el orden de lectura ni los números de página.',
+  'print.showMargins': 'ver márgenes de impresión',
   'print.settings': 'Ajustes de impresión',
   'print.settingsOpen': 'ajustes de impresión',
   'print.numbering': 'numeración',

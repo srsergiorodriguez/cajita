@@ -4,6 +4,7 @@
 export const editor = $state({
   view: 'page',
   viewportWidth: 0,
+  showPrintMargins: false,
   tool: 'select',
   snap: true,
   guides: { x: null, y: null },
@@ -18,6 +19,10 @@ export function setView(view) {
     editor.editingElementId = null;
     clearGuides();
   }
+}
+
+export function togglePrintMargins() {
+  editor.showPrintMargins = !editor.showPrintMargins;
 }
 
 export function setViewportWidth(width) {

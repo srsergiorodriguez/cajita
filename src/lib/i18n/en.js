@@ -651,6 +651,7 @@ export const en = {
   'print.impositionSpread': 'spread',
   'print.impositionBooklet': 'booklet',
   'print.impositionHint': 'Imposition changes sheet layout; reading order and page numbers stay the same.',
+  'print.showMargins': 'show print margins',
   'print.settings': 'Print settings',
   'print.settingsOpen': 'print settings',
   'print.numbering': 'numbering',
