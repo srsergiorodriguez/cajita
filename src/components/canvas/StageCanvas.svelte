@@ -209,6 +209,7 @@
     if (projectId === lastProjectId) return;
     lastProjectId = projectId;
     if (stage.width) editor.viewportWidth = stage.width;
+    editor.showPrintMargins = Boolean(session.project?.print);
     fitMode = 'width';
   });
 
@@ -716,7 +717,7 @@
 
   .print-guide-content {
     inset: 0;
-    border: 1px solid var(--accent);
+    border: 1px dashed var(--accent);
   }
 
   .stage {
