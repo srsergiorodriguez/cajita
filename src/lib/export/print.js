@@ -97,7 +97,7 @@ export function buildPrintDocument(project, pages = []) {
     pagesHtml = sides
       .map(
         (group, index) =>
-          `<section class="print-spread print-booklet-side" data-sheet="${Math.floor(index / 2) + 1}" data-side="${index % 2 === 0 ? 'front' : 'back'}" data-label="${project.locale === 'en' ? 'Sheet' : 'Hoja'} ${Math.floor(index / 2) + 1} · ${index % 2 === 0 ? (project.locale === 'en' ? 'front' : 'frente') : (project.locale === 'en' ? 'back' : 'dorso')}">${group.map((sheet) => (sheet ? sheetHtml(sheet, sheet.index + 1) : blankSheet)).join('')}</section>`
+          `<section class="print-spread print-booklet-side" data-sheet="${Math.floor(index / 2) + 1}" data-side="${index % 2 === 0 ? 'front' : 'back'}" data-label="${project.locale === 'en' ? 'Sheet' : 'Hoja'} ${Math.floor(index / 2) + 1} · ${index % 2 === 0 ? (project.locale === 'en' ? 'front' : 'frente') : (project.locale === 'en' ? 'back' : 'dorso')} · ${group.map((sheet) => sheet?.entry?.number ?? '—').join(' / ')}">${group.map((sheet) => (sheet ? sheetHtml(sheet, sheet.index + 1) : blankSheet)).join('')}</section>`
       )
       .join('\n');
   } else if (spread) {

@@ -87,7 +87,7 @@ describe('booklet sheet size', () => {
         { id: 'p3', title: '3', background: { color: '#ffffff' } },
         { id: 'p4', title: '4', background: { color: '#ffffff' } }
       ],
-      print: { ...project.print, imposition: { mode: 'booklet' } }
+      print: { ...project.print, imposition: { mode: 'booklet' }, toc: { enabled: false } }
     };
     const html = buildPrintDocument(bookletProject, [
       { html: '<main class="stage">Uno</main>' },
@@ -97,6 +97,7 @@ describe('booklet sheet size', () => {
     ]);
     expect(html).toContain('size: 296mm 210mm');
     expect(html).toContain('data-side="front"');
+    expect(html).toContain('4 / 1');
     expect(html).toContain('data-side="back"');
   });
 });
