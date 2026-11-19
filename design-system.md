@@ -781,6 +781,13 @@ elements that use it; manual text edits detach the element from the style.
 The palette generator preserves locked colors and produces a readable
 background/text pair. It applies the whole palette in one undoable command.
 
+### Page viewport and zoom
+
+Page editor and preview share one viewport-width selector. Changing viewport
+changes layout and iframe viewports; changing zoom only scales the rendered
+result. `100%` is actual CSS size. Fit width/page are viewing modes and show
+their real percentage. Exported pages remain fluid.
+
 ### Tabs
 
 Underline 2 px `--accent` for active, 12 px mono lowercase, 32 px height.

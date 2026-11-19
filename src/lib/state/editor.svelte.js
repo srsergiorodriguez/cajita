@@ -3,6 +3,7 @@
  */
 export const editor = $state({
   view: 'page',
+  viewportWidth: 0,
   tool: 'select',
   snap: true,
   guides: { x: null, y: null },
@@ -17,6 +18,11 @@ export function setView(view) {
     editor.editingElementId = null;
     clearGuides();
   }
+}
+
+export function setViewportWidth(width) {
+  const next = Math.round(Number(width));
+  if (Number.isFinite(next) && next > 0) editor.viewportWidth = next;
 }
 
 export function setTool(tool) {

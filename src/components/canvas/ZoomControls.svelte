@@ -9,11 +9,29 @@
     onFitWidth,
     onFitPage = null,
     fitWidthActive = false,
-    fitPageActive = false
+    fitPageActive = false,
+    viewport = null,
+    viewportOptions = [],
+    onviewport = null,
+    onActualSize = null,
+    actualSizeActive = false
   } = $props();
 </script>
 
 <div class="zoom-controls">
+  {#if viewport && viewportOptions.length > 1}
+    <select
+      class="viewport-select"
+      value={String(viewport)}
+      aria-label={t('canvas.viewport')}
+      title={t('canvas.viewport')}
+      onchange={(event) => onviewport?.(Number(event.currentTarget.value))}
+    >
+      {#each viewportOptions as option}
+        <option value={String(option)}>{option}px</option>
+      {/each}
+    </select>
+  {/if}
   <IconButton
     label={t('canvas.zoomOut')}
     icon="minus"
@@ -31,6 +49,18 @@
     variant="ghost"
     onclick={onZoomIn}
   />
+  {#if onActualSize}
+    <button
+      type="button"
+      class="fit-button"
+      class:active={actualSizeActive}
+      aria-label={t('canvas.actualSize')}
+      title={t('canvas.actualSize')}
+      onclick={onActualSize}
+    >
+      100%
+    </button>
+  {/if}
   {#if onFitPage}
     <button
       type="button"
@@ -61,6 +91,17 @@
     align-items: center;
     gap: 2px;
     margin-left: auto;
+  }
+
+  .viewport-select {
+    height: 24px;
+    max-width: 78px;
+    padding: 0 3px;
+    border: 1px solid var(--line-soft);
+    background: var(--panel-2);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-3xs);
   }
 
   .zoom-value {

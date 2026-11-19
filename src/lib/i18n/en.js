@@ -609,6 +609,8 @@ export const en = {
   'units.elementMany': '{count} elements',
 
   'canvas.zoomIn': 'zoom in',
+  'canvas.actualSize': 'actual size',
+  'canvas.viewport': 'viewport width',
   'canvas.zoomOut': 'zoom out',
   'canvas.fitPage': 'fit page',
   'canvas.fitWidth': 'fit width',

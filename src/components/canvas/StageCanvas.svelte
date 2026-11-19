@@ -26,7 +26,8 @@
     setGuides,
     clearGuides,
     beginTextEdit,
-    endTextEdit
+    endTextEdit,
+    setViewportWidth
   } from '../../lib/state/editor.svelte.js';
   import { ensureProjectFonts, fontState } from '../../lib/state/fonts.svelte.js';
   import {
@@ -88,10 +89,18 @@
       )
       .join('|')
   );
-  const stageWidth = $derived(Math.max(120, Math.max(0, wrapW - 48) * zoom));
-  const stageHeight = $derived(stageWidth / aspect);
-  const padWidth = $derived(Math.max(wrapW, stageWidth + 48));
-  const padHeight = $derived(Math.max(wrapH, stageHeight + 48));
+  const viewportWidth = $derived(editor.viewportWidth || stage.width);
+  const stageHeight = $derived(viewportWidth / aspect);
+  const displayWidth = $derived(viewportWidth * zoom);
+  const displayHeight = $derived(stageHeight * zoom);
+  const padWidth = $derived(Math.max(wrapW, displayWidth + 48));
+  const padHeight = $derived(Math.max(wrapH, displayHeight + 48));
+  const viewportOptions = $derived(
+    [...new Set([390, 768, 1024, stage.width, stage.maxWidth].filter((width) => Number.isFinite(width) && width > 0))]
+      .sort((a, b) => a - b)
+  );
+  let lastProjectId = '';
+
 
   $effect(() => {
     fontState.version;
@@ -131,22 +140,53 @@
     });
   });
 
+  function clampZoom(value) {
+    return Math.min(4, Math.max(0.1, Math.round(value * 100) / 100));
+  }
+
   function setZoom(next) {
-    zoom = Math.min(4, Math.max(0.25, Math.round(next * 100) / 100));
+    zoom = clampZoom(next);
     fitMode = 'manual';
   }
 
   function fitWidth() {
-    zoom = 1;
     fitMode = 'width';
   }
 
   function fitPage() {
-    const baseWidth = Math.max(120, Math.max(0, wrapW - 48));
-    const baseHeight = baseWidth / aspect;
-    const availableHeight = Math.max(120, Math.max(0, wrapH - 48));
-    setZoom(Math.min(1, availableHeight / baseHeight));
     fitMode = 'page';
+  }
+
+  function applyFit() {
+    if (!wrapW || !wrapH || !viewportWidth) return;
+    if (fitMode === 'width') zoom = clampZoom((wrapW - 48) / viewportWidth);
+    else if (fitMode === 'page') {
+      zoom = clampZoom(
+        Math.min((wrapW - 48) / viewportWidth, (wrapH - 48) / stageHeight)
+      );
+    }
+  }
+
+  $effect(() => {
+    const projectId = session.project?.id ?? '';
+    if (projectId === lastProjectId) return;
+    lastProjectId = projectId;
+    if (stage.width) editor.viewportWidth = stage.width;
+    fitMode = 'width';
+  });
+
+  $effect(() => {
+    wrapW;
+    wrapH;
+    viewportWidth;
+    stageHeight;
+    fitMode;
+    applyFit();
+  });
+
+  function changeViewport(width) {
+    setViewportWidth(width);
+    fitMode = 'width';
   }
 
   $effect(() => {
@@ -382,11 +422,14 @@
 <section class="desk" aria-label={t('canvas.title')}>
   <div class="stage-wrap" bind:this={wrapEl}>
     <div class="stage-pad" style:width={`${padWidth}px`} style:height={`${padHeight}px`}>
+      <div class="stage-scale" style:width={`${displayWidth}px`} style:height={`${displayHeight}px`}>
       <div
         class="stage"
         bind:this={stageEl}
         style:aspect-ratio={`${stage.width} / ${stage.height}`}
-        style:width={`${stageWidth}px`}
+        style:width={`${viewportWidth}px`}
+        style:height={`${stageHeight}px`}
+        style:transform={`scale(${zoom})`}
         style:--stage-color={pageBackground}
         style:--link-accent={session.project?.palette?.[2] ?? '#a82a1e'}
         class:placing
@@ -536,6 +579,7 @@
           />
         {/if}
       </div>
+      </div>
     </div>
   </div>
 
@@ -544,12 +588,17 @@
     <span>{plural(elements.length, 'units.elementOne', 'units.elementMany')}</span>
     <ZoomControls
       {zoom}
+      viewport={viewportWidth}
+      {viewportOptions}
+      onviewport={changeViewport}
       onZoomOut={() => setZoom(zoom - 0.1)}
       onZoomIn={() => setZoom(zoom + 0.1)}
       onFitWidth={fitWidth}
       onFitPage={fitPage}
       fitWidthActive={fitMode === 'width'}
       fitPageActive={fitMode === 'page'}
+      onActualSize={() => setZoom(1)}
+      actualSizeActive={fitMode === 'manual' && Math.abs(zoom - 1) < 0.005}
     />
     <span class="page-index">
       {String(
@@ -593,9 +642,15 @@
     cursor: crosshair;
   }
 
+  .stage-scale {
+    position: relative;
+    flex: 0 0 auto;
+  }
+
   .stage {
     position: relative;
     overflow: hidden;
+    transform-origin: top left;
     border: 0;
     background: var(--stage-color);
     box-shadow: inset 0 0 0 var(--border-strong) var(--line), var(--shadow-stage);

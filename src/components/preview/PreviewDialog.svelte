@@ -5,6 +5,7 @@
   import ZoomControls from '../canvas/ZoomControls.svelte';
   import { t } from '../../lib/i18n/index.svelte.js';
   import { session } from '../../lib/state/project.svelte.js';
+  import { editor, setViewportWidth } from '../../lib/state/editor.svelte.js';
   import { buildPreview } from '../../lib/export/preview.js';
 
   let { open = $bindable(false) } = $props();
@@ -23,6 +24,17 @@
   const stageRatio = $derived(
     (session.project?.stage?.width ?? 1200) / (session.project?.stage?.height ?? 800)
   );
+  const viewportWidth = $derived(editor.viewportWidth || session.project?.stage?.width || 1200);
+  const stageHeight = $derived(viewportWidth / stageRatio);
+  const viewportOptions = $derived(
+    [...new Set([
+      390,
+      768,
+      1024,
+      session.project?.stage?.width,
+      session.project?.stage?.maxWidth
+    ].filter((width) => Number.isFinite(width) && width > 0))].sort((a, b) => a - b)
+  );
   let previewAnimation = $state('');
   let animationTimer = null;
 
@@ -40,24 +52,40 @@
     )
   );
 
+  function clampPreviewZoom(value) {
+    return Math.min(4, Math.max(0.1, Math.round(value * 100) / 100));
+  }
+
   function setPreviewZoom(next) {
-    previewZoom = Math.min(4, Math.max(0.25, Math.round(next * 100) / 100));
+    previewZoom = clampPreviewZoom(next);
     previewFitMode = 'manual';
   }
 
+  function applyPreviewFit() {
+    if (!previewFrameEl || !viewportWidth) return;
+    const rect = previewFrameEl.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const widthScale = rect.width / viewportWidth;
+    const heightScale = rect.height / stageHeight;
+    previewZoom = clampPreviewZoom(
+      previewFitMode === 'page' ? Math.min(widthScale, heightScale) : widthScale
+    );
+    previewFitZoom = previewZoom;
+  }
+
   function fitWidth() {
-    previewZoom = 1;
     previewFitMode = 'width';
+    applyPreviewFit();
   }
 
   function fitPreview() {
-    if (!previewFrameEl) return;
-    const rect = previewFrameEl.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
-    const fit = Math.min(1, (rect.height * stageRatio) / rect.width);
-    previewFitZoom = Math.max(0.25, Math.min(1, Math.round(fit * 100) / 100));
-    previewZoom = previewFitZoom;
     previewFitMode = 'page';
+    applyPreviewFit();
+  }
+
+  function changeViewport(width) {
+    setViewportWidth(width);
+    previewFitMode = 'width';
   }
 
   function animateOutgoing() {
@@ -86,6 +114,14 @@
   });
 
   $effect(() => {
+    if (!open || previewFitMode === 'manual') return;
+    previewFrameEl;
+    viewportWidth;
+    stageHeight;
+    applyPreviewFit();
+  });
+
+  $effect(() => {
     if (!open || !session.project) return;
     let cancelled = false;
     building = true;
@@ -110,14 +146,6 @@
     return () => {
       cancelled = true;
     };
-  });
-
-  $effect(() => {
-    if (!iframeReady || !iframeEl) return;
-    iframeEl.contentDocument?.documentElement.style.setProperty(
-      '--preview-zoom',
-      String(previewZoom)
-    );
   });
 
   $effect(() => {
@@ -169,12 +197,17 @@
     {/if}
     <ZoomControls
       zoom={previewZoom}
+      viewport={viewportWidth}
+      {viewportOptions}
+      onviewport={changeViewport}
       onZoomOut={() => setPreviewZoom(previewZoom - 0.1)}
       onZoomIn={() => setPreviewZoom(previewZoom + 0.1)}
       onFitWidth={fitWidth}
       onFitPage={fitPreview}
       fitWidthActive={previewFitMode === 'width'}
       fitPageActive={previewFitMode === 'page'}
+      onActualSize={() => setPreviewZoom(1)}
+      actualSizeActive={previewFitMode === 'manual' && Math.abs(previewZoom - 1) < 0.005}
     />
   </div>
   {#if error}
@@ -187,16 +220,25 @@
       class:slide={previewAnimation === 'slide'}
       style:background={siteBackground}
     >
-      <iframe
-        bind:this={iframeEl}
-        src={previewSrc}
-        title={t('preview.title')}
-        style:background={siteBackground}
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads"
-        onload={() => {
-          iframeReady = true;
-        }}
-      ></iframe>
+      <div
+        class="preview-surface"
+        style:width={`${viewportWidth * previewZoom}px`}
+        style:height={`${stageHeight * previewZoom}px`}
+      >
+        <iframe
+          bind:this={iframeEl}
+          src={previewSrc}
+          title={t('preview.title')}
+          style:width={`${viewportWidth}px`}
+          style:height={`${stageHeight}px`}
+          style:transform={`scale(${previewZoom})`}
+          style:background={siteBackground}
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads"
+          onload={() => {
+            iframeReady = true;
+          }}
+        ></iframe>
+      </div>
     </div>
   {/if}
 </Dialog>
@@ -226,8 +268,19 @@
 
   .preview-frame {
     height: min(68vh, 720px);
-    overflow: hidden;
+    overflow: auto;
     border: var(--border-control) solid var(--line);
+  }
+
+  .preview-surface {
+    position: relative;
+    margin: auto;
+  }
+
+  .preview-surface iframe {
+    display: block;
+    border: 0;
+    transform-origin: top left;
   }
 
   .preview-frame.fade {
@@ -257,10 +310,4 @@
     }
   }
 
-  iframe {
-    display: block;
-    width: 100%;
-    height: 100%;
-    border: 0;
-  }
 </style>

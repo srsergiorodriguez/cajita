@@ -613,6 +613,8 @@ export const es = {
   'units.elementMany': '{count} elementos',
 
   'canvas.zoomIn': 'acercar',
+  'canvas.actualSize': 'tamaño real',
+  'canvas.viewport': 'ancho de vista',
   'canvas.zoomOut': 'alejar',
   'canvas.fitPage': 'ajustar página',
   'canvas.fitWidth': 'ajustar al ancho',
