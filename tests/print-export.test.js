@@ -76,3 +76,27 @@ describe('TOC palette', () => {
     expect(html).toContain('color:#f0e8d8');
   });
 });
+
+describe('booklet sheet size', () => {
+  it('uses a double-width sheet and saddle-stitch order', () => {
+    const bookletProject = {
+      ...project,
+      pages: [
+        { id: 'p1', title: '1', background: { color: '#ffffff' } },
+        { id: 'p2', title: '2', background: { color: '#ffffff' } },
+        { id: 'p3', title: '3', background: { color: '#ffffff' } },
+        { id: 'p4', title: '4', background: { color: '#ffffff' } }
+      ],
+      print: { ...project.print, imposition: { mode: 'booklet' } }
+    };
+    const html = buildPrintDocument(bookletProject, [
+      { html: '<main class="stage">Uno</main>' },
+      { html: '<main class="stage">Dos</main>' },
+      { html: '<main class="stage">Tres</main>' },
+      { html: '<main class="stage">Cuatro</main>' }
+    ]);
+    expect(html).toContain('size: 296mm 210mm');
+    expect(html).toContain('data-side="front"');
+    expect(html).toContain('data-side="back"');
+  });
+});

@@ -90,6 +90,7 @@ export function buildPrintDocument(project, pages = []) {
   const blankSheet = `<section class="print-sheet print-sheet--blank" aria-hidden="true" style="width:${paperWidth}mm;height:${paperHeight}mm"></section>`;
   const mode = print.imposition.mode;
   const spread = mode === 'spread';
+  const wideSheet = spread || mode === 'booklet';
   let pagesHtml;
   if (mode === 'booklet') {
     const sides = buildBookletSides(sheets);
@@ -123,7 +124,7 @@ export function buildPrintDocument(project, pages = []) {
 <style>${style}</style>
 <style>
 @page {
-  size: ${spread ? paperWidth * 2 : paperWidth}mm ${paperHeight}mm;
+  size: ${wideSheet ? paperWidth * 2 : paperWidth}mm ${paperHeight}mm;
   margin: 0;
 }
 html, body { margin: 0; padding: 0; }
