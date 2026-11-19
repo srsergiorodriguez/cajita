@@ -1,10 +1,9 @@
 <script>
   import Field from '../ui/Field.svelte';
   import SegmentedControl from '../ui/SegmentedControl.svelte';
-  import Select from '../ui/Select.svelte';
   import ColorField from './ColorField.svelte';
+  import RadiusField from './RadiusField.svelte';
   import { session } from '../../lib/state/project.svelte.js';
-  import { radiusTokenValue } from '../../lib/domain/design.js';
   import { t } from '../../lib/i18n/index.svelte.js';
 
   let { value = {}, onchange = null } = $props();
@@ -45,25 +44,10 @@
   oninput={(event) => patch({ strokeWidth: Number(event.currentTarget.value) })}
 />
 {#if value.shape !== 'circle'}
-  <Select
-    label={t('shape.radiusToken')}
-    value={value.radiusToken ?? ''}
-    options={[
-      { value: '', label: t('design.colorCustom') },
-      ...(session.project?.radiusTokens ?? []).map((item) => ({ value: item.id, label: item.name }))
-    ]}
-    onchange={(token) => {
-      if (!token) patch({ radiusToken: null });
-      else patch({ radiusToken: token, radius: radiusTokenValue(session.project, token, value.radius ?? 0) });
-    }}
-  />
-  <Field
-    label={t('shape.radius')}
-    type="number"
+  <RadiusField
     value={value.radius ?? 0}
-    min="0"
-    max="50"
-    suffix="%"
-    oninput={(event) => patch({ radius: Number(event.currentTarget.value), radiusToken: null })}
+    token={value.radiusToken}
+    project={session.project}
+    onchange={({ value: radius, token }) => patch({ radius, radiusToken: token })}
   />
 {/if}
