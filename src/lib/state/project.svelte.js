@@ -800,8 +800,10 @@ export function updatePalette(index, color, { coalesceKey = null } = {}) {
   );
 }
 
-export function updateTextStyle(styleId, patch = {}) {
-  return runCommand('editar estilo de texto', (draft) => {
+export function updateTextStyle(styleId, patch = {}, { coalesceKey = null } = {}) {
+  return runCommand(
+    'editar estilo de texto',
+    (draft) => {
     draft.textStyles = draft.textStyles ?? {};
     draft.textStyles[styleId] = { ...draft.textStyles[styleId], ...patch };
     const values = textStyleValues(draft, styleId);
@@ -813,7 +815,9 @@ export function updateTextStyle(styleId, patch = {}) {
       }
     };
     for (const page of draft.pages ?? []) for (const element of page.elements ?? []) apply(element);
-  });
+    },
+    { coalesceKey: coalesceKey ?? `textStyle:${styleId}:${Object.keys(patch).join(',')}` }
+  );
 }
 
 export function updateRadiusToken(tokenId, value) {
