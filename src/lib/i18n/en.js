@@ -781,6 +781,7 @@ export const en = {
   'text.size': 'size',
   'text.lineHeight': 'line height',
   'text.letterSpacing': 'letter spacing',
+  'text.justify': 'justify',
   'text.align': 'alignment',
   'text.left': 'left',
   'text.center': 'center',

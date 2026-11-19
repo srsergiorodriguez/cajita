@@ -368,8 +368,8 @@ function checkElement(element, pageIndex, elementIndex, project, errors, heading
       if (!isFiniteNumber(element[key]))
         push(errors, `${path}.${key}`, 'must be a number');
     }
-    if (!['left', 'center', 'right'].includes(element.align)) {
-      push(errors, `${path}.align`, 'must be left, center, or right');
+    if (!['left', 'center', 'right', 'justify'].includes(element.align)) {
+      push(errors, `${path}.align`, 'must be left, center, right, or justify');
     }
     if (typeof element.color !== 'string') {
       push(errors, `${path}.color`, 'must be a color string');

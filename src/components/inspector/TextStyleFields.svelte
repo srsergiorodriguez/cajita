@@ -32,20 +32,13 @@
     options={fontOptions}
     onchange={(font) => patch({ font })}
   />
-  <div class="text-row" class:three={showAlign}>
+  <div class="text-row" class:with-align={showAlign}>
     <Field
       label={t('text.size')}
       type="number"
       value={value.fontSize}
       suffix={sizeSuffix}
       oninput={(event) => patch({ fontSize: Number(event.currentTarget.value) })}
-    />
-    <ColorField
-      label={t('text.color')}
-      value={value.color}
-      token={value.colorToken}
-      project={session.project}
-      onchange={({ value: color, token, index }) => patch({ color, colorToken: token, colorIndex: index })}
     />
     {#if showAlign}
       <div class="align-control">
@@ -56,13 +49,21 @@
           options={[
             { value: 'left', label: t('text.left'), icon: 'align-left' },
             { value: 'center', label: t('text.center'), icon: 'align-center' },
-            { value: 'right', label: t('text.right'), icon: 'align-right' }
+            { value: 'right', label: t('text.right'), icon: 'align-right' },
+            { value: 'justify', label: t('text.justify'), icon: 'align-justify' }
           ]}
           onchange={(align) => patch({ align })}
         />
       </div>
     {/if}
   </div>
+  <ColorField
+    label={t('text.color')}
+    value={value.color}
+    token={value.colorToken}
+    project={session.project}
+    onchange={({ value: color, token, index }) => patch({ color, colorToken: token, colorIndex: index })}
+  />
   {#if showHeading}
     <label class="check">
       <input
@@ -77,8 +78,8 @@
 
 <style>
   .text-fields { display: flex; flex-direction: column; gap: var(--space-2); }
-  .text-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); align-items: end; }
-  .text-row.three { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
+  .text-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); align-items: end; }
+  .text-row.with-align { grid-template-columns: minmax(0, 1fr) auto; }
   .align-control { display: flex; flex-direction: column; gap: var(--space-1); }
   .param-label { color: var(--muted); font-size: var(--text-2xs); }
 </style>

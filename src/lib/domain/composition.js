@@ -63,7 +63,7 @@ export function createCompositionChild(type = 'text', options = {}) {
     lineHeight: Number(options.lineHeight) || 1.05,
     letterSpacing: Number(options.letterSpacing) || 0,
     padding: Math.max(0, Number(options.padding) || 0),
-    align: ['left', 'center', 'right'].includes(options.align) ? options.align : 'center',
+    align: ['left', 'center', 'right', 'justify'].includes(options.align) ? options.align : 'center',
     color: options.color ?? '#1c1917',
     background: options.background ?? null,
     heading: Boolean(options.heading)

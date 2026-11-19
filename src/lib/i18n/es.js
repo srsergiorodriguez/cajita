@@ -785,6 +785,7 @@ export const es = {
   'text.size': 'tamaño',
   'text.lineHeight': 'interlínea',
   'text.letterSpacing': 'espaciado',
+  'text.justify': 'justificado',
   'text.align': 'alineación',
   'text.left': 'izquierda',
   'text.center': 'centro',
