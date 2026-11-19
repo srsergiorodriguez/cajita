@@ -1,5 +1,6 @@
 <script>
   import CanvasAsset from './CanvasAsset.svelte';
+  import LiveDrawing from './LiveDrawing.svelte';
   import CanvasVideo from './CanvasVideo.svelte';
   import CanvasAudio from './CanvasAudio.svelte';
   import CanvasEmbed from './CanvasEmbed.svelte';
@@ -481,6 +482,14 @@
             >
               {#if element.type === 'text'}
                 <div class="text-content">{element.text}</div>
+              {:else if element.type === 'drawing' && element.drawingId && session.project.drawings?.[element.drawingId]}
+                <LiveDrawing
+                  project={session.project}
+                  drawingId={element.drawingId}
+                  fit={element.fit}
+                  alt={element.alt}
+                  pixelated={element.pixelated}
+                />
               {:else if element.type === 'image' || element.type === 'drawing'}
                 <CanvasAsset
                   projectId={session.project.id}

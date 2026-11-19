@@ -224,7 +224,7 @@ describe('site export', () => {
     project.siteBackground = '#102030';
     const site = buildSite(project);
     expect(site.css).toContain('background:#102030');
-    expect(site.css).toContain('background:#fffdf7');
+    expect(site.css).toContain('background:#ffffff');
   });
 
   it('uses the site background around a fitted preview stage', () => {

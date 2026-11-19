@@ -5,6 +5,7 @@
   import SegmentedControl from '../ui/SegmentedControl.svelte';
   import Select from '../ui/Select.svelte';
   import LayersList from './LayersList.svelte';
+  import ColorField from './ColorField.svelte';
   import PageTemplatesDialog from './PageTemplatesDialog.svelte';
   import { t } from '../../lib/i18n/index.svelte.js';
   import { isValidSlug } from '../../lib/domain/slugs.js';
@@ -104,11 +105,11 @@
     apply(() => updatePage(page.id, { transition: value }));
   }
 
-  function setBackground(value) {
+  function setBackground({ value, token, index }) {
     apply(() =>
       updatePage(
         page.id,
-        { background: { color: value } },
+        { background: { ...(page.background ?? {}), color: value, token, index } },
         {
           coalesceKey: `bg:${page.id}`
         }
@@ -224,11 +225,12 @@
       />
     </div>
     <p class="hint">{t('inspector.transitionHint')}</p>
-    <Field
+    <ColorField
       label={t('inspector.background')}
-      type="color"
-      value={page.background?.color ?? '#fffdf7'}
-      oninput={(event) => setBackground(event.currentTarget.value)}
+      value={page.background?.color ?? '#ffffff'}
+      token={page.background?.token}
+      project={session.project}
+      onchange={setBackground}
     />
   </Section>
 

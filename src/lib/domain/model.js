@@ -108,7 +108,7 @@ export function createStage(presetId = 'wide', overrides = {}) {
     align: 'center',
     minWidth: 360,
     maxWidth: width,
-    background: { color: '#fffdf7' },
+    background: { color: '#ffffff' },
     ...overrides
   };
 }
@@ -126,6 +126,7 @@ export function createPage({
     title: title.trim() || 'Inicio',
     slug: slug ?? makeSlug(title || 'Inicio', existingSlugs),
     layout,
+    background: { color: '#ffffff' },
     grid:
       layout === 'grid'
         ? {

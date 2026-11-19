@@ -1,6 +1,7 @@
 <script>
   import ShapeArt from './ShapeArt.svelte';
   import CanvasAsset from './CanvasAsset.svelte';
+  import LiveDrawing from './LiveDrawing.svelte';
   import { fontStack } from '../../lib/domain/elements.js';
   import { compositionChildStyle, frameById } from '../../lib/domain/composition.js';
 
@@ -67,6 +68,14 @@
           strokeWidth={child.strokeWidth}
           radius={child.radius}
           aspect={(Number(aspect) || 1) * (child.frame.w / child.frame.h)}
+        />
+      {:else if child.type === 'drawing' && child.drawingId && project.drawings?.[child.drawingId]}
+        <LiveDrawing
+          {project}
+          drawingId={child.drawingId}
+          fit={child.fit}
+          alt={child.alt || ''}
+          pixelated={child.pixelated}
         />
       {:else if child.type === 'image' || child.type === 'drawing'}
         <CanvasAsset
