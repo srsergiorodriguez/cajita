@@ -2,7 +2,7 @@
 
 Status: **in progress on `feature/print-publication`** (2026-11-19).
 
-Implemented: optional `project.print`, real-unit paper/margin geometry, print-derived stage ratio, crossmedia project creation, and a browser print preview with one fixed page per cajita page. Margins stay in the print profile rather than the editor canvas. Paged.js, folios/running heads, and print-safe media profiles are not implemented yet.
+Implemented: optional `project.print`, real-unit paper/margin geometry, print-derived stage ratio, crossmedia project creation, and a browser print preview with one fixed page per cajita page. Margins stay in the print profile rather than the editor canvas. Media, audio, HTML, and embeds render as placeholders in print; compositions render their first frame. Paged.js, folios/running heads, and full ficha print profiles are not implemented yet.
 
 cajita's normal output is a responsive website. This document describes a
 separate print export for fixed-page zines using Paged.js, while keeping the

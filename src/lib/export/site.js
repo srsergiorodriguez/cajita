@@ -295,7 +295,19 @@ function linkFor(project, page, element, options) {
   return null;
 }
 
+function printPlaceholder(element, project) {
+  const label =
+    element.title ||
+    element.caption ||
+    element.label ||
+    element.type;
+  return `<div class="print-placeholder"><span>${escapeHtml(label)}</span></div>`;
+}
+
 function contentFor(element, project, stage, options, page) {
+  if (options.print && ['video', 'audio', 'html', 'embed'].includes(element.type)) {
+    return printPlaceholder(element, project);
+  }
   if (element.type === 'image' || element.type === 'drawing') {
     const asset = project.assets?.[element.assetId];
     if (!asset) return '';

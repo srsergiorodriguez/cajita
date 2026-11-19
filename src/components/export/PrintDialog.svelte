@@ -18,7 +18,7 @@
     building = true;
     error = '';
     html = '';
-    buildPreview(session.project)
+    buildPreview(session.project, { print: true })
       .then((preview) => {
         if (cancelled) return;
         html = buildPrintDocument(session.project, preview.pages);

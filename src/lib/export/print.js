@@ -61,6 +61,18 @@ body { display: block; min-height: 0; }
   margin: 0 !important;
   box-shadow: none !important;
 }
+.print-page .composition-frame { display: none !important; }
+.print-page .composition-frame:first-child { display: block !important; }
+.print-page .print-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border: 1px dashed currentColor;
+  color: inherit;
+  font-size: 1.5cqw;
+  opacity: .55;
+}
 </style>
 </head>
 <body class="print-doc">

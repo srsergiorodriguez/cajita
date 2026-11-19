@@ -21,7 +21,7 @@ document.addEventListener('click', (event) => {
  * handled by PREVIEW_SCRIPT; the parent swaps the iframe document. Assets and
  * custom fonts use the same URL caches as the editor.
  */
-export async function buildPreview(project) {
+export async function buildPreview(project, { print = false } = {}) {
   const usedAssets = new Map();
   const htmlContent = new Map();
   const allAssetIds = new Set();
@@ -71,6 +71,7 @@ export async function buildPreview(project) {
     assetHref: (_project, _page, asset) => usedAssets.get(asset.id) ?? '',
     htmlContent,
     preview: true,
+    print,
     inlineCss: true,
     inlineScript: `${PREVIEW_SCRIPT}\n${AUDIO_PLAYER_SCRIPT}\n${FICHA_FILTER_SCRIPT}\n${COMPOSITION_SCRIPT}${project.fichaSettings?.movable ? `\n${FICHA_MOVE_SCRIPT}` : ''}`,
     fontFaces: faces
