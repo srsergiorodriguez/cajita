@@ -684,6 +684,7 @@ export const en = {
   'print.section': 'print',
   'print.open': 'open print preview',
   'print.building': 'preparing publication…',
+  'print.bookletHint': 'Booklet: print double-sided and fold in the middle. Pages on each sheet are not consecutive; that is how imposition works.',
   'print.hint': 'One cajita page per printed page. Use Save as PDF in the print dialog.',
   'print.print': 'print / save PDF',
   'print.paperHint': 'paper {paper} · {width} × {height} mm',

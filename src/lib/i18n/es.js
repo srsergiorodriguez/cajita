@@ -688,6 +688,7 @@ export const es = {
   'print.section': 'impresión',
   'print.open': 'abrir vista de impresión',
   'print.building': 'preparando la publicación…',
+  'print.bookletHint': 'Cuadernillo: imprime a doble cara y dobla por el centro. Las páginas de cada hoja no van en orden consecutivo; así funciona la imposición.',
   'print.hint': 'Se imprimirá una página de cajita por página. Usa Guardar como PDF en el diálogo de impresión.',
   'print.print': 'imprimir / guardar PDF',
   'print.paperHint': 'papel {paper} · {width} × {height} mm',

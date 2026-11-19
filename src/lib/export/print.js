@@ -97,7 +97,7 @@ export function buildPrintDocument(project, pages = []) {
     pagesHtml = sides
       .map(
         (group, index) =>
-          `<section class="print-spread print-booklet-side" data-sheet="${Math.floor(index / 2) + 1}" data-side="${index % 2 === 0 ? 'front' : 'back'}">${group.map((sheet) => (sheet ? sheetHtml(sheet, sheet.index + 1) : blankSheet)).join('')}</section>`
+          `<section class="print-spread print-booklet-side" data-sheet="${Math.floor(index / 2) + 1}" data-side="${index % 2 === 0 ? 'front' : 'back'}" data-label="${project.locale === 'en' ? 'Sheet' : 'Hoja'} ${Math.floor(index / 2) + 1} · ${index % 2 === 0 ? (project.locale === 'en' ? 'front' : 'frente') : (project.locale === 'en' ? 'back' : 'dorso')}">${group.map((sheet) => (sheet ? sheetHtml(sheet, sheet.index + 1) : blankSheet)).join('')}</section>`
       )
       .join('\n');
   } else if (spread) {
@@ -160,6 +160,19 @@ body { display: block; min-height: 0; }
 .print-spread .print-sheet { margin: 0; }
 .print-spread:first-child { justify-content: flex-end; }
 .print-doc--booklet .print-spread:first-child { justify-content: flex-start; }
+.print-booklet-side { position: relative; }
+@media screen {
+  .print-booklet-side::before {
+    content: attr(data-label);
+    position: absolute;
+    top: -18px;
+    left: 0;
+    color: #c9c5bd;
+    font: 10px/1 'Space Mono', monospace;
+    white-space: nowrap;
+  }
+}
+@media print { .print-booklet-side::before { display: none; } }
 .print-sheet--blank { background: #fff; }
 .print-page {
   width: ${content.width}mm;

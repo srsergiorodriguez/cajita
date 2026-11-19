@@ -53,6 +53,9 @@
     <p class="status">{t('print.building')}</p>
   {:else if html}
     <p class="hint">{t('print.hint')}</p>
+    {#if session.project?.print?.imposition?.mode === 'booklet'}
+      <p class="hint">{t('print.bookletHint')}</p>
+    {/if}
     <iframe
       bind:this={iframe}
       class="print-preview"
