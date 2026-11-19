@@ -1176,11 +1176,30 @@ export function setSiteBackground(color, { coalesceKey = null, token = null } = 
   );
 }
 
+export function updateStageLimits(minWidth, maxWidth) {
+  return runCommand('cambiar límites de página', (draft) => {
+    const min = Math.round(Number(minWidth));
+    const max = Math.round(Number(maxWidth));
+    if (!Number.isFinite(min) || !Number.isFinite(max) || min <= 0 || max <= 0) {
+      throw new Error('Los límites de ancho deben ser números positivos.');
+    }
+    if (min > max) throw new Error('El ancho mínimo no puede superar el máximo.');
+    draft.stage.minWidth = min;
+    draft.stage.maxWidth = max;
+  });
+}
+
 export function updateStageSize(width, height, { coalesceKey = null } = {}) {
   return runCommand(
     'cambiar tamaño de página',
     (draft) => {
+      const previousWidth = draft.stage.width;
+      const followsWidth = draft.stage.maxWidth === previousWidth;
       resizeStage(draft, width, height);
+      if (followsWidth) {
+        draft.stage.maxWidth = draft.stage.width;
+        draft.stage.minWidth = Math.min(draft.stage.minWidth, draft.stage.maxWidth);
+      }
       for (const [id, grid] of Object.entries(draft.grids ?? {})) {
         draft.grids[id] = { ...reflowGrid(grid, draft.stage), id, name: grid.name };
       }

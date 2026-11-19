@@ -18,6 +18,7 @@
     session,
     assignPageGrid,
     updatePage,
+    updateStageLimits,
     updateStageSize
   } from '../../lib/state/project.svelte.js';
   import { toast } from '../../lib/state/ui.svelte.js';
@@ -29,6 +30,8 @@
   let slugError = $state('');
   let widthDraft = $state(0);
   let heightDraft = $state(0);
+  let minWidthDraft = $state(360);
+  let maxWidthDraft = $state(1280);
   let confirming = $state(false);
   let templatesOpen = $state(false);
 
@@ -41,6 +44,8 @@
     slugError = '';
     widthDraft = session.project?.stage?.width ?? 0;
     heightDraft = session.project?.stage?.height ?? 0;
+    minWidthDraft = session.project?.stage?.minWidth ?? 360;
+    maxWidthDraft = session.project?.stage?.maxWidth ?? session.project?.stage?.width ?? 1200;
     confirming = false;
   });
 
@@ -85,6 +90,14 @@
         coalesceKey: 'stage-size'
       })
     );
+  }
+
+  function setLimit(axis, value) {
+    const next = Number(value);
+    if (!Number.isFinite(next) || next <= 0) return;
+    const min = axis === 'min' ? next : minWidthDraft;
+    const max = axis === 'max' ? next : maxWidthDraft;
+    apply(() => updateStageLimits(min, max));
   }
 
   function setTransition(value) {
@@ -165,8 +178,35 @@
         }}
         onchange={(event) => setDimension('height', event.currentTarget.value)}
       />
+      <Field
+        label={t('inspector.minWidth')}
+        type="number"
+        min={STAGE_MIN}
+        max={STAGE_MAX}
+        step="1"
+        suffix="px"
+        value={minWidthDraft}
+        oninput={(event) => {
+          minWidthDraft = event.currentTarget.value;
+        }}
+        onchange={(event) => setLimit('min', event.currentTarget.value)}
+      />
+      <Field
+        label={t('inspector.maxWidth')}
+        type="number"
+        min={STAGE_MIN}
+        max={STAGE_MAX}
+        step="1"
+        suffix="px"
+        value={maxWidthDraft}
+        oninput={(event) => {
+          maxWidthDraft = event.currentTarget.value;
+        }}
+        onchange={(event) => setLimit('max', event.currentTarget.value)}
+      />
     </div>
     <p class="hint">{t('page.sizeHint')}</p>
+    <p class="hint">{t('page.limitHint')}</p>
   </Section>
 
   <Section label={t('page.appearance')}>

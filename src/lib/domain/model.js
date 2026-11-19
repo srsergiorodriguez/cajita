@@ -98,13 +98,15 @@ export function nowIso(clock = () => new Date()) {
 
 export function createStage(presetId = 'wide', overrides = {}) {
   const preset = STAGE_PRESETS.find((item) => item.id === presetId) ?? STAGE_PRESETS[0];
+  const width = Number(overrides.width) || preset.width;
+  const height = Number(overrides.height) || preset.height;
   return {
-    width: preset.width,
-    height: preset.height,
+    width,
+    height,
     fit: 'width',
     align: 'center',
     minWidth: 360,
-    maxWidth: 1280,
+    maxWidth: width,
     background: { color: '#fffdf7' },
     ...overrides
   };

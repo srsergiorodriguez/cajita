@@ -672,6 +672,7 @@ export const en = {
   'page.size': 'page size',
   'page.width': 'width',
   'page.height': 'height',
+  'page.limitHint': 'Max width is the desktop cap; min width is the mobile floor.',
   'page.sizeHint': 'Applies to every page and scales the elements.',
   'page.appearance': 'appearance',
   'page.add': 'add page',

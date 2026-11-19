@@ -184,6 +184,12 @@
     applyFit();
   });
 
+  $effect(() => {
+    if (stage.maxWidth && editor.viewportWidth > stage.maxWidth) {
+      editor.viewportWidth = stage.maxWidth;
+    }
+  });
+
   function changeViewport(width) {
     setViewportWidth(width);
     fitMode = 'width';

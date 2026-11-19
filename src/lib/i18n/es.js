@@ -676,6 +676,7 @@ export const es = {
   'page.size': 'tamaño de página',
   'page.width': 'ancho',
   'page.height': 'alto',
+  'page.limitHint': 'El ancho máximo es el límite de escritorio; el mínimo es el límite móvil.',
   'page.sizeHint': 'Cambia el marco de todas las páginas; los elementos conservan su posición y tamaño.',
   'page.appearance': 'apariencia',
   'page.add': 'añadir página',
