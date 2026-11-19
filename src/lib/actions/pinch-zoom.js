@@ -2,6 +2,10 @@
  * Shared trackpad/touch pinch handling for editor viewports.
  * Calls onzoom with an incremental scale factor; the owning editor clamps it.
  */
+const PINCH_SENSITIVITY = 0.0025;
+const PINCH_MIN = 0.8;
+const PINCH_MAX = 1.25;
+
 const activeNodes = new Set();
 let globalBound = false;
 
@@ -25,6 +29,10 @@ function releaseGlobalWheel() {
   if (!globalBound || activeNodes.size) return;
   window.removeEventListener('wheel', onGlobalWheel, { capture: true });
   globalBound = false;
+}
+
+export function wheelPinchFactor(deltaY) {
+  return Math.min(PINCH_MAX, Math.max(PINCH_MIN, Math.exp(-deltaY * PINCH_SENSITIVITY)));
 }
 
 export function pinchZoom(node, params = {}) {
@@ -67,7 +75,7 @@ export function pinchZoom(node, params = {}) {
   function onWheel(event) {
     if (options.enabled === false || !(event.ctrlKey || event.metaKey)) return;
     event.preventDefault();
-    const factor = Math.min(2, Math.max(0.5, Math.exp(-event.deltaY * 0.01)));
+    const factor = wheelPinchFactor(event.deltaY);
     if (Number.isFinite(factor) && factor !== 1) options.onzoom?.(factor);
   }
 

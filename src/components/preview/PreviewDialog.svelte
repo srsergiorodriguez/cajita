@@ -7,7 +7,7 @@
   import { session } from '../../lib/state/project.svelte.js';
   import { editor, setViewportWidth } from '../../lib/state/editor.svelte.js';
   import { buildPreview } from '../../lib/export/preview.js';
-  import { pinchZoom } from '../../lib/actions/pinch-zoom.js';
+  import { pinchZoom, wheelPinchFactor } from '../../lib/actions/pinch-zoom.js';
 
   let { open = $bindable(false) } = $props();
 
@@ -155,7 +155,7 @@
     const onWheel = (event) => {
       if (!(event.ctrlKey || event.metaKey)) return;
       event.preventDefault();
-      const factor = Math.min(2, Math.max(0.5, Math.exp(-event.deltaY * 0.01)));
+      const factor = wheelPinchFactor(event.deltaY);
       if (Number.isFinite(factor) && factor !== 1) setPreviewZoom(previewZoom * factor);
     };
     win.addEventListener('wheel', onWheel, { passive: false });
