@@ -1345,9 +1345,10 @@ export async function createAndOpenProject({
   locale = 'es',
   stagePreset = 'wide',
   stageWidth,
-  stageHeight
+  stageHeight,
+  print
 } = {}) {
-  const project = createProject({ title, locale, stagePreset, stageWidth, stageHeight });
+  const project = createProject({ title, locale, stagePreset, stageWidth, stageHeight, print });
   await platform.projects.save(project, { revision: 1, backup: true });
   await refreshLibrary();
   await openProject(project.id);

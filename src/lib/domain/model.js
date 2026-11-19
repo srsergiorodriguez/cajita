@@ -1,5 +1,6 @@
 import { makeSlug } from './slugs.js';
 import { ensureDesign } from './design.js';
+import { createPrintStage, normalisePrint } from './print.js';
 import { DEFAULT_FICHA_STYLE } from './ficha-style.js';
 
 export const PROJECT_FORMAT = 'cajita';
@@ -149,6 +150,7 @@ export function createProject({
   stagePreset = 'wide',
   stageWidth,
   stageHeight,
+  print,
   idFactory,
   clock
 } = {}) {
@@ -169,14 +171,17 @@ export function createProject({
     createdAt,
     updatedAt: createdAt,
     startPageId: page.id,
-    stage: createStage(
-      stagePreset,
-      Number.isFinite(stageWidth) && Number.isFinite(stageHeight)
-        ? { width: stageWidth, height: stageHeight }
-        : undefined
-    ),
+    stage: print
+      ? createPrintStage(normalisePrint(print))
+      : createStage(
+          stagePreset,
+          Number.isFinite(stageWidth) && Number.isFinite(stageHeight)
+            ? { width: stageWidth, height: stageHeight }
+            : undefined
+        ),
     siteBackground: '#fffdf7',
     siteBackgroundToken: 'background',
+    ...(print ? { print: normalisePrint(print) } : {}),
     palette: [...DEFAULT_PALETTE],
     colorTokens: undefined,
     radiusTokens: undefined,

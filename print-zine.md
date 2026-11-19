@@ -1,6 +1,8 @@
 # Print zine export — design notes
 
-Status: **planned, experimental, not implemented** (2026-11-17).
+Status: **in progress on `feature/print-publication`** (2026-11-19).
+
+Implemented: optional `project.print`, real-unit paper/margin geometry, print-derived stage ratio, crossmedia project creation, and the editor paper/margin overlay. Print export and Paged.js are not implemented yet.
 
 cajita's normal output is a responsive website. This document describes a
 separate print export for fixed-page zines using Paged.js, while keeping the

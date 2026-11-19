@@ -40,6 +40,7 @@
   } from '../../lib/domain/geometry.js';
   import { elementName, fontStack, mediaFrame } from '../../lib/domain/elements.js';
   import { snapFrameMove, snapFrameResize } from '../../lib/domain/grid.js';
+  import { printContentSize } from '../../lib/domain/print.js';
   import GridOverlay from './GridOverlay.svelte';
   import SelectionFrame from './SelectionFrame.svelte';
   import TextEditor from './TextEditor.svelte';
@@ -93,12 +94,39 @@
   const stageHeight = $derived(viewportWidth / aspect);
   const displayWidth = $derived(viewportWidth * zoom);
   const displayHeight = $derived(stageHeight * zoom);
-  const padWidth = $derived(Math.max(wrapW, displayWidth + 48));
-  const padHeight = $derived(Math.max(wrapH, displayHeight + 48));
+  const sheetWidth = $derived(displayWidth + (printMargins?.left ?? 0) + (printMargins?.right ?? 0));
+  const sheetHeight = $derived(displayHeight + (printMargins?.top ?? 0) + (printMargins?.bottom ?? 0));
+  const padWidth = $derived(Math.max(wrapW, sheetWidth + 48));
+  const padHeight = $derived(Math.max(wrapH, sheetHeight + 48));
   const viewportOptions = $derived(
     [...new Set([390, 768, 1024, stage.width, stage.maxWidth].filter((width) => Number.isFinite(width) && width > 0))]
       .sort((a, b) => a - b)
   );
+  const pageIndex = $derived(
+    Math.max(0, session.project?.pages.findIndex((item) => item.id === page?.id) ?? 0)
+  );
+  const print = $derived(session.project?.print ?? null);
+  const printMargins = $derived.by(() => {
+    if (!print) return null;
+    try {
+      const content = printContentSize(print);
+      const scale = viewportWidth / content.width;
+      const inner = print.margins.inner * scale;
+      const outer = print.margins.outer * scale;
+      const left = pageIndex % 2 === 0 ? inner : outer;
+      const right = pageIndex % 2 === 0 ? outer : inner;
+      return {
+        left,
+        right,
+        top: print.margins.top * scale,
+        bottom: print.margins.bottom * scale,
+        baseWidth: viewportWidth + left + right,
+        baseHeight: stageHeight + print.margins.top * scale + print.margins.bottom * scale
+      };
+    } catch {
+      return null;
+    }
+  });
   let lastProjectId = '';
 
 
@@ -159,11 +187,11 @@
 
   function applyFit() {
     if (!wrapW || !wrapH || !viewportWidth) return;
-    if (fitMode === 'width') zoom = clampZoom((wrapW - 48) / viewportWidth);
+    const baseWidth = printMargins?.baseWidth ?? viewportWidth;
+    const baseHeight = printMargins?.baseHeight ?? stageHeight;
+    if (fitMode === 'width') zoom = clampZoom((wrapW - 48) / baseWidth);
     else if (fitMode === 'page') {
-      zoom = clampZoom(
-        Math.min((wrapW - 48) / viewportWidth, (wrapH - 48) / stageHeight)
-      );
+      zoom = clampZoom(Math.min((wrapW - 48) / baseWidth, (wrapH - 48) / baseHeight));
     }
   }
 
@@ -180,6 +208,7 @@
     wrapH;
     viewportWidth;
     stageHeight;
+    printMargins;
     fitMode;
     applyFit();
   });
@@ -428,6 +457,16 @@
 <section class="desk" aria-label={t('canvas.title')}>
   <div class="stage-wrap" bind:this={wrapEl}>
     <div class="stage-pad" style:width={`${padWidth}px`} style:height={`${padHeight}px`}>
+      <div
+        class="print-sheet"
+        class:has-print={Boolean(printMargins)}
+        style:width={`${sheetWidth}px`}
+        style:height={`${sheetHeight}px`}
+        style:padding-top={`${printMargins?.top ?? 0}px`}
+        style:padding-right={`${printMargins?.right ?? 0}px`}
+        style:padding-bottom={`${printMargins?.bottom ?? 0}px`}
+        style:padding-left={`${printMargins?.left ?? 0}px`}
+      >
       <div class="stage-scale" style:width={`${displayWidth}px`} style:height={`${displayHeight}px`}>
       <div
         class="stage"
@@ -586,6 +625,7 @@
         {/if}
       </div>
       </div>
+      </div>
     </div>
   </div>
 
@@ -607,12 +647,7 @@
       actualSizeActive={fitMode === 'manual' && Math.abs(zoom - 1) < 0.005}
     />
     <span class="page-index">
-      {String(
-        Math.max(
-          0,
-          session.project?.pages.findIndex((item) => item.id === page?.id) ?? 0
-        ) + 1
-      ).padStart(2, '0')}
+      {String(pageIndex + 1).padStart(2, '0')}
       / {String(session.project?.pages.length ?? 0).padStart(2, '0')}
     </span>
   </div>
@@ -646,6 +681,16 @@
 
   .stage.placing {
     cursor: crosshair;
+  }
+
+  .print-sheet {
+    box-sizing: border-box;
+    flex: 0 0 auto;
+  }
+
+  .print-sheet.has-print {
+    background: #f6f0e4;
+    box-shadow: var(--shadow-stage);
   }
 
   .stage-scale {

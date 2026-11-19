@@ -7,6 +7,7 @@
   import { t } from '../../lib/i18n/index.svelte.js';
   import { STAGE_PRESETS } from '../../lib/domain/model.js';
   import { STAGE_MAX, STAGE_MIN } from '../../lib/domain/stage.js';
+  import { PAPER_PRESETS, DEFAULT_PRINT_MARGINS, printContentSize } from '../../lib/domain/print.js';
   import { createAndOpenProject } from '../../lib/state/project.svelte.js';
   import { toast } from '../../lib/state/ui.svelte.js';
 
@@ -18,6 +19,29 @@
   let stageWidth = $state(1200);
   let stageHeight = $state(800);
   let busy = $state(false);
+  let format = $state('web');
+  let paperPreset = $state('a5');
+  let orientation = $state('portrait');
+  let margins = $state({ ...DEFAULT_PRINT_MARGINS });
+
+  const printSetup = $derived.by(() => {
+    try {
+      return {
+        paper: { preset: paperPreset },
+        orientation,
+        margins: { ...margins }
+      };
+    } catch {
+      return null;
+    }
+  });
+  const printRatio = $derived.by(() => {
+    try {
+      return printContentSize(printSetup);
+    } catch {
+      return null;
+    }
+  });
 
   const stageOptions = [
     ...STAGE_PRESETS.map((preset) => ({
@@ -29,7 +53,11 @@
 
   async function create() {
     if (busy) return;
-    const custom = stagePreset === 'custom';
+    if (format === 'print' && !printRatio) {
+      toast(t('new.printInvalid'), 'error');
+      return;
+    }
+    const custom = stagePreset === 'custom' && format !== 'print';
     const width = Number(stageWidth);
     const height = Number(stageHeight);
     if (
@@ -51,7 +79,8 @@
         locale,
         stagePreset: custom ? 'wide' : stagePreset,
         stageWidth: custom ? width : undefined,
-        stageHeight: custom ? height : undefined
+        stageHeight: custom ? height : undefined,
+        print: format === 'print' ? printSetup : undefined
       });
       open = false;
       title = '';
@@ -85,8 +114,48 @@
     </div>
   </div>
 
-  <Select label={t('new.stage')} bind:value={stagePreset} options={stageOptions} />
-  {#if stagePreset === 'custom'}
+  <div class="cell">
+    <span class="mono-label">{t('new.format')}</span>
+    <SegmentedControl
+      label={t('new.format')}
+      bind:value={format}
+      options={[
+        { value: 'web', label: t('new.web') },
+        { value: 'print', label: t('new.print') }
+      ]}
+    />
+  </div>
+  {#if format === 'print'}
+    <Select
+      label={t('new.paper')}
+      bind:value={paperPreset}
+      options={PAPER_PRESETS.map((paper) => ({ value: paper.id, label: `${paper.label} · ${paper.width} × ${paper.height} mm` }))}
+    />
+    <div class="cell">
+      <span class="mono-label">{t('new.orientation')}</span>
+      <SegmentedControl
+        label={t('new.orientation')}
+        bind:value={orientation}
+        options={[
+          { value: 'portrait', label: t('new.portrait') },
+          { value: 'landscape', label: t('new.landscape') }
+        ]}
+      />
+    </div>
+    <div class="field-grid">
+      {#each [['top', 'new.marginTop'], ['bottom', 'new.marginBottom'], ['inner', 'new.marginInner'], ['outer', 'new.marginOuter']] as [key, label] (key)}
+        <Field label={t(label)} type="number" min="0" suffix="mm" value={margins[key]} oninput={(event) => (margins = { ...margins, [key]: Number(event.currentTarget.value) })} />
+      {/each}
+    </div>
+    {#if printRatio}
+      <p class="hint">{t('new.printRatio', { width: Math.round(printRatio.width), height: Math.round(printRatio.height) })}</p>
+    {:else}
+      <p class="error">{t('new.printInvalid')}</p>
+    {/if}
+  {:else}
+    <Select label={t('new.stage')} bind:value={stagePreset} options={stageOptions} />
+  {/if}
+  {#if stagePreset === 'custom' && format !== 'print'}
     <div class="field-grid">
       <Field
         label={t('new.stageWidth')}
