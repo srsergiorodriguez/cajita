@@ -85,7 +85,7 @@
       .filter((element) => element.type === 'text' && !element.hidden)
       .map(
         (element) =>
-          `${element.id}:${element.text}:${element.font}:${element.fontSize}:${element.lineHeight}:${element.letterSpacing}:${element.frame.w}:${element.padding}:${element.hidden}`
+          `${element.id}:${element.text}:${element.font}:${element.fontSize}:${element.lineHeight}:${element.letterSpacing}:${element.frame.w}:${element.padding}:${element.hidden}:${editor.viewportWidth || stage.width}`
       )
       .join('|')
   );
@@ -126,9 +126,7 @@
     if (!stageEl || !session.project) return;
     queueMicrotask(() => {
       if (!stageEl) return;
-      const stageRect = stageEl.getBoundingClientRect();
-      if (!stageRect.height) return;
-      const scale = stage.height / stageRect.height;
+      const scale = stage.width / (editor.viewportWidth || stage.width);
       for (const element of elements) {
         if (element.type !== 'text' || element.hidden) continue;
         const node = stageEl.querySelector(
