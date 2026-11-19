@@ -795,15 +795,17 @@
     position: absolute;
     color: var(--muted);
     font-family: var(--font-mono);
-    font-size: 9px;
+    font-size: 8.5pt;
     line-height: 1;
     white-space: nowrap;
     pointer-events: none;
     opacity: 0.85;
+    font-variant-numeric: tabular-nums;
   }
 
   .print-guide-paratext.head {
     font-family: var(--font-ui);
+    font-size: 8pt;
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }

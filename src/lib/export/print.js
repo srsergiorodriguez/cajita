@@ -190,11 +190,16 @@ body { display: block; min-height: 0; }
   position: absolute;
   z-index: 2;
   font-family: 'Space Mono', monospace;
-  font-size: 8pt;
+  font-size: 8.5pt;
   line-height: 1;
   color: #1c1917;
+  font-variant-numeric: tabular-nums;
 }
-.print-running-head { text-transform: uppercase; letter-spacing: .04em; }
+.print-running-head {
+  font-size: 8pt;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
 .print-toc { width: 100%; height: 100%; padding: 0; font-family: 'Space Mono', monospace; color: inherit; }
 .print-toc h1 { margin: 0 0 10mm; font-family: 'Fraunces', Georgia, serif; font-size: 28pt; font-weight: 400; }
 .print-toc ol { margin: 0; padding: 0; list-style: none; }
