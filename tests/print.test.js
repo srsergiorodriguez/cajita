@@ -69,3 +69,13 @@ describe('print page sequence', () => {
     expect(formatPageNumber(3, 8, '1 / N')).toBe('3 / 8');
   });
 });
+
+describe('print running heads', () => {
+  it('normalises running-head settings', async () => {
+    const { normalisePrint } = await import('../src/lib/domain/print.js');
+    const print = normalisePrint({ runningHead: { enabled: true, content: 'page-title' } });
+    expect(print.runningHead.enabled).toBe(true);
+    expect(print.runningHead.content).toBe('page-title');
+    expect(normalisePrint({}).runningHead.enabled).toBe(false);
+  });
+});

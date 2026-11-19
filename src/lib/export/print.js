@@ -18,22 +18,34 @@ export function buildPrintDocument(project, pages = []) {
   const fragments = pages.map((page) => extractMain(page.html)).filter(Boolean);
   const printPages = buildPrintPages(project);
   const total = printPages.length;
-  const folioFor = (entry, index) => {
-    if (!entry?.visibleNumber) return '';
-    const value = formatPageNumber(entry.number, total, print.numbering.format);
-    const [vertical, horizontal] = print.numbering.position.split('-');
+  const marginPosition = (placement, index) => {
+    const [vertical, horizontal] = placement.split('-');
     const side = index % 2 === 0 ? 'right' : 'left';
+    if (horizontal === 'center') {
+      return `${vertical}:5mm;left:50%;transform:translateX(-50%)`;
+    }
     const horizontalSide =
-      horizontal === 'center' ? '' : horizontal === 'inner'
+      horizontal === 'inner'
         ? side === 'right' ? 'left' : 'right'
         : horizontal === 'outer'
           ? side
           : horizontal;
-    const position =
-      horizontal === 'center'
-        ? `${vertical}:5mm;left:50%;transform:translateX(-50%)`
-        : `${vertical}:5mm;${horizontalSide}:${horizontal === 'center' ? 0 : 8}mm`;
-    return `<span class="print-folio" style="${position}">${value}</span>`;
+    return `${vertical}:5mm;${horizontalSide}:8mm`;
+  };
+  const folioFor = (entry, index) => {
+    if (!entry?.visibleNumber) return '';
+    const value = formatPageNumber(entry.number, total, print.numbering.format);
+    return `<span class="print-folio" style="${marginPosition(print.numbering.position, index)}">${value}</span>`;
+  };
+  const runningHeadFor = (entry, index) => {
+    const head = print.runningHead;
+    if (!head.enabled || head.content === 'none') return '';
+    if (head.hideOnFirst && index === 0) return '';
+    const value =
+      head.content === 'project-title'
+        ? project.title
+        : entry?.page?.title ?? project.title;
+    return `<span class="print-running-head" style="${marginPosition(head.position, index)}">${value}</span>`;
   };
   const pagesHtml = fragments
     .map((fragment, index) => {
@@ -47,7 +59,7 @@ export function buildPrintDocument(project, pages = []) {
       const innerLeft = index % 2 === 0;
       const left = innerLeft ? print.margins.inner : print.margins.outer;
       const right = innerLeft ? print.margins.outer : print.margins.inner;
-      return `<section class="print-sheet" data-page="${index + 1}" data-number="${entry?.number ?? ''}" style="width:${paperWidth}mm;height:${paperHeight}mm;padding:${print.margins.top}mm ${right}mm ${print.margins.bottom}mm ${left}mm"><div class="print-page" style="background:${background}">${fragment}</div>${folioFor(entry, index)}</section>`;
+      return `<section class="print-sheet" data-page="${index + 1}" data-number="${entry?.number ?? ''}" style="width:${paperWidth}mm;height:${paperHeight}mm;padding:${print.margins.top}mm ${right}mm ${print.margins.bottom}mm ${left}mm"><div class="print-page" style="background:${background}">${fragment}</div>${runningHeadFor(entry, index)}${folioFor(entry, index)}</section>`;
     })
     .join('\n');
 
@@ -100,7 +112,8 @@ body { display: block; min-height: 0; }
   margin: 0 !important;
   box-shadow: none !important;
 }
-.print-folio {
+.print-folio,
+.print-running-head {
   position: absolute;
   z-index: 2;
   font-family: 'Space Mono', monospace;
@@ -108,8 +121,10 @@ body { display: block; min-height: 0; }
   line-height: 1;
   color: #1c1917;
 }
+.print-running-head { text-transform: uppercase; letter-spacing: .04em; }
 .print-page .composition-frame { display: none !important; }
-.print-folio {
+.print-folio,
+.print-running-head {
   position: absolute;
   z-index: 2;
   font-family: 'Space Mono', monospace;
@@ -117,6 +132,7 @@ body { display: block; min-height: 0; }
   line-height: 1;
   color: #1c1917;
 }
+.print-running-head { text-transform: uppercase; letter-spacing: .04em; }
 .print-page .composition-frame:first-child { display: block !important; }
 .print-page .print-placeholder {
   display: grid;

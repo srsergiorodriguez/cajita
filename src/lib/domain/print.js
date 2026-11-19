@@ -42,6 +42,14 @@ export function normalisePrint(print = {}) {
         : '1',
       hideOnFirst: print.numbering?.hideOnFirst !== false,
       position: print.numbering?.position ?? 'bottom-outer'
+    },
+    runningHead: {
+      enabled: print.runningHead?.enabled === true,
+      content: ['none', 'project-title', 'page-title'].includes(print.runningHead?.content)
+        ? print.runningHead.content
+        : 'page-title',
+      position: print.runningHead?.position ?? 'top-outer',
+      hideOnFirst: print.runningHead?.hideOnFirst !== false
     }
   };
 }
