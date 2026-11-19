@@ -17,6 +17,7 @@ import {
 } from '../domain/pages.js';
 import { createElement, duplicateElement, mediaFrame } from '../domain/elements.js';
 import { ensureDesign, textStyleValues, colorForToken } from '../domain/design.js';
+import { normalisePrint, printContentSize } from '../domain/print.js';
 import { assetUsage, assetUseCount } from '../domain/media-usage.js';
 import { resizeStage } from '../domain/stage.js';
 import { normaliseGrid, reflowGrid, mergeGridCells, unmergeGridCells } from '../domain/grid.js';
@@ -1174,6 +1175,26 @@ export function setSiteBackground(color, { coalesceKey = null, token = null } = 
     },
     { coalesceKey }
   );
+}
+
+export function updatePrintSettings(next) {
+  return runCommand('ajustes de impresión', (draft) => {
+    const previous = draft.print;
+    const nextPrint = normalisePrint(next);
+    const previousRatio = previous ? printContentSize(previous).ratio : null;
+    const nextRatio = printContentSize(nextPrint).ratio;
+    draft.print = nextPrint;
+    if (previousRatio === null || Math.abs(previousRatio - nextRatio) > 0.0001) {
+      const width = draft.stage.width;
+      const height = Math.max(320, Math.round(width / nextRatio));
+      resizeStage(draft, width, height);
+      draft.stage.maxWidth = width;
+      draft.stage.minWidth = Math.min(draft.stage.minWidth, width);
+      for (const [id, grid] of Object.entries(draft.grids ?? {})) {
+        draft.grids[id] = { ...reflowGrid(grid, draft.stage), id, name: grid.name };
+      }
+    }
+  });
 }
 
 export function updateStageLimits(minWidth, maxWidth) {

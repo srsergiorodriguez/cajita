@@ -6,6 +6,7 @@
   import GridsDialog from '../canvas/GridsDialog.svelte';
   import DesignSystemDialog from '../inspector/DesignSystemDialog.svelte';
   import PrintDialog from '../export/PrintDialog.svelte';
+  import PrintSettingsDialog from '../export/PrintSettingsDialog.svelte';
   import { plural, t } from '../../lib/i18n/index.svelte.js';
   import { formatBytes, projectStats } from '../../lib/domain/model.js';
   import {
@@ -23,6 +24,7 @@
   let gridsOpen = $state(false);
   let designOpen = $state(false);
   let printOpen = $state(false);
+  let printSettingsOpen = $state(false);
   const summary = $derived(session.project ? projectStats(session.project) : null);
 
   function apply(action) {
@@ -87,9 +89,14 @@
           width: session.project.print.paper.width,
           height: session.project.print.paper.height
         })}</p>
-        <Button size="sm" variant="secondary" onclick={() => { printOpen = true; open = false; }}>
-          {t('print.open')}
-        </Button>
+        <div class="print-actions">
+          <Button size="sm" variant="secondary" onclick={() => { printOpen = true; open = false; }}>
+            {t('print.open')}
+          </Button>
+          <Button size="sm" variant="ghost" onclick={() => { printSettingsOpen = true; open = false; }}>
+            {t('print.settingsOpen')}
+          </Button>
+        </div>
       </Section>
     {/if}
 
@@ -165,6 +172,7 @@
 <GridsDialog bind:open={gridsOpen} />
 <DesignSystemDialog bind:open={designOpen} />
 <PrintDialog bind:open={printOpen} />
+<PrintSettingsDialog bind:open={printSettingsOpen} />
 
 <style>
   .project-summary h2 {
@@ -234,6 +242,7 @@
     color: var(--muted);
     font-size: var(--text-2xs);
   }
+  .print-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
   .hint {
     color: var(--muted);
     font-size: var(--text-2xs);
