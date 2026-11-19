@@ -29,7 +29,7 @@ export function buildPrintDocument(project, pages = []) {
   const total = contentPages.length;
   const toc = print.toc;
   const tocFragment = toc.enabled
-    ? `<div class="print-toc"><h1>${escapeHtml(toc.title)}</h1><ol>${contentPages
+    ? `<div class="print-toc" style="color:${escapeHtml(project.palette?.[1] ?? '#1c1917')}"><h1>${escapeHtml(toc.title)}</h1><ol>${contentPages
         .map(
           (entry) =>
             `<li><span>${escapeHtml(entry.page?.title ?? '')}</span><b>${formatPageNumber(entry.number, total, print.numbering.format)}</b></li>`
@@ -76,10 +76,12 @@ export function buildPrintDocument(project, pages = []) {
   const sheetHtml = (sheet, pageNumber) => {
     const page = sheet.entry?.page;
     const background =
-      page?.background?.color ??
-      project.stage?.background?.color ??
-      project.siteBackground ??
-      '#ffffff';
+      sheet.entry.kind === 'toc'
+        ? project.siteBackground ?? project.palette?.[0] ?? '#ffffff'
+        : page?.background?.color ??
+          project.stage?.background?.color ??
+          project.siteBackground ??
+          '#ffffff';
     const innerLeft = sheet.index % 2 === 0;
     const left = innerLeft ? print.margins.inner : print.margins.outer;
     const right = innerLeft ? print.margins.outer : print.margins.inner;
@@ -193,7 +195,7 @@ body { display: block; min-height: 0; }
   color: #1c1917;
 }
 .print-running-head { text-transform: uppercase; letter-spacing: .04em; }
-.print-toc { width: 100%; height: 100%; padding: 0; font-family: 'Space Mono', monospace; color: #1c1917; }
+.print-toc { width: 100%; height: 100%; padding: 0; font-family: 'Space Mono', monospace; color: inherit; }
 .print-toc h1 { margin: 0 0 10mm; font-family: 'Fraunces', Georgia, serif; font-size: 28pt; font-weight: 400; }
 .print-toc ol { margin: 0; padding: 0; list-style: none; }
 .print-toc li { display: flex; justify-content: space-between; gap: 6mm; padding: 2.4mm 0; border-bottom: 1px solid currentColor; font-size: 10pt; }

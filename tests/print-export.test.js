@@ -61,3 +61,18 @@ describe('spread imposition', () => {
     expect(html).toContain('print-sheet--blank');
   });
 });
+
+describe('TOC palette', () => {
+  it('uses the site background and text palette for the generated TOC', () => {
+    const tocProject = {
+      ...project,
+      siteBackground: '#102030',
+      palette: ['#102030', '#f0e8d8', '#ff6600', '#00aa88', '#3366ff']
+    };
+    const html = buildPrintDocument(tocProject, [
+      { html: '<main class="stage">Uno</main>' }
+    ]);
+    expect(html).toContain('background:#102030');
+    expect(html).toContain('color:#f0e8d8');
+  });
+});
