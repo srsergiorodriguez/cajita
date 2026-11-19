@@ -19,6 +19,7 @@ describe('print export', () => {
     ]);
     expect(html).toContain('@page');
     expect(html).toContain('size: 148mm 210mm');
+    expect(html).toContain('margin: 0;');
     expect(html).toContain('width: 122mm');
     expect(html).toContain('height: 186mm');
     expect(html).toContain('class="print-sheet"');

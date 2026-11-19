@@ -40,51 +40,36 @@ export function buildPrintDocument(project, pages = []) {
 <style>
 @page {
   size: ${paperWidth}mm ${paperHeight}mm;
-  margin: ${print.margins.top}mm ${print.margins.outer}mm ${print.margins.bottom}mm ${print.margins.inner}mm;
-}
-@page :left {
-  margin-left: ${print.margins.outer}mm;
-  margin-right: ${print.margins.inner}mm;
-}
-@page :right {
-  margin-left: ${print.margins.inner}mm;
-  margin-right: ${print.margins.outer}mm;
+  margin: 0;
 }
 html, body { margin: 0; padding: 0; }
 body { display: block; min-height: 0; }
-@media screen {
-  body { background: #24282e; }
-  .print-sheet {
-    box-sizing: border-box;
-    margin: 24px auto;
-    background: #fff;
-    box-shadow: 0 0 0 1px #111, 0 18px 42px rgba(0, 0, 0, .35);
-  }
-}
-.print-page {
-  width: ${content.width}mm;
-  height: ${content.height}mm;
+.print-sheet {
+  box-sizing: border-box;
+  width: ${paperWidth}mm;
+  height: ${paperHeight}mm;
   margin: 0 auto;
+  background: #fff;
   overflow: hidden;
   break-inside: avoid;
   break-after: page;
   page-break-after: always;
 }
-.print-page:last-child { break-after: auto; page-break-after: auto; }
-@media print {
+.print-sheet:last-child { break-after: auto; page-break-after: auto; }
+.print-page {
+  width: ${content.width}mm;
+  height: ${content.height}mm;
+  overflow: hidden;
+}
+@media screen {
+  body { background: #24282e; }
   .print-sheet {
-    width: auto !important;
-    height: auto !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
+    margin: 24px auto;
+    box-shadow: 0 0 0 1px #111, 0 18px 42px rgba(0, 0, 0, .35);
   }
-  .print-page {
-    width: 100% !important;
-    height: auto !important;
-    aspect-ratio: ${content.width} / ${content.height};
-  }
+}
+@media print {
+  .print-sheet { margin: 0; box-shadow: none; }
 }
 .print-page .stage {
   width: 100% !important;
