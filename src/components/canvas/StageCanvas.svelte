@@ -41,7 +41,7 @@
   } from '../../lib/domain/geometry.js';
   import { elementName, fontStack, mediaFrame } from '../../lib/domain/elements.js';
   import { snapFrameMove, snapFrameResize } from '../../lib/domain/grid.js';
-  import { printContentSize } from '../../lib/domain/print.js';
+  import { buildPrintPages, formatPageNumber, printContentSize } from '../../lib/domain/print.js';
   import GridOverlay from './GridOverlay.svelte';
   import SelectionFrame from './SelectionFrame.svelte';
   import TextEditor from './TextEditor.svelte';
@@ -104,6 +104,15 @@
   const pageIndex = $derived(
     Math.max(0, session.project?.pages.findIndex((item) => item.id === page?.id) ?? 0)
   );
+  const printPages = $derived(
+    session.project?.print ? buildPrintPages(session.project) : []
+  );
+  const printEntry = $derived(
+    printPages.find((entry) => entry.kind === 'page' && entry.page?.id === page?.id) ?? null
+  );
+  const printEntryIndex = $derived(
+    printEntry ? printPages.indexOf(printEntry) : pageIndex
+  );
   const printFrame = $derived.by(() => {
     if (!editor.showPrintMargins || !session.project?.print) return null;
     try {
@@ -112,8 +121,8 @@
       const scale = viewportWidth / content.width;
       const inner = print.margins.inner * scale;
       const outer = print.margins.outer * scale;
-      const leftBase = pageIndex % 2 === 0 ? inner : outer;
-      const rightBase = pageIndex % 2 === 0 ? outer : inner;
+      const leftBase = printEntryIndex % 2 === 0 ? inner : outer;
+      const rightBase = printEntryIndex % 2 === 0 ? outer : inner;
       return {
         leftBase,
         rightBase,
@@ -138,6 +147,52 @@
         }
       : null
   );
+  const printParatext = $derived.by(() => {
+    if (!printGuide || !printEntry || !session.project?.print) return [];
+    const print = session.project.print;
+    const side = printEntryIndex % 2 === 0 ? 'right' : 'left';
+    const paperLeft = -printGuide.left;
+    const paperRight = displayWidth + printGuide.right;
+    const paperTop = -printGuide.top;
+    const paperBottom = displayHeight + printGuide.bottom;
+    const xFor = (horizontal) => {
+      if (horizontal === 'center') return (paperLeft + paperRight) / 2;
+      if (horizontal === 'outer') {
+        return side === 'right' ? displayWidth + printGuide.right / 2 : -printGuide.left / 2;
+      }
+      return side === 'right' ? -printGuide.left / 2 : displayWidth + printGuide.right / 2;
+    };
+    const yFor = (vertical) =>
+      vertical === 'top' ? paperTop + printGuide.top / 2 : paperBottom - printGuide.bottom / 2;
+    const items = [];
+    if (
+      print.runningHead.enabled &&
+      print.runningHead.content !== 'none' &&
+      !(print.runningHead.hideOnFirst && printEntryIndex === 0)
+    ) {
+      const [vertical, horizontal] = print.runningHead.position.split('-');
+      items.push({
+        kind: 'head',
+        text:
+          print.runningHead.content === 'project-title'
+            ? session.project.title
+            : printEntry.page?.title ?? session.project.title,
+        x: xFor(horizontal),
+        y: yFor(vertical)
+      });
+    }
+    if (printEntry.visibleNumber) {
+      const [vertical, horizontal] = print.numbering.position.split('-');
+      const total = printPages.filter((entry) => entry.kind === 'page').length;
+      items.push({
+        kind: 'folio',
+        text: formatPageNumber(printEntry.number, total, print.numbering.format),
+        x: xFor(horizontal),
+        y: yFor(vertical)
+      });
+    }
+    return items;
+  });
   let lastProjectId = '';
 
 
@@ -641,6 +696,14 @@
           style:height={`${printGuide.height}px`}
         ></div>
         <div class="print-guide-content"></div>
+        {#each printParatext as item, index (item.kind)}
+          <span
+            class="print-guide-paratext"
+            class:head={item.kind === 'head'}
+            style:left={`${item.x}px`}
+            style:top={`${item.y}px`}
+          >{item.text}</span>
+        {/each}
       {/if}
       </div>
     </div>
@@ -718,6 +781,24 @@
   .print-guide-content {
     inset: 0;
     border: 1px dashed var(--accent);
+  }
+
+  .print-guide-paratext {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0.85;
+  }
+
+  .print-guide-paratext.head {
+    font-family: var(--font-ui);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   .stage {
