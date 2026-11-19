@@ -766,6 +766,21 @@ Drawing model:
 - Composition onion is separate: it ghosts adjacent composition frames, with an
   optional drawings-only scope.
 
+### Design tokens
+
+The design system uses fixed slots rather than arbitrary tokens:
+
+- five color tokens: Fondo, Texto, Acento, Acento 2, Acento 3;
+- four text styles: Título 1, Título 2, Título 3, Cuerpo;
+- radius presets for shapes.
+
+Drawings, token-colored shapes and text, text-style colors, and the site
+background resolve against the same palette. Saving a text style updates the
+elements that use it; manual text edits detach the element from the style.
+
+The palette generator preserves locked colors and produces a readable
+background/text pair. It applies the whole palette in one undoable command.
+
 ### Tabs
 
 Underline 2 px `--accent` for active, 12 px mono lowercase, 32 px height.

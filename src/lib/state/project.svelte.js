@@ -851,6 +851,18 @@ export function resetPalette() {
   });
 }
 
+export function applyGeneratedPalette(colors) {
+  return runCommand('generar paleta', (draft) => {
+    const next = [...(draft.palette ?? DEFAULT_PALETTE)];
+    colors.slice(0, 5).forEach((color, index) => {
+      if (typeof color !== 'string' || !/^#[0-9a-f]{6}$/i.test(color)) return;
+      updatePaletteReferences(draft, index, color);
+      next[index] = color;
+    });
+    draft.palette = next;
+  });
+}
+
 export async function importHtmlFile(file) {
   if (!session.project) throw new Error('No hay un proyecto abierto.');
   if (!/\.html?$/i.test(file.name)) {

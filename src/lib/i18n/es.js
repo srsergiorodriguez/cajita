@@ -514,6 +514,9 @@ export const es = {
   'new.cancel': 'cancelar',
 
   'design.heading': 'título',
+  'design.generate': 'generar paleta',
+  'design.lock': 'bloquear color',
+  'design.unlock': 'desbloquear color',
   'design.colorCustom': 'personalizado',
   'text.style': 'estilo',
   'text.styleCustom': 'personalizado',

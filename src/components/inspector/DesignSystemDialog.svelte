@@ -4,11 +4,14 @@
   import Field from '../ui/Field.svelte';
   import Select from '../ui/Select.svelte';
   import ColorField from './ColorField.svelte';
+  import IconButton from '../ui/IconButton.svelte';
   import Section from '../ui/Section.svelte';
   import { t } from '../../lib/i18n/index.svelte.js';
   import { BUILTIN_FONTS } from '../../lib/domain/elements.js';
+  import { generatePalette } from '../../lib/domain/palette-generator.js';
   import { colorForToken } from '../../lib/domain/design.js';
   import {
+    applyGeneratedPalette,
     resetPalette,
     session,
     setSiteBackground,
@@ -25,6 +28,19 @@
     (project?.colorTokens ?? []).map((token) => ({ value: token.id, label: token.name }))
   );
   const styles = $derived(Object.values(project?.textStyles ?? {}));
+  let locked = $state(new Set());
+
+  function toggleLock(index) {
+    const next = new Set(locked);
+    if (next.has(index)) next.delete(index);
+    else next.add(index);
+    locked = next;
+  }
+
+  function generate() {
+    const colors = generatePalette({ project, locked: [...locked] });
+    apply(() => applyGeneratedPalette(colors));
+  }
 
   function apply(action) {
     try {
@@ -48,20 +64,33 @@
         />
         <div class="color-tokens">
           {#each project.colorTokens ?? [] as token (token.id)}
-            <label class="color-token">
-              <span>{token.name}</span>
+            <div class="color-token">
+              <div class="token-head">
+                <span>{token.name}</span>
+                <IconButton
+                  label={locked.has(token.index) ? t('design.unlock') : t('design.lock')}
+                  icon="lock"
+                  size={20}
+                  iconSize={11}
+                  variant={locked.has(token.index) ? 'default' : 'ghost'}
+                  onclick={() => toggleLock(token.index)}
+                />
+              </div>
               <input
                 type="color"
                 value={project.palette?.[token.index] ?? '#000000'}
                 aria-label={token.name}
                 oninput={(event) => apply(() => updatePalette(token.index, event.currentTarget.value))}
               />
-            </label>
+            </div>
           {/each}
         </div>
-        <Button size="sm" variant="ghost" onclick={() => apply(resetPalette)}>
-          {t('palette.reset')}
-        </Button>
+        <div class="palette-actions">
+          <Button size="sm" variant="accent" onclick={generate}>{t('design.generate')}</Button>
+          <Button size="sm" variant="ghost" onclick={() => apply(resetPalette)}>
+            {t('palette.reset')}
+          </Button>
+        </div>
       </Section>
 
       <Section label={t('design.textStyles')}>
@@ -115,6 +144,8 @@
   .design-system { display: flex; flex-direction: column; gap: var(--space-2); }
   .color-tokens { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-2); }
   .color-token { display: flex; flex-direction: column; gap: 3px; min-width: 0; color: var(--muted); font-size: var(--text-2xs); }
+  .token-head { display: flex; align-items: center; justify-content: space-between; gap: 1px; }
+  .palette-actions { display: flex; gap: var(--space-2); }
   .color-token input { width: 100%; height: 32px; padding: 2px; border: 1px solid var(--line); background: var(--panel-2); }
   .text-styles { display: flex; flex-direction: column; gap: var(--space-2); }
   .text-style { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-2); border: 1px solid var(--line-soft); }

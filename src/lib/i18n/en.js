@@ -510,6 +510,9 @@ export const en = {
   'new.cancel': 'cancel',
 
   'design.heading': 'heading',
+  'design.generate': 'generate palette',
+  'design.lock': 'lock color',
+  'design.unlock': 'unlock color',
   'design.colorCustom': 'custom',
   'text.style': 'style',
   'text.styleCustom': 'custom',
