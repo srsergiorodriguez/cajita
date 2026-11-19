@@ -5,6 +5,7 @@
   import FontsDialog from '../inspector/FontsDialog.svelte';
   import GridsDialog from '../canvas/GridsDialog.svelte';
   import DesignSystemDialog from '../inspector/DesignSystemDialog.svelte';
+  import PrintDialog from '../export/PrintDialog.svelte';
   import { plural, t } from '../../lib/i18n/index.svelte.js';
   import { formatBytes, projectStats } from '../../lib/domain/model.js';
   import {
@@ -21,6 +22,7 @@
   let fontsOpen = $state(false);
   let gridsOpen = $state(false);
   let designOpen = $state(false);
+  let printOpen = $state(false);
   const summary = $derived(session.project ? projectStats(session.project) : null);
 
   function apply(action) {
@@ -77,6 +79,19 @@
         </Button>
       </div>
     </Section>
+
+    {#if session.project?.print}
+      <Section label={t('print.section')}>
+        <p class="hint">{t('print.paperHint', {
+          paper: session.project.print.paper.preset,
+          width: session.project.print.paper.width,
+          height: session.project.print.paper.height
+        })}</p>
+        <Button size="sm" variant="secondary" onclick={() => { printOpen = true; open = false; }}>
+          {t('print.open')}
+        </Button>
+      </Section>
+    {/if}
 
     <Section label={t('grid.manager')}>
       <p class="hint">{t('grid.projectHint')}</p>
@@ -149,6 +164,7 @@
 <FontsDialog bind:open={fontsOpen} />
 <GridsDialog bind:open={gridsOpen} />
 <DesignSystemDialog bind:open={designOpen} />
+<PrintDialog bind:open={printOpen} />
 
 <style>
   .project-summary h2 {

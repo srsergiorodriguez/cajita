@@ -640,6 +640,13 @@ export const en = {
 
   'grid.pageHint': 'To create or edit grids, open the project menu.',
   'grid.projectHint': 'Grids belong to the project and can be assigned to any page.',
+  'print.title': 'Print preview',
+  'print.section': 'print',
+  'print.open': 'open print preview',
+  'print.building': 'preparing publication…',
+  'print.hint': 'One cajita page per printed page. Use Save as PDF in the print dialog.',
+  'print.print': 'print / save PDF',
+  'print.paperHint': 'paper {paper} · {width} × {height} mm',
   'grid.manager': 'grids',
   'grid.section': 'grid',
   'grid.pageGrid': 'grid for this page',

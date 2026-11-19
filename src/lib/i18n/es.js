@@ -644,6 +644,13 @@ export const es = {
 
   'grid.pageHint': 'Para crear o editar cuadrículas, abre el menú del proyecto.',
   'grid.projectHint': 'Las cuadrículas pertenecen al proyecto y se pueden asignar a cualquier página.',
+  'print.title': 'Vista de impresión',
+  'print.section': 'impresión',
+  'print.open': 'abrir vista de impresión',
+  'print.building': 'preparando la publicación…',
+  'print.hint': 'Se imprimirá una página de cajita por página. Usa Guardar como PDF en el diálogo de impresión.',
+  'print.print': 'imprimir / guardar PDF',
+  'print.paperHint': 'papel {paper} · {width} × {height} mm',
   'grid.manager': 'cuadrículas',
   'grid.section': 'cuadrícula',
   'grid.pageGrid': 'cuadrícula de esta página',
